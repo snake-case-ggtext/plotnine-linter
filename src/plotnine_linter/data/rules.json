@@ -1,0 +1,973 @@
+{
+  "schema_version": 1,
+  "description": "Rule catalog shared by the Python (plotnine/matplotlib) and any future R (ggplot2) implementation. IDs are permanent: the third character is the tier; a retired ID is never reused.",
+  "tiers": {
+    "1": {
+      "name": "Errors",
+      "severity": "error",
+      "default": true
+    },
+    "2": {
+      "name": "Clarity",
+      "severity": "warning",
+      "default": true
+    },
+    "3": {
+      "name": "Style",
+      "severity": "info",
+      "default": false
+    }
+  },
+  "areas": {
+    "AX": "Axes and scales",
+    "CL": "Color",
+    "LB": "Labels",
+    "LY": "Layout",
+    "MK": "Marks",
+    "ST": "Style"
+  },
+  "retired": {
+    "CL103": "Moved to Tier 2 as CL201 (2026-11-19)",
+    "LB202": "Moved to opt-in Tier 3 as LB301 after calibration (fired on 42% of plots, low precision), 2026-11-20"
+  },
+  "thresholds": {
+    "max_categorical_colors": {
+      "default": 8,
+      "rule": "CL102",
+      "description": "Most categorical colors before a warning"
+    },
+    "cvd_min_delta_e": {
+      "default": 8.0,
+      "rule": "CL201",
+      "description": "CIEDE2000 distance below which two colors count as confusable under simulated color-vision deficiency"
+    },
+    "overplot_min_points": {
+      "default": 100,
+      "rule": "MK101",
+      "description": "Fewest points before overplotting is checked"
+    },
+    "overplot_fraction": {
+      "default": 0.5,
+      "rule": "MK101",
+      "description": "Share of points overlapping another at full opacity that counts as overplotting"
+    },
+    "discrete_points_per_category": {
+      "default": 10,
+      "rule": "MK101",
+      "description": "Points stacked on one category of a discrete axis (without jitter) that counts as overplotting"
+    },
+    "max_pie_slices": {
+      "default": 4,
+      "rule": "MK201",
+      "description": "Most pie slices before a warning"
+    },
+    "max_lines": {
+      "default": 7,
+      "rule": "MK202",
+      "description": "Most lines in one panel before a warning"
+    },
+    "min_font_pt": {
+      "default": 8.0,
+      "rule": "LY201",
+      "description": "Smallest acceptable text size, in points"
+    },
+    "min_bars_to_sort": {
+      "default": 4,
+      "rule": "AX201",
+      "description": "Fewest bars before unsorted order is flagged"
+    },
+    "min_box_group_n": {
+      "default": 10,
+      "rule": "MK204",
+      "description": "Groups with fewer observations than this get flagged in a box plot without points"
+    },
+    "max_stack_segments": {
+      "default": 5,
+      "rule": "MK205",
+      "description": "Most segments in a stacked bar before a warning"
+    },
+    "min_mark_contrast": {
+      "default": 1.8,
+      "rule": "CL204",
+      "description": "Lowest acceptable contrast ratio between data marks and the panel background. WCAG 1.4.11 asks for 3.0; the default is lower because most standard palettes (including matplotlib's default orange) fall between 2 and 3."
+    },
+    "min_text_contrast": {
+      "default": 4.5,
+      "rule": "LY103",
+      "description": "Lowest acceptable contrast ratio for normal text (WCAG 1.4.3); large text (18 pt, or 14 pt bold) needs 3.0."
+    }
+  },
+  "rules": [
+    {
+      "id": "AX101",
+      "tier": 1,
+      "title": "Bar or area axis excludes zero",
+      "heuristic": false,
+      "why": "A bar's length encodes its value. When the value axis doesn't start at zero, bar lengths stop being proportional and small differences look large.",
+      "fix": "Remove the axis limits so the bars start at zero; if the zoomed view matters, show the values as points or a line instead of bars.",
+      "chartability": [],
+      "wcag": []
+    },
+    {
+      "id": "AX102",
+      "tier": 1,
+      "title": "Dual y-axes",
+      "heuristic": false,
+      "why": "Two independent scales on one panel make the crossing points and relative slopes arbitrary: rescale either axis and the story changes.",
+      "fix": "Use two panels that share the x-axis, or index both series to a common baseline.",
+      "chartability": [],
+      "wcag": []
+    },
+    {
+      "id": "AX103",
+      "tier": 1,
+      "title": "Log scale silently drops data",
+      "heuristic": false,
+      "why": "Zero and negative values have no logarithm. They vanish from a log axis with at most a console warning, so the chart quietly shows less data than the reader assumes.",
+      "fix": "Use a pseudo-log or symlog transform, or filter the values out and say so in the caption.",
+      "chartability": [],
+      "wcag": []
+    },
+    {
+      "id": "CL101",
+      "tier": 1,
+      "title": "Rainbow colormap for ordered data",
+      "heuristic": false,
+      "why": "Rainbow colormaps aren't perceptually ordered: brightness jumps create false boundaries, and they fail for readers with color-vision deficiency.",
+      "fix": "Use `viridis` or `cividis` for sequential data; a diverging map such as `RdBu` centered at the midpoint for data with a meaningful center.",
+      "chartability": [
+        "Not CVD-friendly"
+      ],
+      "wcag": []
+    },
+    {
+      "id": "CL102",
+      "tier": 1,
+      "title": "Too many categorical colors",
+      "heuristic": false,
+      "why": "Readers can reliably match only about eight hues to a legend; beyond that, colors repeat or become too similar to tell apart.",
+      "fix": "Highlight the few categories that matter and gray the rest, facet, or label directly.",
+      "chartability": [
+        "Data density is inappropriate",
+        "Meaningful elements can be distinguished from each other"
+      ],
+      "wcag": []
+    },
+    {
+      "id": "LB101",
+      "tier": 1,
+      "title": "Quantitative axis has no label",
+      "heuristic": false,
+      "why": "Without a label the reader can't tell what is measured or in what units.",
+      "fix": "Add an axis label with units.",
+      "chartability": [
+        "Axis labels are unclear or missing"
+      ],
+      "wcag": []
+    },
+    {
+      "id": "LY101",
+      "tier": 1,
+      "title": "Overlapping tick labels",
+      "heuristic": false,
+      "why": "Overlapping labels can't be read, so the axis stops doing its job.",
+      "fix": "Swap axes first (`coord_flip()` / `barh`); then fewer ticks or shorter labels. Rotation isn't a fix (see AX202).",
+      "chartability": [
+        "Spacing is inappropriate"
+      ],
+      "wcag": []
+    },
+    {
+      "id": "LY102",
+      "tier": 1,
+      "title": "Legend covers data",
+      "heuristic": false,
+      "why": "A legend drawn over the data hides exactly the marks the reader is trying to see.",
+      "fix": "Place the legend outside the plotting area, or label the series directly.",
+      "chartability": [
+        "Meaningful elements can be distinguished from each other"
+      ],
+      "wcag": []
+    },
+    {
+      "id": "LY103",
+      "tier": 1,
+      "title": "Low-contrast text",
+      "heuristic": false,
+      "why": "Text that is too close in brightness to its background can't be read by people with low vision, on a projector, or in sunlight. WCAG asks for at least 4.5:1 (3:1 for large text).",
+      "fix": "Darken the text (or lighten the background) until it meets 4.5:1.",
+      "chartability": [
+        "Low contrast"
+      ],
+      "wcag": [
+        "1.4.3 Contrast (Minimum)"
+      ]
+    },
+    {
+      "id": "MK101",
+      "tier": 1,
+      "title": "Overplotting",
+      "heuristic": false,
+      "why": "When many points land on top of each other, density becomes invisible: a thousand points in one spot look the same as one.",
+      "fix": "Add transparency, jitter discrete positions, bin the points (2D histogram / hexbin), or sample.",
+      "chartability": [
+        "Data density is inappropriate"
+      ],
+      "wcag": []
+    },
+    {
+      "id": "MK102",
+      "tier": 1,
+      "title": "3D for 2D data",
+      "heuristic": false,
+      "why": "Perspective distorts length and area, and bars hide behind each other; the third dimension adds no information.",
+      "fix": "Use 2D bars, grouped bars, or a heatmap.",
+      "chartability": [
+        "Information complexity is inappropriate"
+      ],
+      "wcag": []
+    },
+    {
+      "id": "MK103",
+      "tier": 1,
+      "title": "Line connects unordered categories",
+      "heuristic": false,
+      "why": "A line implies continuity and order between neighboring points. Between nominal categories there is none, so the slopes mean nothing.",
+      "fix": "Use points, bars, or a dot plot; keep lines for ordered or time data.",
+      "chartability": [],
+      "wcag": []
+    },
+    {
+      "id": "AX201",
+      "tier": 2,
+      "title": "Unsorted bars on a nominal axis",
+      "heuristic": false,
+      "why": "With nominal categories, the reader's question is usually 'which is biggest?'. Alphabetical order hides the ranking and makes the reader do the sorting.",
+      "fix": "Order the bars by value; suppress this rule when the category order is meaningful.",
+      "chartability": [],
+      "wcag": []
+    },
+    {
+      "id": "AX202",
+      "tier": 2,
+      "title": "Rotated or crowded category labels",
+      "heuristic": false,
+      "why": "Tilted text is slow to read, even at 30°. Rotating labels usually means the axes should be swapped so long category names read horizontally.",
+      "fix": "Swap the axes (`coord_flip()` / `barh`). Time axes stay horizontal: use fewer ticks or a shorter date format.",
+      "chartability": [],
+      "wcag": []
+    },
+    {
+      "id": "AX203",
+      "tier": 2,
+      "title": "Free facet scales",
+      "heuristic": false,
+      "why": "Panels side by side invite comparison. With free scales, the same bar height or slope means different values in different panels.",
+      "fix": "Use shared scales, or say in the title or caption that each panel has its own scale.",
+      "chartability": [],
+      "wcag": []
+    },
+    {
+      "id": "AX204",
+      "tier": 2,
+      "title": "Default histogram bins",
+      "heuristic": false,
+      "why": "A histogram's shape depends on its bins. The library default is arbitrary, so patterns can appear or vanish depending on a choice nobody made.",
+      "fix": "Choose a bin width that means something in the data's units.",
+      "chartability": [],
+      "wcag": []
+    },
+    {
+      "id": "AX205",
+      "tier": 2,
+      "title": "Ordered categories in alphabetical order",
+      "heuristic": false,
+      "why": "Months, weekdays and rating scales have a natural order. Stored as plain strings, they sort alphabetically (Apr, Aug, Dec...), which scrambles the pattern the chart should show.",
+      "fix": "Make the column an ordered Categorical in its natural order.",
+      "chartability": [],
+      "wcag": []
+    },
+    {
+      "id": "AX206",
+      "tier": 2,
+      "title": "Log values on a linear axis",
+      "heuristic": true,
+      "why": "Plotting log-transformed values on a linear axis makes readers decode logarithms (what is 4.7?). A log-scaled axis keeps the original units on the ticks.",
+      "fix": "Plot the original values on a log-scaled axis instead.",
+      "chartability": [],
+      "wcag": []
+    },
+    {
+      "id": "AX207",
+      "tier": 2,
+      "title": "Fractional ticks on whole-number data",
+      "heuristic": false,
+      "why": "Ticks like 2017.5 on years, or 2.5 on a count of people, label values the data can't take and make the chart look careless.",
+      "fix": "Put ticks on whole numbers only.",
+      "chartability": [],
+      "wcag": []
+    },
+    {
+      "id": "CL201",
+      "tier": 2,
+      "title": "Colors indistinguishable with color-vision deficiency",
+      "heuristic": false,
+      "why": "About 1 in 12 men and 1 in 200 women have a color-vision deficiency, most often red-green. Categories that differ only by such colors merge for them.",
+      "fix": "Use a CVD-safe palette such as Okabe-Ito, or add a second encoding (shape, linetype, direct labels).",
+      "chartability": [
+        "Not CVD-friendly"
+      ],
+      "wcag": [
+        "1.4.1 Use of Color"
+      ]
+    },
+    {
+      "id": "CL202",
+      "tier": 2,
+      "title": "Diverging data on a sequential color scale",
+      "heuristic": false,
+      "why": "When values run from negative to positive (correlations, changes, residuals), zero is the meaningful middle. A sequential scale gives zero no special color, so readers can't tell positive from negative at a glance.",
+      "fix": "Use a diverging colormap centered at zero, e.g. RdBu with vmin = -vmax.",
+      "chartability": [],
+      "wcag": []
+    },
+    {
+      "id": "CL203",
+      "tier": 2,
+      "title": "Color that encodes nothing",
+      "heuristic": false,
+      "why": "Giving every bar its own color invites readers to look for a meaning that isn't there, and it uses up color you may need for something that matters.",
+      "fix": "Use one color for all bars, and save color for a variable or a highlight.",
+      "chartability": [],
+      "wcag": []
+    },
+    {
+      "id": "CL204",
+      "tier": 2,
+      "title": "Low-contrast marks",
+      "heuristic": false,
+      "why": "Lines, points and bars that barely differ from the background (pale yellow on white, light gray on gray) disappear for readers with low vision and on projectors. WCAG asks for 3:1 contrast for graphics needed to understand a chart.",
+      "fix": "Use a darker color for the marks, or give light fills a dark outline.",
+      "chartability": [
+        "Low contrast"
+      ],
+      "wcag": [
+        "1.4.11 Non-text Contrast"
+      ]
+    },
+    {
+      "id": "LB201",
+      "tier": 2,
+      "title": "Label is a raw variable name",
+      "heuristic": false,
+      "why": "Column names are code: `avg_income_usd` is how a program refers to the data, not how a reader does. plotnine and pandas use the column name as the label unless you change it.",
+      "fix": "Write a label for people: words, capitalized, with units.",
+      "chartability": [
+        "Axis labels are unclear or missing"
+      ],
+      "wcag": []
+    },
+    {
+      "id": "LB203",
+      "tier": 2,
+      "title": "Redundant legend",
+      "heuristic": false,
+      "why": "When color repeats what an axis already shows, or a legend has a single entry, the legend adds nothing but asks the reader to look it up anyway.",
+      "fix": "Hide the legend, or drop the redundant color mapping.",
+      "chartability": [],
+      "wcag": []
+    },
+    {
+      "id": "LB205",
+      "tier": 2,
+      "title": "Label doesn't match the values",
+      "heuristic": true,
+      "why": "A label that promises percentages over values between 0 and 1, or a proportion over raw counts, tells the reader the wrong scale.",
+      "fix": "Make the label and the values agree: convert the values or reword the label.",
+      "chartability": [
+        "Axis labels are unclear or missing"
+      ],
+      "wcag": []
+    },
+    {
+      "id": "LB206",
+      "tier": 2,
+      "title": "Scientific offset on an axis",
+      "heuristic": false,
+      "why": "An offset like '1e8' in the corner of the axis is easy to miss, so readers misread every tick by orders of magnitude.",
+      "fix": "Rescale the values (e.g. to millions) and say so in the axis label, or format the ticks in full.",
+      "chartability": [
+        "Data in text is not human-readable"
+      ],
+      "wcag": []
+    },
+    {
+      "id": "LY201",
+      "tier": 2,
+      "title": "Text too small at final size",
+      "heuristic": false,
+      "why": "Small text becomes unreadable once the figure lands in slides, a report or a phone screen.",
+      "fix": "Increase the base font size, or make the figure smaller so text is relatively larger.",
+      "chartability": [
+        "Small text size"
+      ],
+      "wcag": []
+    },
+    {
+      "id": "LY202",
+      "tier": 2,
+      "title": "Legend order doesn't match line order",
+      "heuristic": false,
+      "why": "When the top legend entry isn't the top line, readers hunt back and forth between lines and legend to match them up.",
+      "fix": "Order the legend by each line's last value, or label the line ends directly.",
+      "chartability": [],
+      "wcag": []
+    },
+    {
+      "id": "MK201",
+      "tier": 2,
+      "title": "Pie with many slices",
+      "heuristic": false,
+      "why": "People compare angles and areas poorly; past a few slices, a pie can't show which parts are bigger.",
+      "fix": "Use a sorted bar chart.",
+      "chartability": [],
+      "wcag": []
+    },
+    {
+      "id": "MK202",
+      "tier": 2,
+      "title": "Spaghetti lines",
+      "heuristic": false,
+      "why": "Past about seven lines, lines tangle and colors can't be matched to the legend.",
+      "fix": "Highlight the few lines that matter and gray the rest, or facet.",
+      "chartability": [
+        "Data density is inappropriate"
+      ],
+      "wcag": []
+    },
+    {
+      "id": "MK203",
+      "tier": 2,
+      "title": "Summary bars without uncertainty",
+      "heuristic": false,
+      "why": "A bar of means hides spread and sample size: two groups with the same mean can differ wildly in their data.",
+      "fix": "Add error bars or the raw points, or use a box or strip plot.",
+      "chartability": [
+        "Statistical uncertainty isn't clearly communicated"
+      ],
+      "wcag": []
+    },
+    {
+      "id": "MK204",
+      "tier": 2,
+      "title": "Box plot hides small groups",
+      "heuristic": false,
+      "why": "A box plot summarizes a distribution with five numbers. With only a handful of observations those numbers are unstable, and the box hides how few points there are.",
+      "fix": "Show the points (jittered) on top of the box, or instead of it, and report n per group.",
+      "chartability": [
+        "Statistical uncertainty isn't clearly communicated"
+      ],
+      "wcag": []
+    },
+    {
+      "id": "MK205",
+      "tier": 2,
+      "title": "Stacked bars with many segments",
+      "heuristic": false,
+      "why": "Only the bottom segment of a stacked bar shares a baseline. With many segments, the middle ones can't be compared across bars.",
+      "fix": "Use grouped (dodged) bars or small multiples, or keep stacking to the few segments that matter.",
+      "chartability": [
+        "Data density is inappropriate"
+      ],
+      "wcag": []
+    },
+    {
+      "id": "CL301",
+      "tier": 3,
+      "title": "Color is the only cue",
+      "heuristic": false,
+      "why": "Charts get printed in grayscale and read by people with low vision. If categories differ only in hue and have the same lightness, they become indistinguishable (WCAG: don't rely on color alone).",
+      "fix": "Add a second cue: shape or linetype for the same variable, or label the categories directly.",
+      "chartability": [
+        "Color is used alone to communicate meaning"
+      ],
+      "wcag": [
+        "1.4.1 Use of Color"
+      ]
+    },
+    {
+      "id": "LB301",
+      "tier": 3,
+      "title": "Quantitative label has no units",
+      "heuristic": true,
+      "why": "A number without units can't be interpreted: is that dollars or thousands of dollars, seconds or minutes?",
+      "fix": "Add units in parentheses, e.g. 'Median income (USD)'.",
+      "chartability": [
+        "Axis labels are unclear or missing",
+        "Metrics and variables are undefined"
+      ],
+      "wcag": []
+    },
+    {
+      "id": "ST301",
+      "tier": 3,
+      "title": "No title",
+      "heuristic": false,
+      "why": "A figure that travels without its surrounding text (a slide, a report, a screenshot) needs its own context.",
+      "fix": "Add a title; a takeaway title states what the reader should see.",
+      "chartability": [
+        "No title, summary, or caption"
+      ],
+      "wcag": []
+    },
+    {
+      "id": "ST303",
+      "tier": 3,
+      "title": "Direct labels would beat a legend",
+      "heuristic": false,
+      "why": "With a few lines, labeling each line end removes the back-and-forth between lines and legend.",
+      "fix": "Label line ends and drop the legend.",
+      "chartability": [],
+      "wcag": []
+    },
+    {
+      "id": "ST305",
+      "tier": 3,
+      "title": "Same category, different colors across figures",
+      "heuristic": false,
+      "why": "Readers carry color meaning from one figure to the next. If 'West' is orange in one chart and blue in the next, they'll misread the second.",
+      "fix": "Define one palette per variable (a dict of category to color) and reuse it in every figure.",
+      "chartability": [
+        "Design is not consistent and familiar"
+      ],
+      "wcag": []
+    },
+    {
+      "id": "ST306",
+      "tier": 3,
+      "title": "Inconsistent themes across figures",
+      "heuristic": false,
+      "why": "Figures in one report read as a set. Switching themes or base font sizes between them looks unfinished and makes comparisons harder.",
+      "fix": "Set the theme and font size once at the top of the notebook.",
+      "chartability": [
+        "Design is not consistent and familiar"
+      ],
+      "wcag": []
+    },
+    {
+      "id": "ST307",
+      "tier": 3,
+      "title": "Excess precision in tick labels",
+      "heuristic": false,
+      "why": "Extra decimals add clutter without information.",
+      "fix": "Format ticks to the precision the step needs.",
+      "chartability": [
+        "Data in text is not human-readable"
+      ],
+      "wcag": []
+    }
+  ],
+  "profiles": {
+    "accessibility": {
+      "description": "Rules tied to Chartability tests and WCAG success criteria, at their published thresholds (marks 3:1, text at least 9 pt).",
+      "select": [
+        "tier1",
+        "tier2",
+        "a11y"
+      ],
+      "severity": {
+        "ST301": "warning",
+        "CL301": "warning"
+      },
+      "thresholds": {
+        "min_mark_contrast": 3.0,
+        "min_font_pt": 9.0
+      }
+    }
+  },
+  "chartability": {
+    "source": "https://chartability.github.io/POUR-CAF/",
+    "citation": "Elavsky, Bennett & Moritz (2022). How accessible is my visualization? Evaluating visualization accessibility with Chartability. Computer Graphics Forum 41(3).",
+    "license": "Chartability is CC-BY-SA 3.0; only its test names are referenced here.",
+    "critical": [
+      "Low contrast",
+      "Content is only visual",
+      "Small text size",
+      "Visual presents seizure risk",
+      "Interaction modality only has one input type",
+      "No interaction cues or instructions",
+      "Controls override AT controls",
+      "No explanation for purpose or for how to read",
+      "No title, summary, or caption",
+      "Reading level inappropriate",
+      "No table",
+      "Data density is inappropriate",
+      "Navigation and interaction is tedious",
+      "User style change not respected"
+    ],
+    "static_types": {
+      "rules": "Decided by the linter's rules: pass or fail.",
+      "partly": "The linter gathers evidence; the author answers a question.",
+      "ask": "Only the author can decide; the audit asks.",
+      "na": "Doesn't apply to a static chart in a notebook."
+    },
+    "tests": [
+      {
+        "name": "Low contrast",
+        "principle": "Perceivable",
+        "critical": true,
+        "static": "rules",
+        "pass": "Text meets 4.5:1 (3:1 for large text) and marks meet 3:1 against the background."
+      },
+      {
+        "name": "Content is only visual",
+        "principle": "Perceivable",
+        "critical": true,
+        "static": "partly",
+        "ask": "Edit the alt text above so it says what you want a reader to conclude, and put it next to the chart in your notebook."
+      },
+      {
+        "name": "Small text size",
+        "principle": "Perceivable",
+        "critical": true,
+        "static": "rules",
+        "pass": "All text is at least 9 pt."
+      },
+      {
+        "name": "Visual presents seizure risk",
+        "principle": "Perceivable",
+        "critical": true,
+        "static": "na",
+        "na": "Static images don't flash."
+      },
+      {
+        "name": "Color is used alone to communicate meaning",
+        "principle": "Perceivable",
+        "critical": false,
+        "static": "rules",
+        "pass": "Color isn't the only way to tell groups apart."
+      },
+      {
+        "name": "Meaningful elements can be distinguished from each other",
+        "principle": "Perceivable",
+        "critical": false,
+        "static": "rules",
+        "pass": "Marks don't hide each other and there aren't too many colors to tell apart."
+      },
+      {
+        "name": "Not CVD-friendly",
+        "principle": "Perceivable",
+        "critical": false,
+        "static": "rules",
+        "pass": "Colors stay distinguishable under simulated color-vision deficiencies."
+      },
+      {
+        "name": "Spacing is inappropriate",
+        "principle": "Perceivable",
+        "critical": false,
+        "static": "rules",
+        "pass": "No overlapping labels."
+      },
+      {
+        "name": "Interaction modality only has one input type",
+        "principle": "Operable",
+        "critical": true,
+        "static": "na",
+        "na": "Interactive charts only; a notebook plot is a static image."
+      },
+      {
+        "name": "No interaction cues or instructions",
+        "principle": "Operable",
+        "critical": true,
+        "static": "na",
+        "na": "Interactive charts only; a notebook plot is a static image."
+      },
+      {
+        "name": "Controls override AT controls",
+        "principle": "Operable",
+        "critical": true,
+        "static": "na",
+        "na": "Interactive charts only; a notebook plot is a static image."
+      },
+      {
+        "name": "Low contrast on interactive elements",
+        "principle": "Operable",
+        "critical": false,
+        "static": "na",
+        "na": "Interactive charts only; a notebook plot is a static image."
+      },
+      {
+        "name": "Keyboard focus indicator missing, obscured, or low contrast",
+        "principle": "Operable",
+        "critical": false,
+        "static": "na",
+        "na": "Interactive charts only; a notebook plot is a static image."
+      },
+      {
+        "name": "Inappropriate tab stops",
+        "principle": "Operable",
+        "critical": false,
+        "static": "na",
+        "na": "Interactive charts only; a notebook plot is a static image."
+      },
+      {
+        "name": "Complex actions have no alternatives",
+        "principle": "Operable",
+        "critical": false,
+        "static": "na",
+        "na": "Interactive charts only; a notebook plot is a static image."
+      },
+      {
+        "name": "Target pointer interaction size is too small",
+        "principle": "Operable",
+        "critical": false,
+        "static": "na",
+        "na": "Interactive charts only; a notebook plot is a static image."
+      },
+      {
+        "name": "No explanation for purpose or for how to read",
+        "principle": "Understandable",
+        "critical": true,
+        "static": "ask",
+        "ask": "In a sentence next to the chart, say what question it answers."
+      },
+      {
+        "name": "No title, summary, or caption",
+        "principle": "Understandable",
+        "critical": true,
+        "static": "partly",
+        "ask": "Does the title (or a caption under the chart) say what to notice, not only what is plotted?"
+      },
+      {
+        "name": "Reading level inappropriate",
+        "principle": "Understandable",
+        "critical": true,
+        "static": "partly",
+        "ask": "Rewrite the chart's text in plainer words for your audience.",
+        "pass": "The chart's text is plain."
+      },
+      {
+        "name": "Interactive context is not clear",
+        "principle": "Understandable",
+        "critical": false,
+        "static": "na",
+        "na": "Interactive charts only; a notebook plot is a static image."
+      },
+      {
+        "name": "Information complexity is inappropriate",
+        "principle": "Understandable",
+        "critical": false,
+        "static": "rules",
+        "pass": "Nothing is drawn that the reader has to decode (such as 3D)."
+      },
+      {
+        "name": "Changes are not easy to follow",
+        "principle": "Understandable",
+        "critical": false,
+        "static": "na",
+        "na": "Interactive charts only; a notebook plot is a static image."
+      },
+      {
+        "name": "Metrics and variables are undefined",
+        "principle": "Understandable",
+        "critical": false,
+        "static": "partly",
+        "ask": "Will your readers know what these mean? Spell them out on the chart or define them in the caption.",
+        "pass": "No unexplained abbreviations in the chart's text."
+      },
+      {
+        "name": "Statistical uncertainty isn't clearly communicated",
+        "principle": "Understandable",
+        "critical": false,
+        "static": "partly",
+        "ask": "Say what the uncertainty marks show (SD, SE or a 95% CI), in the caption or a subtitle.",
+        "pass": "No problems found with how uncertainty is shown."
+      },
+      {
+        "name": "Axis labels are unclear or missing",
+        "principle": "Understandable",
+        "critical": false,
+        "static": "rules",
+        "pass": "Axes have human-readable labels."
+      },
+      {
+        "name": "Controls are inappropriate",
+        "principle": "Understandable",
+        "critical": false,
+        "static": "na",
+        "na": "Interactive charts only; a notebook plot is a static image."
+      },
+      {
+        "name": "Does not conform to standards",
+        "principle": "Robust",
+        "critical": false,
+        "static": "na",
+        "na": "About the web page or app around the chart, not the chart itself."
+      },
+      {
+        "name": "Semantically invalid",
+        "principle": "Robust",
+        "critical": false,
+        "static": "na",
+        "na": "About the web page or app around the chart, not the chart itself."
+      },
+      {
+        "name": "Fragile technology support",
+        "principle": "Robust",
+        "critical": false,
+        "static": "na",
+        "na": "About the web page or app around the chart, not the chart itself."
+      },
+      {
+        "name": "No table",
+        "principle": "Compromising",
+        "critical": true,
+        "static": "ask",
+        "ask": "Show the data as a table under the chart, or say why readers don't need it."
+      },
+      {
+        "name": "Information can only be reached through single process",
+        "principle": "Compromising",
+        "critical": false,
+        "static": "na",
+        "na": "Interactive charts only; a notebook plot is a static image."
+      },
+      {
+        "name": "Location and history is unclear",
+        "principle": "Compromising",
+        "critical": false,
+        "static": "na",
+        "na": "Interactive charts only; a notebook plot is a static image."
+      },
+      {
+        "name": "Interactions are not forgivable",
+        "principle": "Compromising",
+        "critical": false,
+        "static": "na",
+        "na": "Interactive charts only; a notebook plot is a static image."
+      },
+      {
+        "name": "Information cannot be navigated according to narrative or structure",
+        "principle": "Compromising",
+        "critical": false,
+        "static": "na",
+        "na": "Interactive charts only; a notebook plot is a static image."
+      },
+      {
+        "name": "Table/data is static",
+        "principle": "Compromising",
+        "critical": false,
+        "static": "na",
+        "na": "Interactive charts only; a notebook plot is a static image."
+      },
+      {
+        "name": "State is not easy to share and reproduce",
+        "principle": "Compromising",
+        "critical": false,
+        "static": "na",
+        "na": "Interactive charts only; a notebook plot is a static image."
+      },
+      {
+        "name": "Data density is inappropriate",
+        "principle": "Assistive",
+        "critical": true,
+        "static": "rules",
+        "pass": "The number of marks, lines and colors is readable."
+      },
+      {
+        "name": "Navigation and interaction is tedious",
+        "principle": "Assistive",
+        "critical": true,
+        "static": "na",
+        "na": "Interactive charts only; a notebook plot is a static image."
+      },
+      {
+        "name": "Visually apparent features and relationships are not described",
+        "principle": "Assistive",
+        "critical": false,
+        "static": "partly",
+        "ask": "Does your description name the pattern a sighted reader would notice first (a trend, a gap, an outlier)?"
+      },
+      {
+        "name": "Data in text is not human-readable",
+        "principle": "Assistive",
+        "critical": false,
+        "static": "rules",
+        "pass": "Numbers and dates in the chart's text are formatted for people."
+      },
+      {
+        "name": "Space does not handle extremes",
+        "principle": "Assistive",
+        "critical": false,
+        "static": "partly",
+        "ask": "Consider a log scale, a separate panel for the extreme value, or labeling it so the rest stays readable.",
+        "pass": "No single value squashes the rest."
+      },
+      {
+        "name": "No default \"build-your-own\" provided",
+        "principle": "Assistive",
+        "critical": false,
+        "static": "na",
+        "na": "Interactive charts only; a notebook plot is a static image."
+      },
+      {
+        "name": "User style change not respected",
+        "principle": "Flexible",
+        "critical": true,
+        "static": "na",
+        "na": "A static image can't be restyled, zoomed or animated by the reader."
+      },
+      {
+        "name": "Long animations cannot be controlled",
+        "principle": "Flexible",
+        "critical": false,
+        "static": "na",
+        "na": "A static image can't be restyled, zoomed or animated by the reader."
+      },
+      {
+        "name": "Scrolling experiences cannot be altered",
+        "principle": "Flexible",
+        "critical": false,
+        "static": "na",
+        "na": "A static image can't be restyled, zoomed or animated by the reader."
+      },
+      {
+        "name": "Zoom and reflow are not supported",
+        "principle": "Flexible",
+        "critical": false,
+        "static": "na",
+        "na": "A static image can't be restyled, zoomed or animated by the reader."
+      },
+      {
+        "name": "User's text adjustments are not respected",
+        "principle": "Flexible",
+        "critical": false,
+        "static": "na",
+        "na": "A static image can't be restyled, zoomed or animated by the reader."
+      },
+      {
+        "name": "Design is not consistent and familiar",
+        "principle": "Flexible",
+        "critical": false,
+        "static": "rules",
+        "pass": "Colors and theme match the other plots in this notebook.",
+        "needs_session": true
+      },
+      {
+        "name": "Contrast and textures cannot be adjusted",
+        "principle": "Flexible",
+        "critical": false,
+        "static": "na",
+        "na": "A static image can't be restyled, zoomed or animated by the reader."
+      },
+      {
+        "name": "Difficult chart type has no alternative",
+        "principle": "Flexible",
+        "critical": false,
+        "static": "partly",
+        "ask": "Pair it with a table or a simpler chart, or explain how to read it.",
+        "pass": "A familiar chart type."
+      }
+    ]
+  }
+}

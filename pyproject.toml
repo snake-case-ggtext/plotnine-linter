@@ -1,0 +1,33 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "plotnine-linter"
+version = "0.1.0"
+description = "A teaching-first linter for plotnine and matplotlib charts"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Shannon E. Ellis" }]
+dependencies = [
+    "matplotlib>=3.8",
+    "numpy>=1.24",
+    "pandas>=2.0",
+    "tomli>=1.1; python_version < '3.11'",
+]
+
+[project.optional-dependencies]
+plotnine = ["plotnine>=0.13"]
+dev = ["plotnine>=0.13", "pytest>=7", "ipython>=8", "seaborn>=0.13", "nbclient", "ipykernel"]
+
+[project.scripts]
+plotnine-linter = "plotnine_linter.__main__:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/plotnine_linter"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = ["ignore::UserWarning", "ignore::FutureWarning"]
+markers = ["slow: starts a Jupyter kernel (deselect with -m 'not slow')"]
