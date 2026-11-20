@@ -222,7 +222,7 @@ def test_alt_text():
 
     fig, ax = plt.subplots()
     s = pd.Series({"West": 52, "East": 61, "South": 47})
-    ax.bar(s.index, s.values)
+    ax.bar(s.index, s.to_numpy())
     ax.set_xlabel("Region")
     ax.set_ylabel("Income (USD k)")
     text = alt_text(fig)

@@ -25,7 +25,7 @@ def good_bar():
     s = pd.Series(
         {"West": 52, "North": 58, "East": 61, "Central": 50, "South": 47}
     ).sort_values()
-    ax.barh(s.index, s.values, color="#4C72B0")
+    ax.barh(s.index, s.to_numpy(), color="#4C72B0")
     ax.set_xlabel("Average income (USD, thousands)")
     ax.set_title("East earns the most")
     return fig

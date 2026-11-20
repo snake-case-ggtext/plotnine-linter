@@ -206,7 +206,9 @@ def ax201(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
             continue
         s = bars[0]
         axis = panel.x if s.orientation == "vertical" else panel.y
-        if s.heights is None or axis.kind != "discrete" or len(s.heights) < min_bars:
+        if s.x is None or s.heights is None:
+            continue
+        if axis.kind != "discrete" or len(s.heights) < min_bars:
             continue
         labels = [t.text for t in axis.tick_labels]
         if ordinal_like(labels):

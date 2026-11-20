@@ -62,7 +62,9 @@ def mk101(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     dpi = desc.render.figure.dpi
     for panel in desc.render.panels:
         for s in panel.of_kind("scatter"):
-            if s.x is None or s.sizes is None or len(s.x) < min_n or s.alpha < 0.9:
+            if s.x is None or s.y is None or s.sizes is None:
+                continue
+            if len(s.x) < min_n or s.alpha < 0.9:
                 continue
             xy = np.column_stack([s.x, s.y])
             xy = xy[~np.isnan(xy).any(axis=1)]

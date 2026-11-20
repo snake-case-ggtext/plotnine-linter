@@ -18,6 +18,8 @@ slop-lint is not on PyPI. The `dev` group installs it from GitHub, and `uv.lock`
 
 We use [uv](https://docs.astral.sh/uv/), but plain `pip` + `venv` works too (`--group` needs pip ≥ 25.1).
 
+`.python-version` sets Python 3.13 for development, so uv uses (and if needed downloads) it. pyrefly and slop-lint give the same results as CI only on that version. On older versions, numpy and pandas-stubs differ, and the dev group skips slop-lint.
+
 ### With uv
 
 uv creates the environment and installs plotnine-linter (editable) and the `dev` group from `uv.lock`:
@@ -66,7 +68,7 @@ The linter reads arbitrary user plots, so some code catches broad exceptions on 
 
 ## Type checking
 
-pyrefly runs in strict mode on `src`, `tests` and `docs/gallery`, and checks against Python 3.10. `pyrefly-baseline.json` records the existing errors, so only added errors fail. All of them are missing annotations (`implicit-any`) in internal helpers. When you add types, shrink the baseline with `uv run pyrefly check --update-baseline`.
+pyrefly runs in strict mode on `src`, `tests` and `docs/gallery`, and checks the code against Python 3.10 syntax. Run it on Python 3.13 (`.python-version`), because the numpy and pandas stubs differ between versions. `pyrefly-baseline.json` records the existing errors, so only added errors fail. All of them are missing annotations (`implicit-any`) in internal helpers. When you add types, shrink the baseline with `uv run pyrefly check --update-baseline`.
 
 The rule checks have types: `def ax101(desc: ChartDescription, cfg: Config) -> Iterator[Hit]`. Give each added rule the same signature.
 
