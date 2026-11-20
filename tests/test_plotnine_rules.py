@@ -69,6 +69,18 @@ def test_lint_does_not_mutate_plot(regions):
     lint(p)  # linting twice works
 
 
+def test_lint_ignores_an_earlier_draw(regions: pd.DataFrame) -> None:
+    # plotnine 0.15 keeps the drawn figure on the plot. lint() must draw a fresh one.
+    from matplotlib.text import Text
+
+    p = good_bars(regions)
+    figure = p.draw()
+    texts = len(figure.findobj(Text))
+    report = lint(p)
+    assert report.findings == [], str(report)
+    assert len(figure.findobj(Text)) == texts  # lint() leaves the user's figure alone
+
+
 # ---------------------------------------------------------------- tier 1
 def test_ax101_bars_truncated(regions):
     p = good_bars(regions) + coord_cartesian(ylim=(40, 65))

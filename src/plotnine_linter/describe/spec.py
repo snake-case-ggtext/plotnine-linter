@@ -65,9 +65,22 @@ def _panel_ranges(built) -> list[dict[str, tuple[float, float]]]:
     return ranges
 
 
+# plotnine 0.15 keeps the last drawn figure on the plot, and deepcopy shares it.
+# draw() then paints onto that earlier figure, so the text doubles up.
+_DRAW_STATE = ("figure", "_gridspec", "axs")
+
+
+def _fresh_copy(plot: Any) -> Any:
+    """Deep-copy a plot without the figure from any earlier draw()."""
+    built = copy.deepcopy(plot)
+    for name in _DRAW_STATE:
+        vars(built).pop(name, None)
+    return built
+
+
 def describe_plotnine(plot) -> tuple[SpecInfo, Any]:
     """Return the spec description and the figure drawn from a deep copy."""
-    built = copy.deepcopy(plot)
+    built = _fresh_copy(plot)
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         figure = built.draw()
@@ -76,7 +89,7 @@ def describe_plotnine(plot) -> tuple[SpecInfo, Any]:
         ):
             # plotnine < 0.14 draws from its own internal copy, leaving `built` untouched:
             # build a copy ourselves to get trained scales, layer data and panel ranges
-            built = copy.deepcopy(plot)
+            built = _fresh_copy(plot)
             built._build()
 
     plot_mapping = _mapping_dict(plot.mapping)
