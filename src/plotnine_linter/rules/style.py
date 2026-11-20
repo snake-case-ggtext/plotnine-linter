@@ -3,12 +3,18 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Iterator
+from typing import TYPE_CHECKING
 
 from ..registry import Hit, rule
 
+if TYPE_CHECKING:
+    from ..config import Config
+    from ..describe.model import ChartDescription
+
 
 @rule("ST301")
-def st301(desc, cfg):
+def st301(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     if desc.spec is not None:
         if not desc.spec.user_labels.get("title"):
             yield Hit(
@@ -30,7 +36,7 @@ def st301(desc, cfg):
 
 
 @rule("ST303")
-def st303(desc, cfg):
+def st303(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     if desc.spec is not None:
         for layer in desc.spec.layers:
             if (
@@ -66,7 +72,7 @@ _DECIMALS = re.compile(r"\.(\d+)")
 
 
 @rule("ST307")
-def st307(desc, cfg):
+def st307(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     for panel in desc.render.panels:
         for which, axis in (("x", panel.x), ("y", panel.y)):
             decimals = [
@@ -88,7 +94,7 @@ def st307(desc, cfg):
 
 
 @rule("ST305")
-def st305(desc, cfg):
+def st305(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     session = getattr(desc, "session", None)
     if session is None or not session.charts:
         return
@@ -113,7 +119,7 @@ def st305(desc, cfg):
 
 
 @rule("ST306")
-def st306(desc, cfg):
+def st306(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     session = getattr(desc, "session", None)
     if session is None or not session.charts:
         return

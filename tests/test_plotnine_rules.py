@@ -95,14 +95,14 @@ def test_cl101_rainbow():
         lint(
             ggplot(df, aes("x", "y", color="z"))
             + geom_point()
-            + scale_color_cmap("jet")
+            + scale_color_cmap(cmap_name="jet")
         )
     )
     assert "CL101" not in ids(
         lint(
             ggplot(df, aes("x", "y", color="z"))
             + geom_point()
-            + scale_color_cmap("viridis")
+            + scale_color_cmap(cmap_name="viridis")
         )
     )
 
@@ -116,9 +116,8 @@ def test_cl102_too_many_colors():
 
 def test_cl201_red_green_palette_confusable():
     df = pd.DataFrame({"x": range(9), "y": range(9), "g": list("abc") * 3})
-    red_green = scale_color_manual(
-        ["#f8766d", "#00ba38", "#619cff"]
-    )  # plotnine >= 0.14's default hue
+    # plotnine >= 0.14's default hue
+    red_green = scale_color_manual(values=["#f8766d", "#00ba38", "#619cff"])
     assert "CL201" in ids(
         lint(ggplot(df, aes("x", "y", color="g")) + geom_point() + red_green)
     )
@@ -130,7 +129,7 @@ def test_cl201_okabe_ito_ok_and_redundant_shape_ok():
         lint(
             ggplot(df, aes("x", "y", color="g"))
             + geom_point()
-            + scale_color_manual(OKABE[:3])
+            + scale_color_manual(values=OKABE[:3])
         )
     )
     assert "CL201" not in ids(
@@ -317,7 +316,7 @@ def test_ly202_legend_order():
     p = (
         ggplot(df, aes("t", "v", color="series"))
         + geom_line()
-        + scale_color_manual(OKABE[:3])
+        + scale_color_manual(values=OKABE[:3])
     )
     assert "LY202" in ids(lint(p))
     order = pd.Categorical(df.series, categories=["beta", "alpha", "gamma"])
@@ -325,7 +324,7 @@ def test_ly202_legend_order():
         lint(
             ggplot(df.assign(series=order), aes("t", "v", color="series"))
             + geom_line()
-            + scale_color_manual(OKABE[:3])
+            + scale_color_manual(values=OKABE[:3])
         )
     )
 

@@ -210,7 +210,7 @@ def _series(ax) -> list[Series]:
             continue
         if not _uses_data_coords(coll.get_offset_transform(), ax):
             continue
-        fc = np.asarray(coll.get_facecolors())
+        fc = np.asarray(coll.get_facecolor())
         a = coll.get_alpha()
         if a is None:
             a = float(fc[:, 3].mean()) if fc.ndim == 2 and len(fc) else 1.0
@@ -227,7 +227,7 @@ def _series(ax) -> list[Series]:
                 kind="scatter",
                 palette=palette,
                 color=_single_color(fc) if fc.size else None,
-                label=coll.get_label(),
+                label=str(coll.get_label()),
                 x=offsets[:, 0].astype(float),
                 y=offsets[:, 1].astype(float),
                 alpha=float(a),
@@ -258,7 +258,7 @@ def _series(ax) -> list[Series]:
         from_hist = (
             bool(tagged)
             if tagged is not None
-            else (_HIST_TAGGING is False and _contiguous(pos, width))
+            else (not _HIST_TAGGING and _contiguous(pos, width))
         )
         series.append(
             Series(
@@ -295,7 +295,7 @@ def _is_glyph(x, y) -> bool:
     return bool(closed and len(x) <= 5 and ux <= 2 and uy <= 2)  # box outline
 
 
-_HIST_TAGGING = False  # set once tag_histograms() has wrapped Axes.hist
+_HIST_TAGGING: bool = False  # set once tag_histograms() has wrapped Axes.hist
 
 
 def tag_histograms() -> None:
@@ -319,14 +319,14 @@ def tag_histograms() -> None:
         items = containers if isinstance(containers, list) else [containers]
         for c in items:
             if isinstance(c, BarContainer):
-                c._plotnine_linter_hist = True
+                setattr(c, "_plotnine_linter_hist", True)  # noqa: B010
         for c in self.containers:  # bars drawn by bar() keep no tag
             if isinstance(c, BarContainer) and not hasattr(c, "_plotnine_linter_hist"):
-                c._plotnine_linter_hist = False
+                setattr(c, "_plotnine_linter_hist", False)  # noqa: B010
         return out
 
-    hist._plotnine_linter = True
-    Axes.hist = hist
+    setattr(hist, "_plotnine_linter", True)  # noqa: B010
+    setattr(Axes, "hist", hist)  # noqa: B010
     _wrap_bar()
     _HIST_TAGGING = True
 
@@ -341,13 +341,12 @@ def _wrap_bar() -> None:
     def bar(self, *args, **kwargs):
         out = original(self, *args, **kwargs)
         if isinstance(out, BarContainer) and not hasattr(out, "_plotnine_linter_hist"):
-            out._plotnine_linter_hist = (
-                False  # hist() re-tags its own bars after this returns
-            )
+            # hist() re-tags its own bars after this returns
+            setattr(out, "_plotnine_linter_hist", False)  # noqa: B010
         return out
 
-    bar._plotnine_linter = True
-    Axes.bar = bar
+    setattr(bar, "_plotnine_linter", True)  # noqa: B010
+    setattr(Axes, "bar", bar)  # noqa: B010
 
 
 def _is_num(values) -> bool:

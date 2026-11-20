@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
+from typing import TYPE_CHECKING
+
 import numpy as np
 import pandas as pd
 from matplotlib.colors import to_hex, to_rgb
@@ -10,6 +13,10 @@ from ..colors import confusable_pairs, contrast_ratio
 from ..describe.model import PROBE_ERRORS, scale_categories
 from ..registry import Hit, rule
 from ._util import base_var, is_discrete_column
+
+if TYPE_CHECKING:
+    from ..config import Config
+    from ..describe.model import ChartDescription
 
 RAINBOW = {
     "jet",
@@ -34,7 +41,7 @@ def _base_cmap(name: str) -> str:
 
 # ---------------------------------------------------------------- CL101
 @rule("CL101")
-def cl101(desc, cfg):
+def cl101(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     if desc.spec is not None:
         for scale in desc.spec.user_scales:
             palette = getattr(scale, "palette", None)
@@ -64,7 +71,7 @@ def cl101(desc, cfg):
 
 # ---------------------------------------------------------------- CL102
 @rule("CL102")
-def cl102(desc, cfg):
+def cl102(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     limit = int(cfg.t("max_categorical_colors"))
     if desc.spec is not None:
         spec = desc.spec
@@ -136,7 +143,7 @@ def _colors_repeat_axis(panel) -> bool:
 
 # ---------------------------------------------------------------- CL201
 @rule("CL201")
-def cl201(desc, cfg):
+def cl201(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     min_de = float(cfg.t("cvd_min_delta_e"))
     if desc.spec is not None:
         spec = desc.spec
@@ -195,7 +202,7 @@ def cl201(desc, cfg):
             continue  # each color sits on its own category (hue=x): color repeats the axis
         style_of, colors = {}, []
         for s in series:
-            for c in s.palette or [s.color]:
+            for c in s.palette or ([s.color] if s.color is not None else []):
                 colors.append(c[:3])
                 style_of.setdefault(to_hex(c[:3]), _style(s))
         if len(colors) < 2:
@@ -318,7 +325,7 @@ def _spans_zero(values) -> bool:
 
 
 @rule("CL202")
-def cl202(desc, cfg):
+def cl202(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     if desc.spec is not None:
         spec = desc.spec
         for aes in ("fill", "color"):
@@ -408,12 +415,10 @@ def cl202(desc, cfg):
 
 # ---------------------------------------------------------------- CL203
 @rule("CL203")
-def cl203(desc, cfg):
+def cl203(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     if desc.spec is not None:
         spec = desc.spec
-        legend_hidden = spec.legend_position == "none" or (
-            desc.render is not None and not desc.render.has_legend
-        )
+        legend_hidden = spec.legend_position == "none" or (not desc.render.has_legend)
         for layer in spec.layers:
             if layer.geom not in (
                 "geom_col",
@@ -456,7 +461,7 @@ def cl203(desc, cfg):
                 )
                 return
         elif len(bars) >= 3:
-            positions = [set(np.round(b.x, 6)) for b in bars]
+            positions = [set(np.round(np.asarray(b.x, dtype=float), 6)) for b in bars]
             disjoint = all(
                 positions[i].isdisjoint(positions[j])
                 for i in range(len(bars))
@@ -553,9 +558,7 @@ def _mark_colors(desc, panel):
 
 # ---------------------------------------------------------------- CL204
 @rule("CL204")
-def cl204(desc, cfg):
-    if desc.render is None:
-        return
+def cl204(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     min_cr = float(cfg.t("min_mark_contrast"))
     for panel in desc.render.panels:
         bg = _panel_bg(panel.ax)
@@ -605,7 +608,7 @@ def _style(series) -> tuple:
 
 # ---------------------------------------------------------------- CL301
 @rule("CL301")
-def cl301(desc, cfg):
+def cl301(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     min_de = float(cfg.t("cvd_min_delta_e"))
     spec = desc.spec
     if spec is not None:
@@ -665,7 +668,10 @@ def cl301(desc, cfg):
             continue  # every series also differs in linestyle or marker shape
         colors = []
         for s in series:
-            colors += [c[:3] for c in s.palette] if s.palette else [s.color[:3]]
+            if s.palette:
+                colors += [c[:3] for c in s.palette]
+            elif s.color is not None:
+                colors.append(s.color[:3])
         pairs = confusable_pairs(colors, min_de, kinds=("grayscale",))
         if pairs:
             a, b, _, _d = pairs[0]

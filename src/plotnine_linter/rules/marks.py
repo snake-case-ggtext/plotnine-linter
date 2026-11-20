@@ -2,10 +2,17 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
+from typing import TYPE_CHECKING
+
 import numpy as np
 
 from ..registry import Hit, rule
 from ._util import is_unordered_column, ordinal_like
+
+if TYPE_CHECKING:
+    from ..config import Config
+    from ..describe.model import ChartDescription
 
 UNCERTAINTY_GEOMS = {
     "geom_errorbar",
@@ -23,7 +30,7 @@ UNCERTAINTY_GEOMS = {
 
 # ---------------------------------------------------------------- MK101
 @rule("MK101")
-def mk101(desc, cfg):
+def mk101(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     plotnine = desc.source == "plotnine"
     if desc.spec is not None:
         spec = desc.spec
@@ -50,14 +57,12 @@ def mk101(desc, cfg):
                         )
                         return
 
-    if desc.render is None:
-        return
     min_n = int(cfg.t("overplot_min_points"))
     threshold = float(cfg.t("overplot_fraction"))
     dpi = desc.render.figure.dpi
     for panel in desc.render.panels:
         for s in panel.of_kind("scatter"):
-            if s.x is None or len(s.x) < min_n or s.alpha < 0.9:
+            if s.x is None or s.sizes is None or len(s.x) < min_n or s.alpha < 0.9:
                 continue
             xy = np.column_stack([s.x, s.y])
             xy = xy[~np.isnan(xy).any(axis=1)]
@@ -87,9 +92,7 @@ def mk101(desc, cfg):
 
 # ---------------------------------------------------------------- MK102
 @rule("MK102")
-def mk102(desc, cfg):
-    if desc.render is None:
-        return
+def mk102(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     for panel in desc.render.panels:
         if panel.has_3d_bars:
             yield Hit(
@@ -103,7 +106,7 @@ def mk102(desc, cfg):
 
 # ---------------------------------------------------------------- MK103
 @rule("MK103")
-def mk103(desc, cfg):
+def mk103(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     if desc.spec is not None:
         spec = desc.spec
         if not spec.is_discrete("x"):
@@ -149,9 +152,7 @@ def mk103(desc, cfg):
 
 # ---------------------------------------------------------------- MK201
 @rule("MK201")
-def mk201(desc, cfg):
-    if desc.render is None:
-        return
+def mk201(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     limit = int(cfg.t("max_pie_slices"))
     for panel in desc.render.panels:
         if panel.n_wedges > limit:
@@ -165,7 +166,7 @@ def mk201(desc, cfg):
 
 # ---------------------------------------------------------------- MK202
 @rule("MK202")
-def mk202(desc, cfg):
+def mk202(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     limit = int(cfg.t("max_lines"))
     if desc.spec is not None:
         for layer in desc.spec.layers:
@@ -215,7 +216,7 @@ def mk202(desc, cfg):
 
 # ---------------------------------------------------------------- MK203
 @rule("MK203")
-def mk203(desc, cfg):
+def mk203(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     spec = desc.spec
     if spec is None:
         return
@@ -240,7 +241,7 @@ POINT_GEOMS = {"geom_point", "geom_jitter", "geom_sina", "geom_dotplot", "geom_c
 
 
 @rule("MK204")
-def mk204(desc, cfg):
+def mk204(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     spec = desc.spec
     if spec is None:
         return
@@ -251,9 +252,9 @@ def mk204(desc, cfg):
         if layer.geom != "geom_boxplot" or layer.raw_data is None:
             continue
         y, x = layer.mapping.get("y"), layer.mapping.get("x")
-        if y not in layer.raw_data:
-            continue
         data = layer.raw_data
+        if not isinstance(y, str) or data is None or y not in data:
+            continue
         if x in data:
             counts = data.groupby(x, observed=True)[y].count()
             if counts.empty:
@@ -273,7 +274,7 @@ def mk204(desc, cfg):
 
 # ---------------------------------------------------------------- MK205
 @rule("MK205")
-def mk205(desc, cfg):
+def mk205(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     limit = int(cfg.t("max_stack_segments"))
     if desc.spec is not None:
         spec = desc.spec

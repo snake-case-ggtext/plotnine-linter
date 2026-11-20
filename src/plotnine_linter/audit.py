@@ -24,13 +24,19 @@ from __future__ import annotations
 import hashlib
 import html
 import re
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import pandas as pd
 
 from .findings import Finding, Severity
+
+if TYPE_CHECKING:
+    from .config import Config
+    from .describe.model import ChartDescription
+    from .session import Session
 
 PASS, FAIL, PARTLY, ASK, NA = "pass", "fail", "partly", "ask", "na"
 STATUS_LABEL = {
@@ -318,7 +324,12 @@ class Audit:
 # Running the audit
 # ---------------------------------------------------------------------------
 def audit(
-    obj: Any, *, session=None, config=None, source: str | None = None, suppress=None
+    obj: Any,
+    *,
+    session: Session | None = None,
+    config: Config | None = None,
+    source: str | None = None,
+    suppress: Mapping[str, str] | Iterable[str] | None = None,
 ) -> Audit:
     """Audit a plotnine plot or a matplotlib Figure/Axes against Chartability's tests.
 
@@ -335,13 +346,19 @@ def audit(
     try:
         return audit_description(desc, cfg, source=source, suppress=suppress)
     finally:
-        if desc.source == "plotnine" and desc.render is not None:
+        if desc.source == "plotnine":
             import matplotlib.pyplot as plt
 
             plt.close(desc.render.figure)
 
 
-def audit_description(desc, cfg, *, source=None, suppress=None) -> Audit:
+def audit_description(
+    desc: ChartDescription,
+    cfg: Config,
+    *,
+    source: str | None = None,
+    suppress: Mapping[str, str] | Iterable[str] | None = None,
+) -> Audit:
     from .api import lint_description
     from .registry import all_rules, load_catalog
 
@@ -677,40 +694,39 @@ def chart_features(desc) -> set[str]:
                 f.add(f"log_{aes}")
         if spec.coord == "coord_polar":
             f.add("polar")
-    if render is not None:
-        for p in render.panels:
-            if p.n_wedges:
-                f.add("pie")
-            if p.twin_of is not None:
-                f.add("twin")
-            if getattr(p, "is_3d", False):
-                f.add("3d")
-            if spec is None:
-                if p.cmaps:
-                    f.add("heatmap")
-                bars = [s for s in p.series if s.kind == "bar"]
-                if bars:
-                    f.add("hist" if all(s.from_hist for s in bars) else "bar")
-                if p.of_kind("line"):
-                    f.add("line")
-                if p.of_kind("scatter"):
-                    f.add("scatter")
-                if p.x.scale in ("log", "symlog"):
-                    f.add("log_x")
-                if p.y.scale in ("log", "symlog"):
-                    f.add("log_y")
-                if getattr(p.ax, "name", "") == "polar":
-                    f.add("polar")
-                for c in getattr(p.ax, "containers", []):
-                    if type(c).__name__ == "ErrorbarContainer":
-                        f.add("errorbar")
-                for coll in p.ax.collections:
-                    if type(coll).__name__ == "FillBetweenPolyCollection" or (
-                        type(coll).__name__ == "PolyCollection" and p.of_kind("line")
-                    ):
-                        f.add("ribbon")
-                if _mpl_boxplot(p):
-                    f.add("boxplot")
+    for p in render.panels:
+        if p.n_wedges:
+            f.add("pie")
+        if p.twin_of is not None:
+            f.add("twin")
+        if getattr(p, "is_3d", False):
+            f.add("3d")
+        if spec is None:
+            if p.cmaps:
+                f.add("heatmap")
+            bars = [s for s in p.series if s.kind == "bar"]
+            if bars:
+                f.add("hist" if all(s.from_hist for s in bars) else "bar")
+            if p.of_kind("line"):
+                f.add("line")
+            if p.of_kind("scatter"):
+                f.add("scatter")
+            if p.x.scale in ("log", "symlog"):
+                f.add("log_x")
+            if p.y.scale in ("log", "symlog"):
+                f.add("log_y")
+            if getattr(p.ax, "name", "") == "polar":
+                f.add("polar")
+            for c in getattr(p.ax, "containers", []):
+                if type(c).__name__ == "ErrorbarContainer":
+                    f.add("errorbar")
+            for coll in p.ax.collections:
+                if type(coll).__name__ == "FillBetweenPolyCollection" or (
+                    type(coll).__name__ == "PolyCollection" and p.of_kind("line")
+                ):
+                    f.add("ribbon")
+            if _mpl_boxplot(p):
+                f.add("boxplot")
     return f
 
 
@@ -830,7 +846,7 @@ def data_table(obj: Any) -> pd.DataFrame:
     try:
         table = _table(desc)
     finally:
-        if desc.source == "plotnine" and desc.render is not None:
+        if desc.source == "plotnine":
             import matplotlib.pyplot as plt
 
             plt.close(desc.render.figure)

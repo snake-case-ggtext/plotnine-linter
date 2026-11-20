@@ -14,10 +14,13 @@ part they need is missing.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import pandas as pd
+
+if TYPE_CHECKING:
+    from ..session import Session
 
 
 def _probe_errors() -> tuple[type[BaseException], ...]:
@@ -84,9 +87,8 @@ class Series:
     bottoms: np.ndarray | None = None  # bars only: baseline per bar
     heights: np.ndarray | None = None  # bars only: signed length per bar
     from_hist: bool = False  # bars only: drawn by Axes.hist
-    palette: list[tuple] | None = (
-        None  # scatter with per-point colors: its distinct colors
-    )
+    # scatter with per-point colors: its distinct colors
+    palette: list[tuple] | None = None
 
 
 @dataclass
@@ -228,12 +230,10 @@ def _is_discrete_scale(scale: Any) -> bool:
 @dataclass
 class ChartDescription:
     source: str  # "plotnine" or "matplotlib"
-    spec: SpecInfo | None = None
-    render: RenderInfo | None = None
+    render: RenderInfo  # what was drawn; plotnine plots are drawn too
+    spec: SpecInfo | None = None  # plotnine plots only
     errors: list[str] = field(default_factory=list)  # adapter problems, for debugging
-    session: Any = (
-        None  # a session.Session when figures are linted as a set (notebooks)
-    )
+    session: Session | None = None  # set when figures are linted as a set (notebooks)
 
 
 def scale_categories(scale: Any) -> list[str]:

@@ -6,6 +6,10 @@ import html
 import json
 from dataclasses import asdict, dataclass, field
 from enum import IntEnum
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .audit import Audit
 
 
 class Severity(IntEnum):
@@ -71,9 +75,8 @@ class Report:
     image: str | None = None  # path to a saved PNG of the plot, when requested
     alt_text: str = ""  # a draft alt text for the plot (see alttext.py)
     empty: bool = False  # the figure had no plotted data, so nothing was checked
-    audit: object = field(
-        default=None, repr=False, compare=False
-    )  # set by `plotnine-linter audit`
+    # set by `plotnine-linter audit` and `check_notebook(audit=True)`
+    audit: Audit | None = field(default=None, repr=False, compare=False)
 
     # ----- convenience -------------------------------------------------
     def __iter__(self):

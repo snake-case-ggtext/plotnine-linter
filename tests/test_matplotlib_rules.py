@@ -303,7 +303,9 @@ def test_lb205_percent_label_on_fractions():
 
 def test_lb205_density_label_on_counts():
     fig, ax = plt.subplots()
-    ax.hist(np.random.default_rng(0).normal(size=300), bins=np.arange(-4, 4.5, 0.5))
+    ax.hist(
+        np.random.default_rng(0).normal(size=300), bins=np.arange(-4, 4.5, 0.5).tolist()
+    )
     ax.set_xlabel("Score (z)")
     ax.set_ylabel("Density")
     assert "LB205" in ids(lint(fig))

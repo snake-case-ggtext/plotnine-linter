@@ -31,7 +31,6 @@ matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
 import numpy as np
-import plotnine
 from plotnine import ggplot, theme_gray, theme_set
 
 from plotnine_linter import lint
@@ -1198,6 +1197,8 @@ def _save_side_by_side(objs, path: Path, size) -> None:
 
 
 def _configure(size) -> None:
+    import plotnine.options
+
     plotnine.options.figure_size = size
     plotnine.options.dpi = DPI
     plt.rcParams.update(

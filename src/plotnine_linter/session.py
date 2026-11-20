@@ -91,7 +91,7 @@ def chart_facts(desc) -> ChartFacts:
                         label_colors[lim] = h
             except PROBE_ERRORS:
                 continue
-    elif desc.render is not None:
+    else:
         for p in desc.render.panels:
             if p.legend is not None:
                 label_colors.update(_legend_colors_mpl(p.legend))
@@ -101,11 +101,7 @@ def chart_facts(desc) -> ChartFacts:
                 l.get_visible() for l in ax.get_xgridlines() + ax.get_ygridlines()
             )
             theme = f"face={_hex(ax.get_facecolor())}, grid={'on' if grid else 'off'}"
-    sizes = [
-        t.fontsize
-        for t in (desc.render.texts if desc.render else [])
-        if t.role in ("xtick", "ytick")
-    ]
+    sizes = [t.fontsize for t in desc.render.texts if t.role in ("xtick", "ytick")]
     return ChartFacts(
         label_colors=label_colors,
         theme=theme,

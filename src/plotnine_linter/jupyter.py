@@ -158,9 +158,8 @@ def _patch_ggplot_show():
     original = ggplot.show
 
     def show(self, *args, **kwargs):
-        _STATE["in_ggplot_show"] = (
-            True  # its matplotlib figure is linted from the spec instead
-        )
+        # its matplotlib figure is linted from the spec instead
+        _STATE["in_ggplot_show"] = True
         try:
             out = original(self, *args, **kwargs)
         finally:
@@ -169,9 +168,9 @@ def _patch_ggplot_show():
             _STATE["pending"].append(_lint_quietly(self, _STATE.get("cell")))
         return out
 
-    show._plotnine_linter = True
-    show._original = original
-    ggplot.show = show
+    setattr(show, "_plotnine_linter", True)  # noqa: B010
+    setattr(show, "_original", original)  # noqa: B010
+    setattr(ggplot, "show", show)  # noqa: B010
 
 
 def _patch_pyplot_show(before_flush):
@@ -187,9 +186,9 @@ def _patch_pyplot_show(before_flush):
             before_flush()
         return original(*args, **kwargs)
 
-    show._plotnine_linter = True
-    show._original = original
-    plt.show = show
+    setattr(show, "_plotnine_linter", True)  # noqa: B010
+    setattr(show, "_original", original)  # noqa: B010
+    setattr(plt, "show", show)  # noqa: B010
 
 
 def _parse_magic(line: str) -> str:
@@ -309,13 +308,13 @@ def unload_ipython_extension(ip) -> None:
         from plotnine import ggplot
 
         if getattr(ggplot.show, "_plotnine_linter", False):
-            ggplot.show = ggplot.show._original
+            setattr(ggplot, "show", getattr(ggplot.show, "_original"))  # noqa: B009, B010
     except ImportError:
         pass
     import matplotlib.pyplot as plt
 
     if getattr(plt.show, "_plotnine_linter", False):
-        plt.show = plt.show._original
+        setattr(plt, "show", getattr(plt.show, "_original"))  # noqa: B009, B010
 
 
 class NotebookSummary:

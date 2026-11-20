@@ -117,7 +117,7 @@ def test_fixing_the_chart_flips_verdicts(rt):
 def test_rules_turned_off_become_questions(rt):
     from plotnine_linter.config import Config
 
-    a = audit(rt_plot(rt), config=Config(ignore=["CL204", "LY103"]))
+    a = audit(rt_plot(rt), config=Config(ignore=("CL204", "LY103")))
     assert a["Low contrast"].status == ASK
     assert "turned off" in a["Low contrast"].evidence
 
@@ -250,7 +250,7 @@ def test_readability_helpers():
             "Posterior probability",
         ]
     )
-    assert r.scored and r.grade > 10 and r.long_words
+    assert r.grade is not None and r.grade > 10 and r.long_words
 
 
 def test_check_answers_cli(tmp_path, rt):

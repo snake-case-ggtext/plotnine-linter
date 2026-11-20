@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Iterable
+from typing import TypeGuard
 
 import numpy as np
 import pandas as pd
@@ -16,7 +17,7 @@ _ARITH = re.compile(r"^[a-z_][\w.]*[-+*/][a-z_][\w.]*$")  # a/b, but not Race/Et
 _CAMEL = re.compile(r"[a-z][A-Z]")
 
 
-def looks_like_code(label: str | None) -> bool:
+def looks_like_code(label: str | None) -> TypeGuard[str]:
     """True for labels that read as code: snake_case, camelCase, dotted names, calls."""
     if not label:
         return False
@@ -165,7 +166,7 @@ def base_var(expr: str | None) -> str | None:
     return m.group(1) if m else expr.strip()
 
 
-def is_unordered_column(col: pd.Series | None) -> bool:
+def is_unordered_column(col: pd.Series | None) -> TypeGuard[pd.Series]:
     """A nominal column: strings/objects, or an unordered Categorical in default (sorted) order."""
     if col is None:
         return False

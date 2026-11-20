@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Iterator
+from typing import TYPE_CHECKING
 
 import numpy as np
 
@@ -16,6 +18,10 @@ from ._util import (
     plural,
     quote,
 )
+
+if TYPE_CHECKING:
+    from ..config import Config
+    from ..describe.model import ChartDescription
 
 BAR_GEOMS = {"geom_bar", "geom_col", "geom_area", "geom_histogram"}
 
@@ -37,7 +43,7 @@ def _log_scale(scale) -> bool:
 
 # ---------------------------------------------------------------- AX101
 @rule("AX101")
-def ax101(desc, cfg):
+def ax101(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     if desc.spec is not None:
         spec = desc.spec
         if _log_scale(spec.user_scale_for("y")):
@@ -83,9 +89,7 @@ def ax101(desc, cfg):
 
 # ---------------------------------------------------------------- AX102
 @rule("AX102")
-def ax102(desc, cfg):
-    if desc.render is None:
-        return
+def ax102(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     for panel in desc.render.panels:
         if panel.twin_of is None:
             continue
@@ -105,7 +109,7 @@ def ax102(desc, cfg):
 
 # ---------------------------------------------------------------- AX103
 @rule("AX103")
-def ax103(desc, cfg):
+def ax103(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     if desc.spec is not None:
         spec = desc.spec
         for aes in ("x", "y"):
@@ -156,7 +160,7 @@ def ax103(desc, cfg):
 
 # ---------------------------------------------------------------- AX201
 @rule("AX201")
-def ax201(desc, cfg):
+def ax201(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     min_bars = int(cfg.t("min_bars_to_sort"))
     if desc.spec is not None:
         spec = desc.spec
@@ -202,7 +206,7 @@ def ax201(desc, cfg):
             continue
         s = bars[0]
         axis = panel.x if s.orientation == "vertical" else panel.y
-        if axis.kind != "discrete" or len(s.heights) < min_bars:
+        if s.heights is None or axis.kind != "discrete" or len(s.heights) < min_bars:
             continue
         labels = [t.text for t in axis.tick_labels]
         if ordinal_like(labels):
@@ -225,9 +229,7 @@ def _is_rotated(angle: float) -> bool:
 
 
 @rule("AX202")
-def ax202(desc, cfg):
-    if desc.render is None:
-        return
+def ax202(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     plotnine = desc.source == "plotnine"
     reported = set()
     for panel in desc.render.panels:
@@ -276,7 +278,7 @@ def ax202(desc, cfg):
 
 # ---------------------------------------------------------------- AX203
 @rule("AX203")
-def ax203(desc, cfg):
+def ax203(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     spec = desc.spec
     if spec is None or spec.facet_type == "facet_null":
         return
@@ -292,7 +294,7 @@ def ax203(desc, cfg):
 
 # ---------------------------------------------------------------- AX204
 @rule("AX204")
-def ax204(desc, cfg):
+def ax204(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     if desc.spec is not None:
         for layer in desc.spec.layers:
             if layer.stat != "stat_bin":
@@ -312,7 +314,7 @@ def ax204(desc, cfg):
 
     for panel in desc.render.panels:
         for s in panel.of_kind("bar"):
-            if s.from_hist and len(s.heights) == 10:
+            if s.from_hist and s.heights is not None and len(s.heights) == 10:
                 yield Hit(
                     "This histogram has 10 equal bins, matplotlib's default.",
                     fix="Pass bin edges with meaning, e.g. `ax.hist(x, bins=np.arange(0, 101, 5))`.",
@@ -325,7 +327,7 @@ def ax204(desc, cfg):
 
 # ---------------------------------------------------------------- AX205
 @rule("AX205")
-def ax205(desc, cfg):
+def ax205(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     spec = desc.spec
 
     def categorical_fix(expr, natural):
@@ -397,9 +399,7 @@ _LOG_LABEL = re.compile(
 
 
 @rule("AX206")
-def ax206(desc, cfg):
-    if desc.render is None:
-        return
+def ax206(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     for panel in desc.render.panels:
         for which, axis in (("x", panel.x), ("y", panel.y)):
             if (
@@ -449,9 +449,7 @@ def _whole(values) -> bool:
 
 
 @rule("AX207")
-def ax207(desc, cfg):
-    if desc.render is None:
-        return
+def ax207(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     spec = desc.spec
     flipped = spec is not None and spec.coord == "coord_flip"
     for panel in desc.render.panels:

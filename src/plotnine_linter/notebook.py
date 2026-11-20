@@ -137,11 +137,12 @@ def check_notebook(
     import nbformat
     from nbclient import NotebookClient
     from nbclient.exceptions import CellTimeoutError, DeadKernelError
+    from nbformat import NotebookNode
 
     path = Path(path)
     result = NotebookReport(path=str(path))
     try:
-        nb = nbformat.read(path, as_version=4)
+        nb: NotebookNode = nbformat.read(path, as_version=4)  # pyrefly: ignore[bad-assignment]
     except (OSError, ValueError) as exc:
         result.error = f"unreadable notebook: {exc}"
         return result
@@ -184,7 +185,9 @@ def check_notebook(
         try:
             from jupyter_client.utils import run_sync
 
-            run_sync(client.km.shutdown_kernel)(now=True)
+            if client.km is not None:
+                # nbclient's kernel manager is async; its stubs say otherwise
+                run_sync(client.km.shutdown_kernel)(now=True)  # pyrefly: ignore[bad-argument-type]
         except Exception:  # noqa: BLE001, S110  # best effort: the kernel may already be gone
             pass
         worker.join(10)

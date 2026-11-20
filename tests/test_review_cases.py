@@ -193,7 +193,7 @@ def test_ly101_autofmt_xdate_does_not_overlap():
 
 def test_ly101_plotnine_rotated_labels_do_not_overlap():
     # FAILS TODAY. Same AABB issue in plotnine. Expected: AX202 only; actual adds LY101.
-    df = mpg.groupby("manufacturer", as_index=False)["hwy"].mean()
+    df = mpg.groupby("manufacturer", as_index=False).agg(hwy=("hwy", "mean"))
     p = (
         ggplot(df, aes("reorder(manufacturer, -hwy)", "hwy"))
         + geom_col()
@@ -360,7 +360,7 @@ def test_ax103_ignores_empty_bins_in_log_histogram():
     fig, ax = plt.subplots()
     ax.hist(
         np.random.default_rng(1).exponential(1, 500),
-        bins=np.arange(0, 10, 0.5),
+        bins=np.arange(0, 10, 0.5).tolist(),
         log=True,
     )
     ax.set(xlabel="Wait time (min)", ylabel="Count")

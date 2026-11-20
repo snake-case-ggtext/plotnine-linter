@@ -4,13 +4,16 @@ from __future__ import annotations
 
 import warnings
 from collections.abc import Iterable, Mapping
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from .config import Config, load_config
 from .describe import ChartDescription, describe
 from .findings import Finding, Report, Severity
 from .registry import all_rules
 from .suppress import parse_suppressions
+
+if TYPE_CHECKING:
+    from .session import Session
 
 
 def lint(
@@ -23,7 +26,7 @@ def lint(
     suppress: Mapping[str, str] | Iterable[str] | None = None,
     source: str | None = None,
     config: Config | None = None,
-    session=None,
+    session: Session | None = None,
     profile: str | None = None,
 ) -> Report:
     """Lint a plotnine plot or a matplotlib Figure/Axes and return a :class:`Report`.
@@ -69,7 +72,7 @@ def lint(
             session.add(chart_facts(desc))
         return report
     finally:
-        if desc.source == "plotnine" and desc.render is not None:
+        if desc.source == "plotnine":
             _close(desc.render.figure)
 
 
@@ -88,7 +91,7 @@ def lint_description(
             suppressions.update({str(k).upper(): "" for k in suppress})
 
     report = Report(source=desc.source)
-    if desc.render is not None and desc.spec is None:
+    if desc.spec is None:
         data_panels = [p for p in desc.render.panels if p.has_data]
         if not data_panels:
             report.empty = True
@@ -126,9 +129,7 @@ def lint_description(
                 why=rule.why,
                 source=hit.source,
                 heuristic=hit.heuristic or rule.heuristic,
-                panel=hit.panel
-                if desc.render and len(desc.render.panels) > 1
-                else None,
+                panel=hit.panel if len(desc.render.panels) > 1 else None,
                 details=hit.details,
             )
             if rule.id in suppressions:

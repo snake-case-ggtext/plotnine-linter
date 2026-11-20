@@ -154,7 +154,7 @@ def _check_answers(paths: list[str]) -> int:
 
     incomplete = 0
     for path in paths:
-        nb = nbformat.read(path, as_version=4)
+        nb: nbformat.NotebookNode = nbformat.read(path, as_version=4)  # pyrefly: ignore[bad-assignment]
         found = []
         for i, cell in enumerate(nb.cells, start=1):
             if cell.cell_type == "markdown":

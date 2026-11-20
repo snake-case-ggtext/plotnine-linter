@@ -33,9 +33,8 @@ def syllables(word: str) -> int:
 @dataclass
 class Readability:
     words: int = 0
-    grade: float | None = (
-        None  # Flesch-Kincaid grade, when there is enough text to score
-    )
+    # Flesch-Kincaid grade, when there is enough text to score
+    grade: float | None = None
     long_words: list[str] = field(default_factory=list)  # 4+ syllables
     abbreviations: list[str] = field(default_factory=list)  # undefined ones
 

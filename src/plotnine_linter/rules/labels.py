@@ -3,19 +3,25 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Iterator
+from typing import TYPE_CHECKING
 
 import numpy as np
 
 from ..registry import Hit, rule
 from ._util import base_var, humanize, looks_like_code, quote
 
+if TYPE_CHECKING:
+    from ..config import Config
+    from ..describe.model import ChartDescription
+
 LEGEND_AES = ("color", "fill", "size", "shape", "alpha", "linetype")
 
 
 # ---------------------------------------------------------------- LB101
 @rule("LB101")
-def lb101(desc, cfg):
-    if desc.source != "matplotlib" or desc.render is None:
+def lb101(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
+    if desc.source != "matplotlib":
         return  # plotnine always labels axes; LB201 checks what it says
     for panel in desc.render.panels:
         if panel.axis_off or panel.is_3d or panel.n_wedges or not panel.series:
@@ -48,10 +54,10 @@ def lb101(desc, cfg):
 
 # ---------------------------------------------------------------- LB201
 @rule("LB201")
-def lb201(desc, cfg):
+def lb201(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     if desc.spec is not None:
         spec = desc.spec
-        has_legend = desc.render.has_legend if desc.render else True
+        has_legend = desc.render.has_legend
         mapped: dict[str, str] = {}
         for layer in spec.layers:
             for aes, expr in layer.mapping.items():
@@ -135,8 +141,6 @@ def lb201(desc, cfg):
 
 def _strip_hits(desc, plotnine: bool):
     """Facet strip labels that are raw codes, e.g. `non_profit` or `drv_f`."""
-    if desc.render is None:
-        return
     strips = sorted({t.text for t in desc.render.texts if t.role == "strip"})
     coded = [s for s in strips if looks_like_code(s)]
     if strips and len(coded) * 2 >= len(strips):
@@ -169,9 +173,7 @@ _UNITLESS = re.compile(
 
 
 @rule("LB301")
-def lb301(desc, cfg):
-    if desc.render is None:
-        return
+def lb301(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     reported = set()
     for panel in desc.render.panels:
         for which, axis in (("x", panel.x), ("y", panel.y)):
@@ -202,10 +204,10 @@ def lb301(desc, cfg):
 
 # ---------------------------------------------------------------- LB203
 @rule("LB203")
-def lb203(desc, cfg):
+def lb203(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     if desc.spec is not None:
         spec = desc.spec
-        if desc.render is not None and not desc.render.has_legend:
+        if not desc.render.has_legend:
             return
         if spec.legend_position == "none":
             return
@@ -275,9 +277,7 @@ def _tick_values(axis) -> list[float]:
 
 
 @rule("LB205")
-def lb205(desc, cfg):
-    if desc.render is None:
-        return
+def lb205(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     for panel in desc.render.panels:
         for which, axis in (("x", panel.x), ("y", panel.y)):
             label = axis.label.strip()
@@ -321,9 +321,7 @@ def lb205(desc, cfg):
 
 # ---------------------------------------------------------------- LB206
 @rule("LB206")
-def lb206(desc, cfg):
-    if desc.render is None:
-        return
+def lb206(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     for panel in desc.render.panels:
         for which in ("x", "y"):
             axis = panel.ax.xaxis if which == "x" else panel.ax.yaxis

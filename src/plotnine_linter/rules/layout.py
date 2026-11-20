@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import itertools
 from collections import defaultdict
+from collections.abc import Iterator
+from typing import TYPE_CHECKING
 
 import numpy as np
 
@@ -11,12 +13,14 @@ from ..describe.model import PROBE_ERRORS, scale_categories
 from ..registry import Hit, rule
 from ._util import overlaps, quote
 
+if TYPE_CHECKING:
+    from ..config import Config
+    from ..describe.model import ChartDescription
+
 
 # ---------------------------------------------------------------- LY101
 @rule("LY101")
-def ly101(desc, cfg):
-    if desc.render is None:
-        return
+def ly101(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     reported = set()
     for panel in desc.render.panels:
         for which, axis in (("x", panel.x), ("y", panel.y)):
@@ -91,7 +95,7 @@ def _data_points_display(panel) -> np.ndarray:
 
     for patch in ax.patches:
         if isinstance(patch, Wedge) and patch.get_visible():
-            verts = patch.get_path().vertices
+            verts = np.asarray(patch.get_path().vertices)
             display.append(
                 patch.get_transform().transform(verts[:: max(1, len(verts) // 24)])
             )
@@ -101,9 +105,7 @@ def _data_points_display(panel) -> np.ndarray:
 
 
 @rule("LY102")
-def ly102(desc, cfg):
-    if desc.render is None:
-        return
+def ly102(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     renderer = desc.render.renderer
     for panel in desc.render.panels:
         boxes = []
@@ -140,9 +142,7 @@ def ly102(desc, cfg):
 
 # ---------------------------------------------------------------- LY201
 @rule("LY201")
-def ly201(desc, cfg):
-    if desc.render is None:
-        return
+def ly201(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     min_pt = float(cfg.t("min_font_pt"))
     small = defaultdict(list)
     for t in desc.render.texts:
@@ -173,10 +173,10 @@ def _order_mismatch(legend_order: list[str], end_values: dict[str, float]) -> bo
 
 
 @rule("LY202")
-def ly202(desc, cfg):
+def ly202(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     if desc.spec is not None:
         spec = desc.spec
-        if desc.render is not None and not desc.render.has_legend:
+        if not desc.render.has_legend:
             return
         for layer in spec.layers:
             if (
@@ -196,6 +196,8 @@ def ly202(desc, cfg):
             try:
                 legend_order = scale_categories(scale)
             except PROBE_ERRORS:
+                continue
+            if layer.raw_data is None:
                 continue
             df = layer.raw_data.assign(_c=col.astype(str))
             last = (
@@ -224,6 +226,8 @@ def ly202(desc, cfg):
         }
         ends = {}
         for label, s in lines.items():
+            if s.x is None or s.y is None:
+                continue
             ok = ~(np.isnan(s.x) | np.isnan(s.y))
             if ok.any():
                 ends[label] = float(s.y[ok][np.argmax(s.x[ok])])
@@ -286,9 +290,7 @@ def _rendered_background(image, box):
 
 
 @rule("LY103")
-def ly103(desc, cfg):
-    if desc.render is None:
-        return
+def ly103(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     from ..colors import blend, contrast_ratio
 
     try:
