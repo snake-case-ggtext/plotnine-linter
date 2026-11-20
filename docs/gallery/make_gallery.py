@@ -1,4 +1,4 @@
-"""Build the before/after gallery: docs/GALLERY.md and docs/gallery/img/.
+"""Build the before/after gallery: docs/gallery.md and docs/gallery/img/.
 
 Each rule in the catalog has a BEFORE snippet that breaks the rule. It also
 has an AFTER snippet that follows the rule's fix. The script lints both with
@@ -7,7 +7,7 @@ all three tiers. It fails unless the rule flags BEFORE and not AFTER.
 AFTER plots are model answers. The script prints any finding left on one. With
 ``--strict``, those findings also make it exit with an error.
 
-GALLERY.md shows the snippets below as diffs. Run it from the package root:
+gallery.md shows the snippets below as diffs. Run it from the package root:
 
     python docs/gallery/make_gallery.py --strict
 """
@@ -39,7 +39,7 @@ from plotnine_linter.session import Session
 
 HERE = Path(__file__).resolve().parent
 IMG = HERE / "img"
-GALLERY_MD = HERE.parent / "GALLERY.md"
+GALLERY_MD = HERE.parent / "gallery.md"
 
 SELECT = [
     "tier1",
@@ -1390,7 +1390,7 @@ def main(argv=None) -> int:
     ap.add_argument(
         "--only",
         nargs="*",
-        help="run only these rule IDs (GALLERY.md is not rewritten)",
+        help="run only these rule IDs (gallery.md is not rewritten)",
     )
     args = ap.parse_args(argv)
 

@@ -35,7 +35,13 @@ def _rules(markdown: bool) -> int:
                     note = " *(heuristic, reported as info)*" if r.heuristic else ""
                     lines.append(f"| {r.id} | {r.title}{note} | {r.why} | {r.fix} |")
             sections.append("\n".join(lines))
-        print("\n\n".join(sections))
+        intro = (
+            "# Rule catalog\n\n"
+            "Every rule, with why it matters and how to fix it. Tiers 1 and 2 run by default. "
+            "This file comes from `src/plotnine_linter/data/rules.json`: run `make rules` after "
+            "you change the catalog."
+        )
+        print("\n\n".join([intro, *sections]))
     else:
         for r in rules:
             print(f"{r.id}  tier {r.tier}  {r.title}")

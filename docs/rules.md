@@ -1,3 +1,7 @@
+# Rule catalog
+
+Every rule, with why it matters and how to fix it. Tiers 1 and 2 run by default. This file comes from `src/plotnine_linter/data/rules.json`: run `make rules` after you change the catalog.
+
 ## Tier 1 — Errors (on by default)
 
 | ID | Rule | Why | Fix |

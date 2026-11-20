@@ -1,13 +1,13 @@
 # Calibration on COGS 108 final projects
 
-*November 2026.* We tuned the rules against real student work: the public COGS 108 final projects posted with the groups' agreement (the 11 `FinalProjects-<term>` repositories linked from the [course guidelines](https://github.com/COGS108/Projects/blob/fa26/FinalProject_Guidelines.md#previous-cogs-108-final-projects), Spring 2017 to Winter 2025; 584 notebooks). No other repositories were used. Reports refer to plots by term, group and cell only; no student names.
+*November 2026*. We tuned the rules against real student work: the public COGS 108 final projects that groups agreed to post. These are the 11 `FinalProjects-<term>` repositories linked from the [course guidelines](https://github.com/COGS108/Projects/blob/fa26/FinalProject_Guidelines.md#previous-cogs-108-final-projects): Spring 2017 to Winter 2025, 584 notebooks. We used no other repositories. Reports name plots by term, group and cell only, never by student.
 
-**The population:** every project uses matplotlib, seaborn or pandas. None uses plotnine, so this calibrates the matplotlib side of the linter. The plotnine side is covered by the tests and the gallery.
+**The population:** every project uses matplotlib, seaborn or pandas. None uses plotnine, so this calibrates the matplotlib side of the linter. The tests and the gallery cover the plotnine side.
 
 ## Two sources of evidence
 
-1. **Image audit (what students actually do).** The notebooks contain about 8,600 saved plot images. A reviewer judged a stratified random sample of 120 against every rule (yes / no / can't tell / doesn't apply), and noted problems the catalog missed.
-2. **Re-running the notebooks (what the linter actually says).** The repos don't include data files, and most data came from sources this environment can't reach, so most cells failed. Of 558 notebooks run, 41 produced real plots. Each flagged finding was then judged by looking at the plot.
+1. **Image audit (what students actually do)**. The notebooks contain about 8,600 saved plot images. A reviewer judged a stratified random sample of 120 against every rule: yes, no, can't tell or doesn't apply. The reviewer also noted problems the catalog missed.
+2. **Re-running the notebooks (what the linter actually says)**. The repos don't include data files, and most data came from sources this environment can't reach. So most cells failed. Of 558 notebooks run, 41 produced real plots. A reviewer then judged each finding by looking at the plot.
 
 ## How often problems occur (image audit, 120 plots)
 
@@ -27,9 +27,9 @@ Share of plots with the problem, among plots where the rule applies:
 
 Rarely or never seen: pies (MK201), 3D (MK102), rainbow colormaps (CL101), log scales (AX103), excess decimals (ST307). They stay because they're serious when they do occur.
 
-Common problems the catalog didn't cover, now added as rules:
+Common problems the catalog didn't cover, which are now rules:
 
-| Problem | Plots | New rule |
+| Problem | Plots | Added rule |
 | --- | --- | --- |
 | Color that encodes nothing (per-bar hues) | 18 | CL203 |
 | Label doesn't match the values ("%" on fractions, "density" on counts) | ~23 | LB205 *(heuristic)* |
@@ -57,17 +57,17 @@ Findings per rule (plots flagged):
 | AX202 rotated labels | 41 | 33 | Dropped the character-count trigger (wrong in all 4 cases checked); rotation only |
 | LB101 unlabeled numeric axis | 34 | 43 | More plots linted (no change to the rule) |
 | MK101 overplotting | 21 | 29 | Threshold 0.4 → 0.5 |
-| AX204 default bins | 5 | 1 | Histograms are tagged when drawn, so touching bars aren't mistaken for one |
+| AX204 default bins | 5 | 1 | The linter tags the bars that `hist()` draws, so it no longer mistakes touching bars for a histogram |
 | CL102 / CL201 | 6 / 6 | 1 / 2 | Colors that repeat the axis are exempt; CL201 judges each pair, so a red/green pair with different markers passes |
 | LB203 redundant legend | 0 | 25 | Now includes single-entry legends |
-| CL204 low-contrast marks | — | 15 | New (e.g. the palest bar of a sequential palette on seaborn's gray) |
-| LB206 offset notation | — | 14 | New |
-| CL203 color encodes nothing | — | 11 | New |
-| AX207 fractional ticks | — | 7 | New (e.g. "9.5 months") |
-| LY103 low-contrast text | — | 7 | New (e.g. white annotations on mid-blue heatmap cells) |
-| AX206 / LB205 | — | 6 / 4 | New (heuristic, info) |
+| CL204 low-contrast marks | — | 15 | Added (e.g. the palest bar of a sequential palette on seaborn's gray) |
+| LB206 offset notation | — | 14 | Added |
+| CL203 color encodes nothing | — | 11 | Added |
+| AX207 fractional ticks | — | 7 | Added (e.g. "9.5 months") |
+| LY103 low-contrast text | — | 7 | Added (e.g. white annotations on mid-blue heatmap cells) |
+| AX206 / LB205 | — | 6 / 4 | Added (heuristic, info) |
 
-Precision labels from the first run, and the false-positive patterns behind each fix, are in the calibration working files (not part of this repository).
+The calibration working files hold the precision labels from the first run and the false-positive patterns behind each fix. They are not part of this repository.
 
 ## Thresholds
 
@@ -81,6 +81,6 @@ Precision labels from the first run, and the false-positive patterns behind each
 
 ## Limits
 
-- Only 41 notebooks could be re-run, and a few groups contribute many plots (17 of the first run's 42 AX202 hits came from one notebook). Treat per-rule rates as rough.
+- Only 41 notebooks ran again, and a few groups contribute many plots. For example, 17 of the first run's 42 AX202 hits came from one notebook. Treat per-rule rates as rough.
 - The image audit is one reviewer's judgment. The small denominators (AX203, AX205, MK203) are unstable.
 - None of this exercises the plotnine adapter. A course that teaches plotnine should spot-check its first assignment.

@@ -21,7 +21,7 @@ lint: ## Run ruff (lint and format check), pyrefly (strict, baselined) and slop-
 	uv run ruff format --check .
 	uv run pyrefly check
 	uv run slop-lint $(PY_FILES) Makefile
-	uv run plotnine-linter rules --markdown | diff -u docs/RULES.md -
+	uv run plotnine-linter rules --markdown | diff -u docs/rules.md -
 
 format: ## Fix what ruff can fix, then format
 	uv run ruff check --fix .
@@ -30,10 +30,10 @@ format: ## Fix what ruff can fix, then format
 prose: ## Run slop-lint on the Markdown docs too (report only: it reads tables as one sentence)
 	-uv run slop-lint $(MD_FILES)
 
-rules: ## Write docs/RULES.md from the catalog
-	uv run plotnine-linter rules --markdown > docs/RULES.md
+rules: ## Write docs/rules.md from the catalog
+	uv run plotnine-linter rules --markdown > docs/rules.md
 
-gallery: ## Draw the before and after gallery (docs/GALLERY.md and docs/gallery/img/)
+gallery: ## Draw the before and after gallery (docs/gallery.md and docs/gallery/img/)
 	uv run python docs/gallery/make_gallery.py --strict
 
 demo: ## Run the demo notebook again and save its output
