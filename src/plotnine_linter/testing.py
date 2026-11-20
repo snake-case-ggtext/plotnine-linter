@@ -1,8 +1,8 @@
 """Helpers for autograders and test suites.
 
-    from plotnine_linter.testing import assert_clean
-    assert_clean(student_plot)                    # fail on any error-level finding
-    assert_clean(student_plot, at_least="warning")
+from plotnine_linter.testing import assert_clean
+assert_clean(student_plot)                    # fail on any error-level finding
+assert_clean(student_plot, at_least="warning")
 """
 
 from __future__ import annotations

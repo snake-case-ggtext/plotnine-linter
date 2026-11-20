@@ -8,7 +8,7 @@ from .model import ChartDescription
 from .render import describe_figure
 from .spec import describe_plotnine, is_ggplot
 
-__all__ = ["describe", "ChartDescription"]
+__all__ = ["ChartDescription", "describe"]
 
 
 def describe(obj: Any) -> ChartDescription:
@@ -42,7 +42,7 @@ def _figure_of(obj: Any):
         flat = np.asarray(obj, dtype=object).ravel()
         if flat.size and all(isinstance(a, Axes) for a in flat):
             return flat[0].figure
-    except Exception:
+    except (TypeError, ValueError):
         pass
     # seaborn FacetGrid / JointGrid / PairGrid and similar wrappers
     for attr in ("figure", "fig"):
@@ -56,7 +56,10 @@ def _apply_spec_axis_kinds(spec, render) -> None:
     """plotnine draws every axis as numeric; take axis kinds from its scales."""
     flipped = spec.coord == "coord_flip"
     for panel in render.panels:
-        for display, data_aes in (("x", "y" if flipped else "x"), ("y", "x" if flipped else "y")):
+        for display, data_aes in (
+            ("x", "y" if flipped else "x"),
+            ("y", "x" if flipped else "y"),
+        ):
             axis = panel.x if display == "x" else panel.y
             if spec.is_discrete(data_aes):
                 axis.kind = "discrete"

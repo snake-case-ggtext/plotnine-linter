@@ -38,7 +38,9 @@ class PlotResult:
 class NotebookReport:
     path: str
     plots: list[PlotResult] = field(default_factory=list)
-    failed_cells: list[tuple[int, str]] = field(default_factory=list)  # (cell, error name: message)
+    failed_cells: list[tuple[int, str]] = field(
+        default_factory=list
+    )  # (cell, error name: message)
     code_cells: int = 0
     empty_figures: int = 0  # figures with no data (not counted as plots)
     error: str | None = None  # the notebook couldn't be run at all
@@ -63,11 +65,15 @@ class NotebookReport:
         }
 
     def __str__(self) -> str:
-        lines = [f"{self.path}: {len(self.plots)} plot(s) linted, {len(self.findings)} finding(s)"]
+        lines = [
+            f"{self.path}: {len(self.plots)} plot(s) linted, {len(self.findings)} finding(s)"
+        ]
         if self.error:
             lines.append(f"  could not run: {self.error}")
         if self.empty_figures:
-            lines.append(f"  {self.empty_figures} empty figure(s) skipped (no data was plotted)")
+            lines.append(
+                f"  {self.empty_figures} empty figure(s) skipped (no data was plotted)"
+            )
         if self.failed_cells:
             first = self.failed_cells[0]
             lines.append(
@@ -136,7 +142,7 @@ def check_notebook(
     result = NotebookReport(path=str(path))
     try:
         nb = nbformat.read(path, as_version=4)
-    except Exception as exc:
+    except (OSError, ValueError) as exc:
         result.error = f"unreadable notebook: {exc}"
         return result
 
@@ -166,7 +172,7 @@ def check_notebook(
     def run() -> None:
         try:
             client.execute()
-        except Exception as exc:  # recorded below
+        except Exception as exc:  # noqa: BLE001  # recorded below
             failure["exc"] = exc
 
     worker = threading.Thread(target=run, daemon=True)
@@ -179,13 +185,15 @@ def check_notebook(
             from jupyter_client.utils import run_sync
 
             run_sync(client.km.shutdown_kernel)(now=True)
-        except Exception:
+        except Exception:  # noqa: BLE001, S110  # best effort: the kernel may already be gone
             pass
         worker.join(10)
     elif "exc" in failure:
         exc = failure["exc"]
         if isinstance(exc, (CellTimeoutError, DeadKernelError)):
-            result.error = f"{type(exc).__name__}: {str(exc).splitlines()[0] if str(exc) else ''}"
+            result.error = (
+                f"{type(exc).__name__}: {str(exc).splitlines()[0] if str(exc) else ''}"
+            )
         else:  # kernel failed to start, etc.
             result.error = f"{type(exc).__name__}: {exc}"
 
@@ -196,7 +204,9 @@ def check_notebook(
         n += 1
         for out in cell.get("outputs", []):
             if out.get("output_type") == "error":
-                result.failed_cells.append((n, f"{out.get('ename')}: {str(out.get('evalue'))[:120]}"))
+                result.failed_cells.append(
+                    (n, f"{out.get('ename')}: {str(out.get('evalue'))[:120]}")
+                )
             data = out.get("data", {})
             if COLLECT_MIME in data:
                 report = _report_from_dict(data[COLLECT_MIME])

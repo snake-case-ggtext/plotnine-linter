@@ -21,7 +21,14 @@ from .findings import _BADGE, _md_code
 from .registry import Rule, all_rules
 
 TIER_NAMES = {1: "Tier 1 — Errors", 2: "Tier 2 — Clarity", 3: "Tier 3 — Style (opt-in)"}
-AREAS = {"AX": "Axes and scales", "CL": "Color", "LB": "Labels", "LY": "Layout", "MK": "Marks", "ST": "Style"}
+AREAS = {
+    "AX": "Axes and scales",
+    "CL": "Color",
+    "LB": "Labels",
+    "LY": "Layout",
+    "MK": "Marks",
+    "ST": "Style",
+}
 
 
 @dataclass
@@ -66,7 +73,7 @@ class RuleCatalog:
             lines.append(TIER_NAMES[tier])
             for r in (r for r in self.rules if r.tier == tier):
                 state = "on " if self._enabled(r) else "off"
-                lines.append(f"  {r.id}  [{state}] {str(self._severity(r)):<7}  {r.title}")
+                lines.append(f"  {r.id}  [{state}] {self._severity(r)!s:<7}  {r.title}")
         return "\n".join(lines)
 
     __repr__ = __str__
@@ -74,20 +81,24 @@ class RuleCatalog:
     def _repr_html_(self) -> str:
         from ._html import FONT, MUTED, SEVERITY, pill
 
-        parts = [f"<div style=\"{FONT};max-width:900px\">"]
+        parts = [f'<div style="{FONT};max-width:900px">']
         n_on = sum(self._enabled(r) for r in self.rules)
         parts.append(
             f"<div style='{MUTED};margin-bottom:6px'>{len(self.rules)} rules · {n_on} on with the "
             "current settings · click a rule for why and how to fix</div>"
         )
         for tier in sorted({r.tier for r in self.rules}):
-            parts.append(f"<div style='font-weight:600;font-size:14px;margin:12px 0 4px'>{TIER_NAMES[tier]}</div>")
+            parts.append(
+                f"<div style='font-weight:600;font-size:14px;margin:12px 0 4px'>{TIER_NAMES[tier]}</div>"
+            )
             for r in (r for r in self.rules if r.tier == tier):
                 kind = _BADGE[self._severity(r)]
                 on = self._enabled(r)
                 solid, tint = SEVERITY[kind if on else "off"]
                 state = pill("on", "ok") if on else pill("off", "off")
-                note = f" <span style='{MUTED}'>(heuristic)</span>" if r.heuristic else ""
+                note = (
+                    f" <span style='{MUTED}'>(heuristic)</span>" if r.heuristic else ""
+                )
                 parts.append(
                     f"<details style='border-left:3px solid {solid};padding:3px 10px;margin:2px 0;background:{tint}'>"
                     f"<summary style='cursor:pointer'><code style='font-weight:600'>{r.id}</code> "
@@ -99,8 +110,15 @@ class RuleCatalog:
                         + " &middot; ".join(
                             x
                             for x in (
-                                ("Chartability: " + html.escape("; ".join(r.chartability))) if r.chartability else "",
-                                ("WCAG " + html.escape("; ".join(r.wcag))) if r.wcag else "",
+                                (
+                                    "Chartability: "
+                                    + html.escape("; ".join(r.chartability))
+                                )
+                                if r.chartability
+                                else "",
+                                ("WCAG " + html.escape("; ".join(r.wcag)))
+                                if r.wcag
+                                else "",
                             )
                             if x
                         )
@@ -114,7 +132,9 @@ class RuleCatalog:
         return "".join(parts)
 
 
-def show_rules(select: str | int | None = None, *, config: Config | None = None) -> RuleCatalog:
+def show_rules(
+    select: str | int | None = None, *, config: Config | None = None
+) -> RuleCatalog:
     """The rule catalog, showing which rules are on under the current settings.
 
     ``select`` narrows it: a tier number (``1``), an area prefix (``"AX"``), a rule ID, or
@@ -137,12 +157,9 @@ def show_rules(select: str | int | None = None, *, config: Config | None = None)
 
 def _current_config() -> Config:
     """pyproject.toml settings plus anything set with %plotlint in this notebook."""
-    cfg = load_config()
-    try:
-        from .jupyter import _STATE
+    from .jupyter import _STATE
 
-        if _STATE.get("loaded") and _STATE["options"]:
-            cfg = cfg.merged(**_STATE["options"])
-    except Exception:  # pragma: no cover
-        pass
+    cfg = load_config()
+    if _STATE.get("loaded") and _STATE["options"]:
+        cfg = cfg.merged(**_STATE["options"])
     return cfg

@@ -14,7 +14,7 @@ class Severity(IntEnum):
     ERROR = 3
 
     @classmethod
-    def parse(cls, value: "str | Severity") -> "Severity":
+    def parse(cls, value: str | Severity) -> Severity:
         if isinstance(value, Severity):
             return value
         return cls[str(value).upper()]
@@ -45,7 +45,7 @@ class Finding:
 
     def __str__(self) -> str:
         where = f" (panel {self.panel + 1})" if self.panel is not None else ""
-        text = f"{self.rule_id} {str(self.severity)}{where}: {self.message}"
+        text = f"{self.rule_id} {self.severity!s}{where}: {self.message}"
         if self.fix:
             text += f"\n    fix: {self.fix}"
         return text
@@ -65,11 +65,15 @@ class Report:
     findings: list[Finding] = field(default_factory=list)
     suppressed: list[tuple[Finding, str]] = field(default_factory=list)
     source: str = ""
-    internal_errors: list[str] = field(default_factory=list)  # rules that crashed (a linter bug)
+    internal_errors: list[str] = field(
+        default_factory=list
+    )  # rules that crashed (a linter bug)
     image: str | None = None  # path to a saved PNG of the plot, when requested
     alt_text: str = ""  # a draft alt text for the plot (see alttext.py)
     empty: bool = False  # the figure had no plotted data, so nothing was checked
-    audit: object = field(default=None, repr=False, compare=False)  # set by `plotnine-linter audit`
+    audit: object = field(
+        default=None, repr=False, compare=False
+    )  # set by `plotnine-linter audit`
 
     # ----- convenience -------------------------------------------------
     def __iter__(self):
@@ -91,7 +95,7 @@ class Report:
     def warnings(self) -> list[Finding]:
         return [f for f in self.findings if f.severity == Severity.WARNING]
 
-    def at_least(self, severity: "str | Severity") -> list[Finding]:
+    def at_least(self, severity: str | Severity) -> list[Finding]:
         sev = Severity.parse(severity)
         return [f for f in self.findings if f.severity >= sev]
 
@@ -100,7 +104,8 @@ class Report:
             "source": self.source,
             "findings": [f.to_dict() for f in self.findings],
             "suppressed": [
-                {"rule_id": f.rule_id, "reason": reason} for f, reason in self.suppressed
+                {"rule_id": f.rule_id, "reason": reason}
+                for f, reason in self.suppressed
             ],
             "internal_errors": list(self.internal_errors),
             "image": self.image,
@@ -127,13 +132,17 @@ class Report:
         from ._html import FONT, MUTED, SEVERITY, pill
 
         if not self.findings and not self.internal_errors:
-            return f"<div style=\"{FONT}\">{pill('ok', 'ok')} plotnine-linter: no issues found.</div>"
+            return f'<div style="{FONT}">{pill("ok", "ok")} plotnine-linter: no issues found.</div>'
         rows = []
         for f in self.findings:
             kind = _BADGE[f.severity]
             solid, tint = SEVERITY[kind]
             where = f" &middot; panel {f.panel + 1}" if f.panel is not None else ""
-            fix = f"<div style='margin-top:2px'><b>Fix:</b> {_md_code(f.fix)}</div>" if f.fix else ""
+            fix = (
+                f"<div style='margin-top:2px'><b>Fix:</b> {_md_code(f.fix)}</div>"
+                if f.fix
+                else ""
+            )
             why = (
                 f"<details style='margin-top:2px'><summary style='cursor:pointer;{MUTED}'>Why it matters</summary>"
                 f"<div style='{MUTED}'>{html.escape(f.why)}</div></details>"
@@ -146,11 +155,15 @@ class Report:
                 f"<span style='{MUTED}'>{where}</span> {_md_code(f.message)}{fix}{why}</div>"
             )
         for err in self.internal_errors:
-            rows.append(f"<div style='{MUTED};font-size:12px'>linter error (not your plot): {html.escape(err)}</div>")
+            rows.append(
+                f"<div style='{MUTED};font-size:12px'>linter error (not your plot): {html.escape(err)}</div>"
+            )
         sup = (
-            f"<div style='{MUTED};font-size:12px'>{len(self.suppressed)} suppressed</div>" if self.suppressed else ""
+            f"<div style='{MUTED};font-size:12px'>{len(self.suppressed)} suppressed</div>"
+            if self.suppressed
+            else ""
         )
-        return f"<div style=\"{FONT};max-width:760px\">" + "".join(rows) + sup + "</div>"
+        return f'<div style="{FONT};max-width:760px">' + "".join(rows) + sup + "</div>"
 
 
 def _md_code(text: str) -> str:

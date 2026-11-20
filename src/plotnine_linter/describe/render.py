@@ -9,16 +9,20 @@ from __future__ import annotations
 
 import functools
 
-import numpy as np
 import matplotlib
-from matplotlib import category, dates as mdates, ticker
+import numpy as np
+from matplotlib import category, ticker
+from matplotlib import dates as mdates
 from matplotlib.collections import PathCollection
 from matplotlib.colors import to_rgba
 from matplotlib.container import BarContainer
 from matplotlib.patches import Wedge
 from matplotlib.text import Text
 
-from .model import AxisInfo, PanelInfo, RenderInfo, Series, TextBox
+from .model import PROBE_ERRORS, AxisInfo, PanelInfo, RenderInfo, Series, TextBox
+
+# Measuring text can fail on bad mathtext (ValueError) or a missing renderer (RuntimeError).
+TEXT_ERRORS = (ValueError, RuntimeError)
 
 
 def get_renderer(fig):
@@ -60,7 +64,10 @@ def _axis_kind(axis) -> str:
     if date_converters and isinstance(conv, date_converters):
         return "datetime"
     fmt = axis.get_major_formatter()
-    if isinstance(fmt, (mdates.AutoDateFormatter, mdates.ConciseDateFormatter, mdates.DateFormatter)):
+    if isinstance(
+        fmt,
+        (mdates.AutoDateFormatter, mdates.ConciseDateFormatter, mdates.DateFormatter),
+    ):
         return "datetime"
     labels = None
     if isinstance(fmt, ticker.FixedFormatter):
@@ -69,7 +76,10 @@ def _axis_kind(axis) -> str:
         # set_xticks(pos, labels) / set_xticklabels install
         # FuncFormatter(partial(axis._format_with_dict, {pos: label})) in matplotlib >= 3.5
         func = getattr(fmt, "func", None)
-        if isinstance(func, functools.partial) and getattr(func.func, "__name__", "") == "_format_with_dict":
+        if (
+            isinstance(func, functools.partial)
+            and getattr(func.func, "__name__", "") == "_format_with_dict"
+        ):
             labels = list(func.args[0].values()) if func.args else None
     if labels:
         labels = [s for s in labels if str(s).strip()]
@@ -137,7 +147,7 @@ def _single_color(colors) -> tuple | None:
 def _uses_data_coords(transform, ax) -> bool:
     try:
         return transform == ax.transData
-    except Exception:  # pragma: no cover - odd transforms
+    except (TypeError, ValueError):  # pragma: no cover - odd transforms
         return False
 
 
@@ -148,8 +158,16 @@ def _series(ax) -> list[Series]:
     for line in ax.get_lines():
         if not line.get_visible() or not _uses_data_coords(line.get_transform(), ax):
             continue
-        x = np.asarray(line.get_xdata(orig=False), dtype=float) if _is_num(line.get_xdata(orig=False)) else None
-        y = np.asarray(line.get_ydata(orig=False), dtype=float) if _is_num(line.get_ydata(orig=False)) else None
+        x = (
+            np.asarray(line.get_xdata(orig=False), dtype=float)
+            if _is_num(line.get_xdata(orig=False))
+            else None
+        )
+        y = (
+            np.asarray(line.get_ydata(orig=False), dtype=float)
+            if _is_num(line.get_ydata(orig=False))
+            else None
+        )
         n = len(line.get_xdata(orig=False))
         if n < 2:
             continue
@@ -237,7 +255,11 @@ def _series(ax) -> list[Series]:
             bottoms = np.array([r.get_x() for r in rects])
             heights = np.array([r.get_width() for r in rects])
         tagged = getattr(cont, "_plotnine_linter_hist", None)
-        from_hist = bool(tagged) if tagged is not None else (_HIST_TAGGING is False and _contiguous(pos, width))
+        from_hist = (
+            bool(tagged)
+            if tagged is not None
+            else (_HIST_TAGGING is False and _contiguous(pos, width))
+        )
         series.append(
             Series(
                 kind="bar",
@@ -270,9 +292,7 @@ def _is_glyph(x, y) -> bool:
     if len(x) == 2 and uy <= 1:  # short horizontal: caps, medians
         return True
     closed = np.allclose([x[0], y[0]], [x[-1], y[-1]])
-    if closed and len(x) <= 5 and ux <= 2 and uy <= 2:  # box outline
-        return True
-    return False
+    return bool(closed and len(x) <= 5 and ux <= 2 and uy <= 2)  # box outline
 
 
 _HIST_TAGGING = False  # set once tag_histograms() has wrapped Axes.hist
@@ -321,7 +341,9 @@ def _wrap_bar() -> None:
     def bar(self, *args, **kwargs):
         out = original(self, *args, **kwargs)
         if isinstance(out, BarContainer) and not hasattr(out, "_plotnine_linter_hist"):
-            out._plotnine_linter_hist = False  # hist() re-tags its own bars after this returns
+            out._plotnine_linter_hist = (
+                False  # hist() re-tags its own bars after this returns
+            )
         return out
 
     bar._plotnine_linter = True
@@ -350,14 +372,20 @@ def _contiguous(pos, width) -> bool:
 def _has_3d_bars(ax) -> bool:
     try:
         from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-    except Exception:  # pragma: no cover
+    except ImportError:  # pragma: no cover
         return False
     for coll in ax.collections:
         if not isinstance(coll, Poly3DCollection):
             continue
         segs = getattr(coll, "_faces", None)  # matplotlib >= 3.10
-        if segs is None and getattr(coll, "_vec", None) is not None and getattr(coll, "_segslices", None):
-            vec = np.asarray(coll._vec)  # matplotlib <= 3.10: homogeneous coords + per-face slices
+        if (
+            segs is None
+            and getattr(coll, "_vec", None) is not None
+            and getattr(coll, "_segslices", None)
+        ):
+            vec = np.asarray(
+                coll._vec
+            )  # matplotlib <= 3.10: homogeneous coords + per-face slices
             segs = [vec[:3, sl].T for sl in coll._segslices]
         if segs is None:
             segs = getattr(coll, "_segments3d", None)  # older matplotlib
@@ -386,7 +414,7 @@ def _cmaps(ax) -> list[str]:
             if get_array() is None:
                 continue
             names.append(get_cmap().name)
-        except Exception:
+        except PROBE_ERRORS:
             continue
     return names
 
@@ -413,12 +441,16 @@ def describe_figure(fig, is_plotnine: bool = False) -> RenderInfo:
                 x=_axis_info(ax, "x", renderer, i),
                 y=_axis_info(ax, "y", renderer, i),
                 series=_series(ax),
-                n_wedges=sum(isinstance(p, Wedge) and p.get_visible() for p in ax.patches),
+                n_wedges=sum(
+                    isinstance(p, Wedge) and p.get_visible() for p in ax.patches
+                ),
                 cmaps=_cmaps(ax),
                 is_3d=getattr(ax, "name", "") == "3d",
                 has_3d_bars=getattr(ax, "name", "") == "3d" and _has_3d_bars(ax),
                 legend=legend,
-                legend_labels=[t.get_text() for t in legend.get_texts()] if legend else [],
+                legend_labels=[t.get_text() for t in legend.get_texts()]
+                if legend
+                else [],
                 legend_title=legend.get_title().get_text() if legend else "",
                 axis_off=not ax.axison,
             )
@@ -428,7 +460,9 @@ def describe_figure(fig, is_plotnine: bool = False) -> RenderInfo:
     for i, a in enumerate(axes):
         for j in range(i):
             b = axes[j]
-            same_box = np.allclose(a.get_position().bounds, b.get_position().bounds, atol=1e-6)
+            same_box = np.allclose(
+                a.get_position().bounds, b.get_position().bounds, atol=1e-6
+            )
             shared_x = a.get_shared_x_axes().joined(a, b)
             shared_y = a.get_shared_y_axes().joined(a, b)
             if same_box and (shared_x or shared_y) and panels[j].twin_of is None:
@@ -455,11 +489,13 @@ def describe_figure(fig, is_plotnine: bool = False) -> RenderInfo:
     legend_bboxes = []
     figure_legend_labels: list[str] = []
     fig_legends = list(getattr(fig, "legends", []))
-    offsetbox_legends = [a for a in fig.artists if type(a).__name__ == "FlexibleAnchoredOffsetbox"]
+    offsetbox_legends = [
+        a for a in fig.artists if type(a).__name__ == "FlexibleAnchoredOffsetbox"
+    ]
     for leg in fig_legends + offsetbox_legends:
         try:
             legend_bboxes.append(leg.get_window_extent(renderer))
-        except Exception:
+        except TEXT_ERRORS:
             continue
         for t in leg.findobj(Text):
             if t.get_text().strip():
@@ -480,13 +516,13 @@ def describe_figure(fig, is_plotnine: bool = False) -> RenderInfo:
             # skip tick labels for ticks outside the view
             try:
                 bb = t.get_window_extent(renderer)
-            except Exception:
+            except TEXT_ERRORS:
                 continue
             if bb.width == 0 and bb.height == 0:
                 continue
         try:
             bbox = t.get_window_extent(renderer)
-        except Exception:
+        except TEXT_ERRORS:
             continue
         color = _rgba(t.get_color())
         if color is not None and t.get_alpha() is not None:

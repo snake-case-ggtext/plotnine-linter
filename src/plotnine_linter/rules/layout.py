@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
+import itertools
 from collections import defaultdict
 
 import numpy as np
 
+from ..describe.model import PROBE_ERRORS, scale_categories
 from ..registry import Hit, rule
 from ._util import overlaps, quote
-from ..describe.model import scale_categories
 
 
 # ---------------------------------------------------------------- LY101
@@ -27,10 +28,16 @@ def ly101(desc, cfg):
             boxes, seen_spots = [], set()
             for t in sorted(axis.tick_labels, key=key):
                 spot = (t.text, round(t.bbox.x0), round(t.bbox.y0))
-                if spot not in seen_spots:  # duplicates drawn at the same spot read as one label
+                if (
+                    spot not in seen_spots
+                ):  # duplicates drawn at the same spot read as one label
                     seen_spots.add(spot)
                     boxes.append(t)
-            clashes = [(a, b) for a, b in zip(boxes, boxes[1:]) if overlaps(a.bbox, b.bbox, tol=-2.0, along=which)]
+            clashes = [
+                (a, b)
+                for a, b in itertools.pairwise(boxes)
+                if overlaps(a.bbox, b.bbox, tol=-2.0, along=which)
+            ]
             if clashes:
                 reported.add(which)
                 a, b = clashes[0]
@@ -69,8 +76,15 @@ def _data_points_display(panel) -> np.ndarray:
         elif s.kind == "bar":
             for rect in s.artist.patches:
                 bb = rect.get_bbox()
-                corners = np.array([[bb.x0, bb.y0], [bb.x1, bb.y1], [bb.x0, bb.y1], [bb.x1, bb.y0],
-                                    [(bb.x0 + bb.x1) / 2, bb.y1]])
+                corners = np.array(
+                    [
+                        [bb.x0, bb.y0],
+                        [bb.x1, bb.y1],
+                        [bb.x0, bb.y1],
+                        [bb.x1, bb.y0],
+                        [(bb.x0 + bb.x1) / 2, bb.y1],
+                    ]
+                )
                 pts.append(corners)
     display = [ax.transData.transform(np.vstack(pts))] if pts else []
     from matplotlib.patches import Wedge
@@ -78,7 +92,9 @@ def _data_points_display(panel) -> np.ndarray:
     for patch in ax.patches:
         if isinstance(patch, Wedge) and patch.get_visible():
             verts = patch.get_path().vertices
-            display.append(patch.get_transform().transform(verts[:: max(1, len(verts) // 24)]))
+            display.append(
+                patch.get_transform().transform(verts[:: max(1, len(verts) // 24)])
+            )
     if not display:
         return np.empty((0, 2))
     return np.vstack(display)
@@ -100,7 +116,12 @@ def ly102(desc, cfg):
         if not len(pts):
             continue
         for bb in boxes:
-            inside = (pts[:, 0] > bb.x0 + 2) & (pts[:, 0] < bb.x1 - 2) & (pts[:, 1] > bb.y0 + 2) & (pts[:, 1] < bb.y1 - 2)
+            inside = (
+                (pts[:, 0] > bb.x0 + 2)
+                & (pts[:, 0] < bb.x1 - 2)
+                & (pts[:, 1] > bb.y0 + 2)
+                & (pts[:, 1] < bb.y1 - 2)
+            )
             if inside.any():
                 fix = (
                     "Move it outside: `theme(legend_position='right')`, or label lines directly."
@@ -158,18 +179,30 @@ def ly202(desc, cfg):
         if desc.render is not None and not desc.render.has_legend:
             return
         for layer in spec.layers:
-            if layer.geom not in ("geom_line", "geom_path") or "color" not in layer.mapping:
+            if (
+                layer.geom not in ("geom_line", "geom_path")
+                or "color" not in layer.mapping
+            ):
                 continue
             col, xcol, ycol = (spec.column(layer, a) for a in ("color", "x", "y"))
-            if col is None or xcol is None or ycol is None or not spec.is_discrete("color"):
+            if (
+                col is None
+                or xcol is None
+                or ycol is None
+                or not spec.is_discrete("color")
+            ):
                 continue
             scale = spec.scale_for("color")
             try:
                 legend_order = scale_categories(scale)
-            except Exception:
+            except PROBE_ERRORS:
                 continue
             df = layer.raw_data.assign(_c=col.astype(str))
-            last = df.sort_values(layer.mapping["x"]).groupby("_c")[layer.mapping["y"]].last()
+            last = (
+                df.sort_values(layer.mapping["x"])
+                .groupby("_c")[layer.mapping["y"]]
+                .last()
+            )
             if _order_mismatch(legend_order, last.to_dict()):
                 name = layer.mapping["color"]
                 yield Hit(
@@ -184,7 +217,11 @@ def ly202(desc, cfg):
     for panel in desc.render.panels:
         if panel.legend is None:
             continue
-        lines = {s.label: s for s in panel.of_kind("line") if s.x is not None and s.y is not None}
+        lines = {
+            s.label: s
+            for s in panel.of_kind("line")
+            if s.x is not None and s.y is not None
+        }
         ends = {}
         for label, s in lines.items():
             ok = ~(np.isnan(s.x) | np.isnan(s.y))
@@ -211,7 +248,11 @@ def _text_background(desc, box):
     if box.role == "legend" and box.panel is not None:
         legend = desc.render.panels[box.panel].legend
         frame = legend.get_frame() if legend is not None else None
-        if frame is not None and frame.get_visible() and frame.get_facecolor()[3] >= 0.5:
+        if (
+            frame is not None
+            and frame.get_visible()
+            and frame.get_facecolor()[3] >= 0.5
+        ):
             return mcolors.to_rgb(frame.get_facecolor())
     for panel in desc.render.panels:
         bb = panel.ax.get_window_extent(desc.render.renderer)
@@ -252,7 +293,7 @@ def ly103(desc, cfg):
 
     try:
         image = np.asarray(desc.render.figure.canvas.buffer_rgba())
-    except Exception:
+    except (AttributeError, ValueError, RuntimeError):
         image = None
     min_normal = float(cfg.t("min_text_contrast"))
     worst = None
@@ -262,7 +303,16 @@ def ly103(desc, cfg):
         bg = _rendered_background(image, box) or _text_background(desc, box)
         fg = blend(box.color[:3], bg, box.color[3] if len(box.color) > 3 else 1.0)
         cr = contrast_ratio(fg, bg)
-        bold = str(box.weight).lower() in ("bold", "heavy", "black", "semibold", "demibold", "700", "800", "900")
+        bold = str(box.weight).lower() in (
+            "bold",
+            "heavy",
+            "black",
+            "semibold",
+            "demibold",
+            "700",
+            "800",
+            "900",
+        )
         large = box.fontsize >= 18 or (box.fontsize >= 14 and bold)
         need = 3.0 if large else min_normal
         if cr < need and (worst is None or cr < worst[0]):

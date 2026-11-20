@@ -1,10 +1,10 @@
 """Command line.
 
-    plotnine-linter rules [--markdown]      # list the rule catalog
-    plotnine-linter check project.ipynb      # run a notebook, lint every plot it draws
-    plotnine-linter check script.py [...]   # run scripts, lint every plot they make
-    plotnine-linter audit project.ipynb      # Chartability audit of every plot, as markdown checklists
-    plotnine-linter audit project.ipynb --check-answers   # report checklist items left unanswered
+plotnine-linter rules [--markdown]      # list the rule catalog
+plotnine-linter check project.ipynb      # run a notebook, lint every plot it draws
+plotnine-linter check script.py [...]   # run scripts, lint every plot they make
+plotnine-linter audit project.ipynb      # Chartability audit of every plot, as markdown checklists
+plotnine-linter audit project.ipynb --check-answers   # report checklist items left unanswered
 """
 
 from __future__ import annotations
@@ -21,7 +21,11 @@ def _rules(markdown: bool) -> int:
 
     rules = all_rules()
     if markdown:
-        tiers = {1: "Tier 1 — Errors (on by default)", 2: "Tier 2 — Clarity (on by default)", 3: "Tier 3 — Style (opt-in)"}
+        tiers = {
+            1: "Tier 1 — Errors (on by default)",
+            2: "Tier 2 — Clarity (on by default)",
+            3: "Tier 3 — Style (opt-in)",
+        }
         for tier, heading in tiers.items():
             print(f"## {heading}\n")
             print("| ID | Rule | Why | Fix |\n| --- | --- | --- | --- |")
@@ -36,7 +40,13 @@ def _rules(markdown: bool) -> int:
     return 0
 
 
-def _check(paths: list[str], fmt: str, fail_on: str, timeout: int = 900, save_images: str | None = None) -> int:
+def _check(
+    paths: list[str],
+    fmt: str,
+    fail_on: str,
+    timeout: int = 900,
+    save_images: str | None = None,
+) -> int:
     notebooks = [p for p in paths if p.endswith(".ipynb")]
     scripts = [p for p in paths if not p.endswith(".ipynb")]
     worst = 0
@@ -84,7 +94,11 @@ def _check_scripts(paths: list[str], fmt: str, fail_on: str) -> int:
             if report.at_least(fail_on):
                 worst = 1
     if fmt == "json":
-        print(json.dumps([{"file": p, "plot": n, **r.to_dict()} for p, n, r in reports], indent=2))
+        print(
+            json.dumps(
+                [{"file": p, "plot": n, **r.to_dict()} for p, n, r in reports], indent=2
+            )
+        )
     else:
         for p, n, r in reports:
             print(f"{p} [{n}]")
@@ -107,7 +121,11 @@ def _audit(paths: list[str], fmt: str, timeout: int) -> int:
                     "path": path,
                     "error": result.error,
                     "plots": [
-                        {"cell": pr.cell, "audit": pr.audit.to_dict() if pr.audit else None} for pr in result.plots
+                        {
+                            "cell": pr.cell,
+                            "audit": pr.audit.to_dict() if pr.audit else None,
+                        }
+                        for pr in result.plots
                     ],
                 }
             )
@@ -159,16 +177,29 @@ def main(argv: list[str] | None = None) -> int:
     sub = parser.add_subparsers(dest="cmd", required=True)
     r = sub.add_parser("rules", help="list the rule catalog")
     r.add_argument("--markdown", action="store_true")
-    c = sub.add_parser("check", help="run notebooks (.ipynb) or Python scripts and lint every plot they make")
+    c = sub.add_parser(
+        "check",
+        help="run notebooks (.ipynb) or Python scripts and lint every plot they make",
+    )
     c.add_argument("paths", nargs="+")
     c.add_argument("--format", choices=["text", "json"], default="text")
     c.add_argument("--fail-on", default="error", choices=["info", "warning", "error"])
-    c.add_argument("--timeout", type=int, default=900, help="seconds allowed per notebook")
-    c.add_argument("--save-images", metavar="DIR", help="save a PNG of each linted notebook plot under DIR")
-    a = sub.add_parser("audit", help="Chartability audit of every plot in notebooks (.ipynb)")
+    c.add_argument(
+        "--timeout", type=int, default=900, help="seconds allowed per notebook"
+    )
+    c.add_argument(
+        "--save-images",
+        metavar="DIR",
+        help="save a PNG of each linted notebook plot under DIR",
+    )
+    a = sub.add_parser(
+        "audit", help="Chartability audit of every plot in notebooks (.ipynb)"
+    )
     a.add_argument("paths", nargs="+")
     a.add_argument("--format", choices=["markdown", "text", "json"], default="markdown")
-    a.add_argument("--timeout", type=int, default=900, help="seconds allowed per notebook")
+    a.add_argument(
+        "--timeout", type=int, default=900, help="seconds allowed per notebook"
+    )
     a.add_argument(
         "--check-answers",
         action="store_true",

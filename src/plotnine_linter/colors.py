@@ -15,13 +15,25 @@ from matplotlib.colors import to_rgb
 
 MACHADO = {
     "protanopia": np.array(
-        [[0.152286, 1.052583, -0.204868], [0.114503, 0.786281, 0.099216], [-0.003882, -0.048116, 1.051998]]
+        [
+            [0.152286, 1.052583, -0.204868],
+            [0.114503, 0.786281, 0.099216],
+            [-0.003882, -0.048116, 1.051998],
+        ]
     ),
     "deuteranopia": np.array(
-        [[0.367322, 0.860646, -0.227968], [0.280085, 0.672501, 0.047413], [-0.011820, 0.042940, 0.968881]]
+        [
+            [0.367322, 0.860646, -0.227968],
+            [0.280085, 0.672501, 0.047413],
+            [-0.011820, 0.042940, 0.968881],
+        ]
     ),
     "tritanopia": np.array(
-        [[1.255528, -0.076749, -0.178779], [-0.078411, 0.930809, 0.147602], [0.004733, 0.691367, 0.303900]]
+        [
+            [1.255528, -0.076749, -0.178779],
+            [-0.078411, 0.930809, 0.147602],
+            [0.004733, 0.691367, 0.303900],
+        ]
     ),
 }
 
@@ -39,14 +51,20 @@ def simulate(color, kind: str) -> np.ndarray:
     """sRGB (0-1) of ``color`` as seen with the given deficiency, or printed in grayscale."""
     rgb = np.asarray(to_rgb(color), dtype=float)
     if kind == "grayscale":
-        y = float(np.dot([0.2126, 0.7152, 0.0722], _to_linear(rgb)))  # relative luminance
+        y = float(
+            np.dot([0.2126, 0.7152, 0.0722], _to_linear(rgb))
+        )  # relative luminance
         return _to_srgb(np.array([y, y, y]))
     return _to_srgb(MACHADO[kind] @ _to_linear(rgb))
 
 
 def relative_luminance(color) -> float:
     """WCAG relative luminance of an sRGB color (0 = black, 1 = white)."""
-    return float(np.dot([0.2126, 0.7152, 0.0722], _to_linear(np.asarray(to_rgb(color), dtype=float))))
+    return float(
+        np.dot(
+            [0.2126, 0.7152, 0.0722], _to_linear(np.asarray(to_rgb(color), dtype=float))
+        )
+    )
 
 
 def contrast_ratio(a, b) -> float:
@@ -62,8 +80,18 @@ def blend(color, background, alpha: float):
 
 
 def to_lab(color) -> np.ndarray:
-    rgb = _to_linear(np.asarray(to_rgb(color) if not isinstance(color, np.ndarray) else color, dtype=float))
-    m = np.array([[0.4124564, 0.3575761, 0.1804375], [0.2126729, 0.7151522, 0.0721750], [0.0193339, 0.1191920, 0.9503041]])
+    rgb = _to_linear(
+        np.asarray(
+            to_rgb(color) if not isinstance(color, np.ndarray) else color, dtype=float
+        )
+    )
+    m = np.array(
+        [
+            [0.4124564, 0.3575761, 0.1804375],
+            [0.2126729, 0.7151522, 0.0721750],
+            [0.0193339, 0.1191920, 0.9503041],
+        ]
+    )
     xyz = m @ rgb / np.array([0.95047, 1.0, 1.08883])
     f = np.where(xyz > (6 / 29) ** 3, np.cbrt(xyz), xyz / (3 * (6 / 29) ** 2) + 4 / 29)
     return np.array([116 * f[1] - 16, 500 * (f[0] - f[1]), 200 * (f[1] - f[2])])
@@ -113,13 +141,20 @@ def delta_e2000(lab1: np.ndarray, lab2: np.ndarray) -> float:
     Sc = 1 + 0.045 * Cbp
     Sh = 1 + 0.015 * Cbp * T
     Rt = -math.sin(math.radians(2 * dtheta)) * Rc
-    return math.sqrt((dLp / Sl) ** 2 + (dCp / Sc) ** 2 + (dHp / Sh) ** 2 + Rt * (dCp / Sc) * (dHp / Sh))
+    return math.sqrt(
+        (dLp / Sl) ** 2
+        + (dCp / Sc) ** 2
+        + (dHp / Sh) ** 2
+        + Rt * (dCp / Sc) * (dHp / Sh)
+    )
 
 
 CVD_KINDS = ("deuteranopia", "protanopia", "tritanopia")
 
 
-def confusable_pairs(colors, min_delta_e: float, kinds=CVD_KINDS) -> list[tuple[str, str, str, float]]:
+def confusable_pairs(
+    colors, min_delta_e: float, kinds=CVD_KINDS
+) -> list[tuple[str, str, str, float]]:
     """Pairs that are distinct normally but closer than ``min_delta_e`` under some CVD.
 
     Returns (color_a, color_b, deficiency, simulated distance), worst first.
@@ -135,7 +170,9 @@ def confusable_pairs(colors, min_delta_e: float, kinds=CVD_KINDS) -> list[tuple[
     out = []
     for a, b in itertools.combinations(uniq, 2):
         normal = delta_e2000(to_lab(np.array(a)), to_lab(np.array(b)))
-        if normal < min_delta_e:  # already hard to tell apart; not a CVD problem specifically
+        if (
+            normal < min_delta_e
+        ):  # already hard to tell apart; not a CVD problem specifically
             continue
         worst = None
         for kind in kinds:
@@ -148,4 +185,4 @@ def confusable_pairs(colors, min_delta_e: float, kinds=CVD_KINDS) -> list[tuple[
 
 
 def _hex(rgb) -> str:
-    return "#" + "".join(f"{int(round(v * 255)):02x}" for v in rgb)
+    return "#" + "".join(f"{round(v * 255):02x}" for v in rgb)

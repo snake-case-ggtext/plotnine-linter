@@ -9,9 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pytest
-from plotnine import (  # noqa: I001
-    scale_color_manual,
-    scale_fill_manual,
+from plotnine import (
     aes,
     element_text,
     geom_bar,
@@ -21,6 +19,8 @@ from plotnine import (  # noqa: I001
     geom_point,
     ggplot,
     labs,
+    scale_color_manual,
+    scale_fill_manual,
     scale_x_datetime,
     theme,
 )
@@ -60,7 +60,9 @@ def test_matplotlib_boxplot_is_not_lines():
     df = penguins()
     fig, ax = plt.subplots()
     ax.boxplot([d.body_mass_g for _, d in df.groupby("species")])
-    ax.set_xticks([1, 2, 3], ["Adelie", "Chinstrap", "Gentoo"])  # works on every matplotlib version
+    ax.set_xticks(
+        [1, 2, 3], ["Adelie", "Chinstrap", "Gentoo"]
+    )  # works on every matplotlib version
     ax.set_ylabel("Body mass (g)")
     got = ids(lint(fig))
     assert "MK103" not in got
@@ -151,8 +153,16 @@ def test_grouped_bar_recipe_has_no_lb101():
 # =====================================================================
 # LY101: rotated labels compared by axis-aligned boxes
 # =====================================================================
-MAJORS = ["Cognitive Science", "Computer Science", "Data Science", "Psychology",
-          "Economics", "Biology", "Political Science", "Mathematics"]
+MAJORS = [
+    "Cognitive Science",
+    "Computer Science",
+    "Data Science",
+    "Psychology",
+    "Economics",
+    "Biology",
+    "Political Science",
+    "Mathematics",
+]
 
 
 def test_ly101_rotated_category_labels_do_not_overlap():
@@ -263,7 +273,12 @@ def test_cl201_accepts_seaborn_colorblind_palette():
     fig, ax = plt.subplots()
     rng = np.random.default_rng(0)
     for i, name in enumerate(["A", "B", "C", "D"]):
-        ax.plot(np.arange(10), np.arange(10) * (i + 1) + rng.normal(0, 1, 10), color=pal[i], label=name)
+        ax.plot(
+            np.arange(10),
+            np.arange(10) * (i + 1) + rng.normal(0, 1, 10),
+            color=pal[i],
+            label=name,
+        )
     ax.legend(loc="upper left", bbox_to_anchor=(1.01, 1))
     ax.set(xlabel="Week", ylabel="Sales (USD)")
     assert "CL201" not in ids(lint(fig))
@@ -273,7 +288,11 @@ def test_cl201_skips_color_redundant_with_axis_plotnine():
     # FAILS TODAY. fill repeats x and the legend is hidden (the fix LB203 suggests);
     # categories are named on the axis, so CVD can't hide them.
     # Expected: no CL201. Actual: CL201 error ('4' vs 'f').
-    p = ggplot(mpg, aes("drv", fill="drv")) + geom_bar(show_legend=False) + labs(x="Drive", y="Count")
+    p = (
+        ggplot(mpg, aes("drv", fill="drv"))
+        + geom_bar(show_legend=False)
+        + labs(x="Drive", y="Count")
+    )
     assert "CL201" not in ids(lint(p))
 
 
@@ -310,7 +329,9 @@ def test_cl201_same_verdict_for_seaborn_scatter_and_scatter_loop():
     ax.set(xlabel="Bill length (mm)", ylabel="Body mass (g)")
     loop = "CL201" in ids(lint(fig))
     _, ax2 = plt.subplots()
-    sns.scatterplot(data=df, x="bill_length_mm", y="body_mass_g", hue="species", alpha=0.6, ax=ax2)
+    sns.scatterplot(
+        data=df, x="bill_length_mm", y="body_mass_g", hue="species", alpha=0.6, ax=ax2
+    )
     ax2.set(xlabel="Bill length (mm)", ylabel="Body mass (g)")
     seaborn = "CL201" in ids(lint(ax2.figure))
     assert loop == seaborn
@@ -337,7 +358,11 @@ def test_ax103_ignores_empty_bins_in_log_histogram():
     # (no data is dropped; empty bins are just empty). Actual: AX103 error
     # "6 plotted values are at or below zero" with a symlog fix.
     fig, ax = plt.subplots()
-    ax.hist(np.random.default_rng(1).exponential(1, 500), bins=np.arange(0, 10, 0.5), log=True)
+    ax.hist(
+        np.random.default_rng(1).exponential(1, 500),
+        bins=np.arange(0, 10, 0.5),
+        log=True,
+    )
     ax.set(xlabel="Wait time (min)", ylabel="Count")
     assert "AX103" not in ids(lint(fig))
 
@@ -345,8 +370,10 @@ def test_ax103_ignores_empty_bins_in_log_histogram():
 def test_ax201_dodged_bar_count_is_number_of_categories():
     # FAILS TODAY. 7 classes dodged by drv. Expected message "The 7 bars ...".
     # Actual: "The 12 bars for `class`" (counts dodged sub-bars by their shifted x).
-    p = ggplot(mpg, aes("class", fill="drv")) + geom_bar(position="dodge") + labs(
-        x="Vehicle class", y="Count", fill="Drive"
+    p = (
+        ggplot(mpg, aes("class", fill="drv"))
+        + geom_bar(position="dodge")
+        + labs(x="Vehicle class", y="Count", fill="Drive")
     )
     hits = findings(lint(p), "AX201")
     assert hits and "7 bars" in hits[0].message, [h.message for h in hits]
@@ -355,7 +382,7 @@ def test_ax201_dodged_bar_count_is_number_of_categories():
 def test_lint_accepts_array_of_axes():
     # FAILS TODAY. `axes = df.hist()` / plt.subplots(1, 2) return ndarrays of Axes;
     # students will pass them straight in. Expected: lints the figure. Actual: TypeError.
-    fig, axes = plt.subplots(1, 2)
+    _fig, axes = plt.subplots(1, 2)
     for a in axes:
         a.plot([1, 2, 3], [1, 4, 9])
         a.set(xlabel="Time (s)", ylabel="Distance (m)")
@@ -387,7 +414,9 @@ def test_guard_legend_over_bar_is_flagged():
     rng = np.random.default_rng(1)
     tips = pd.DataFrame(
         {
-            "day": rng.choice(["Thur", "Fri", "Sat", "Sun"], 244, p=[0.55, 0.15, 0.15, 0.15]),
+            "day": rng.choice(
+                ["Thur", "Fri", "Sat", "Sun"], 244, p=[0.55, 0.15, 0.15, 0.15]
+            ),
             "time": rng.choice(["Lunch", "Dinner"], 244),
         }
     )

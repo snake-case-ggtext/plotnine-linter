@@ -46,15 +46,15 @@ Load once; every plot after that is linted as it appears. Findings show under th
 ```python
 from plotnine_linter import lint, alt_text, show_rules
 
-report = lint(p)          # a plotnine ggplot, or a matplotlib Figure / Axes
+report = lint(p)  # a plotnine ggplot, or a matplotlib Figure / Axes
 print(report)
-report.ids                # ['AX201', 'LB201', ...]
-report.errors()           # error-level findings only
-report.to_json()          # for autograders
-report.alt_text           # a draft alt text, also available as alt_text(p)
+report.ids  # ['AX201', 'LB201', ...]
+report.errors()  # error-level findings only
+report.to_json()  # for autograders
+report.alt_text  # a draft alt text, also available as alt_text(p)
 
-show_rules()              # the catalog, grouped by tier, showing which rules are on
-show_rules().to_frame()   # as a pandas DataFrame
+show_rules()  # the catalog, grouped by tier, showing which rules are on
+show_rules().to_frame()  # as a pandas DataFrame
 ```
 
 `alt_text(p)` drafts a description from the chart itself, e.g. *"Bar chart of Average income (USD, thousands) by Region. Highest: East (61); lowest: South (47)."* It's a starting point; the author adds the takeaway.
@@ -64,9 +64,9 @@ show_rules().to_frame()   # as a pandas DataFrame
 ```python
 from plotnine_linter import audit, data_table
 
-audit(p)                     # every Chartability test that applies to a static chart, with a verdict
+audit(p)  # every Chartability test that applies to a static chart, with a verdict
 print(audit(p).to_markdown())  # a checklist to paste into a markdown cell and answer
-data_table(p)                # the data behind the chart, as a DataFrame
+data_table(p)  # the data behind the chart, as a DataFrame
 ```
 
 `lint()` reports only problems. `audit()` goes through all 50 [Chartability](https://chartability.github.io/POUR-CAF/) tests and marks each one **pass** or **fail** (decided by the rules), **partly checked** (the linter gathers evidence, such as a draft alt text, the chart's reading grade or undefined abbreviations, and asks the author a question), **your call** (only the author can decide; the audit asks), or **n/a** (interactive and web tests). The markdown checklist pre-checks the automatic passes and pre-fills the draft alt text for the author to edit.
@@ -76,7 +76,7 @@ data_table(p)                # the data behind the chart, as a DataFrame
 ```python
 from plotnine_linter.testing import assert_clean
 
-assert_clean(student_plot)                     # fails on any error-level finding
+assert_clean(student_plot)  # fails on any error-level finding
 assert_clean(student_plot, at_least="warning")
 ```
 

@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import warnings
-from typing import Any, Iterable, Mapping
+from collections.abc import Iterable, Mapping
+from typing import Any
 
 from .config import Config, load_config
 from .describe import ChartDescription, describe
@@ -52,7 +53,11 @@ def lint(
         compare figures (ST305, ST306). The Jupyter hook passes one automatically.
     """
     cfg = (config or load_config()).merged(
-        profile=profile, select=select, ignore=ignore, severity=severity, thresholds=thresholds
+        profile=profile,
+        select=select,
+        ignore=ignore,
+        severity=severity,
+        thresholds=thresholds,
     )
     desc = describe(obj)
     desc.session = session
@@ -97,7 +102,7 @@ def lint_description(
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
                 hits = list(rule.check(desc, cfg) or [])
-        except Exception as exc:  # a broken rule must never break the user's plot
+        except Exception as exc:  # noqa: BLE001  # a broken rule must never break the user's plot
             desc.errors.append(f"{rule.id}: {type(exc).__name__}: {exc}")
             continue
         for hit in hits:
@@ -107,7 +112,11 @@ def lint_description(
             seen.add(key)
             sev = cfg.severity.get(rule.id)
             if sev is None:
-                sev = Severity.INFO if (hit.heuristic or rule.heuristic) else rule.default_severity
+                sev = (
+                    Severity.INFO
+                    if (hit.heuristic or rule.heuristic)
+                    else rule.default_severity
+                )
             finding = Finding(
                 rule_id=rule.id,
                 title=rule.title,
@@ -117,7 +126,9 @@ def lint_description(
                 why=rule.why,
                 source=hit.source,
                 heuristic=hit.heuristic or rule.heuristic,
-                panel=hit.panel if desc.render and len(desc.render.panels) > 1 else None,
+                panel=hit.panel
+                if desc.render and len(desc.render.panels) > 1
+                else None,
                 details=hit.details,
             )
             if rule.id in suppressions:
@@ -146,9 +157,6 @@ def lint_description(
 
 
 def _close(fig) -> None:
-    try:
-        import matplotlib.pyplot as plt
+    import matplotlib.pyplot as plt
 
-        plt.close(fig)
-    except Exception:  # pragma: no cover
-        pass
+    plt.close(fig)

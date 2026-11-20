@@ -11,7 +11,8 @@ from dataclasses import dataclass, field
 
 import numpy as np
 from matplotlib.colors import to_hex
-from .describe.model import scale_categories
+
+from .describe.model import PROBE_ERRORS, scale_categories
 
 
 @dataclass
@@ -41,7 +42,9 @@ def _hex(color) -> str | None:
 
 def _legend_colors_mpl(legend) -> dict[str, str]:
     out = {}
-    handles = getattr(legend, "legend_handles", None) or getattr(legend, "legendHandles", [])
+    handles = getattr(legend, "legend_handles", None) or getattr(
+        legend, "legendHandles", []
+    )
     for handle, text in zip(handles, legend.get_texts()):
         color = None
         for getter in ("get_color", "get_facecolor"):
@@ -50,7 +53,7 @@ def _legend_colors_mpl(legend) -> dict[str, str]:
                 continue
             try:
                 value = fn()
-            except Exception:
+            except PROBE_ERRORS:
                 continue
             arr = np.asarray(value)
             color = _hex(arr[0] if arr.ndim == 2 and len(arr) else value)
@@ -66,9 +69,15 @@ def chart_facts(desc) -> ChartFacts:
     theme = ""
     if desc.spec is not None:
         spec = desc.spec
-        theme = type(spec.plot.theme).__name__ if getattr(spec.plot, "theme", None) is not None else "theme_gray"
+        theme = (
+            type(spec.plot.theme).__name__
+            if getattr(spec.plot, "theme", None) is not None
+            else "theme_gray"
+        )
         for aes in ("color", "fill"):
-            if not spec.is_discrete(aes) or not any(aes in l.mapping for l in spec.layers):
+            if not spec.is_discrete(aes) or not any(
+                aes in l.mapping for l in spec.layers
+            ):
                 continue
             scale = spec.scale_for(aes)
             try:
@@ -80,7 +89,7 @@ def chart_facts(desc) -> ChartFacts:
                     h = _hex(col)
                     if h:
                         label_colors[lim] = h
-            except Exception:
+            except PROBE_ERRORS:
                 continue
     elif desc.render is not None:
         for p in desc.render.panels:
@@ -88,7 +97,17 @@ def chart_facts(desc) -> ChartFacts:
                 label_colors.update(_legend_colors_mpl(p.legend))
         ax = desc.render.panels[0].ax if desc.render.panels else None
         if ax is not None:
-            grid = any(l.get_visible() for l in ax.get_xgridlines() + ax.get_ygridlines())
+            grid = any(
+                l.get_visible() for l in ax.get_xgridlines() + ax.get_ygridlines()
+            )
             theme = f"face={_hex(ax.get_facecolor())}, grid={'on' if grid else 'off'}"
-    sizes = [t.fontsize for t in (desc.render.texts if desc.render else []) if t.role in ("xtick", "ytick")]
-    return ChartFacts(label_colors=label_colors, theme=theme, font_size=float(np.median(sizes)) if sizes else None)
+    sizes = [
+        t.fontsize
+        for t in (desc.render.texts if desc.render else [])
+        if t.role in ("xtick", "ytick")
+    ]
+    return ChartFacts(
+        label_colors=label_colors,
+        theme=theme,
+        font_size=float(np.median(sizes)) if sizes else None,
+    )

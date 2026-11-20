@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling>=1.27"]
 build-backend = "hatchling.build"
 
 [project]
@@ -7,9 +7,27 @@ name = "plotnine-linter"
 version = "0.1.0"
 description = "A teaching-first linter for plotnine and matplotlib charts"
 readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.10"
-license = { text = "MIT" }
 authors = [{ name = "Shannon E. Ellis" }]
+keywords = ["plotnine", "matplotlib", "ggplot", "linter", "visualization", "accessibility", "teaching"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Framework :: Matplotlib",
+    "Framework :: Jupyter",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: Visualization",
+    "Topic :: Software Development :: Quality Assurance",
+    "Typing :: Typed",
+]
+# plotnine is optional: the linter also checks plain matplotlib, pandas and seaborn figures.
 dependencies = [
     "matplotlib>=3.8",
     "numpy>=1.24",
@@ -19,15 +37,73 @@ dependencies = [
 
 [project.optional-dependencies]
 plotnine = ["plotnine>=0.13"]
-dev = ["plotnine>=0.13", "pytest>=7", "ipython>=8", "seaborn>=0.13", "nbclient", "ipykernel"]
 
 [project.scripts]
 plotnine-linter = "plotnine_linter.__main__:main"
+
+[project.urls]
+Documentation = "https://github.com/snake-case-ggtext/plotnine-linter/tree/main/docs"
+Source = "https://github.com/snake-case-ggtext/plotnine-linter"
+
+# Installed by default with `uv sync` (and `make install`).
+[dependency-groups]
+test = [
+    "pytest>=7",
+    "pytest-cov",
+    "pytest-randomly",
+    "plotnine>=0.13",
+    "seaborn>=0.13",
+    "ipython>=8",
+    "ipykernel",
+    "nbclient",
+    "nbformat",
+]
+docs = ["jupyter", "nbconvert"]
+dev = [
+    { include-group = "test" },
+    { include-group = "docs" },
+    "ruff",
+    "prek",
+    "pyrefly",
+    "pandas-stubs",
+    # slop-lint isn't on PyPI; uv.lock pins the commit. It needs Python 3.12 or later.
+    "slop-lint @ git+https://github.com/tylerriccio33/slop-lint ; python_version >= '3.12'",
+]
+
+[tool.hatch.metadata]
+allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/plotnine_linter"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-filterwarnings = ["ignore::UserWarning", "ignore::FutureWarning"]
-markers = ["slow: starts a Jupyter kernel (deselect with -m 'not slow')"]
+addopts = "-ra --strict-markers"
+filterwarnings = [
+    "ignore::UserWarning",
+    "ignore::FutureWarning",
+    "error::DeprecationWarning:plotnine_linter",
+]
+markers = [
+    "notebook: starts a Jupyter kernel (the hook tests and the demo notebook)",
+]
+
+[tool.coverage.run]
+source = ["plotnine_linter"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+
+# Ruff runs with its out-of-the-box rules and formatter settings.
+[tool.pyrefly]
+preset = "strict"
+project-includes = ["src", "tests", "docs/gallery"]
+search-path = ["src", "."]
+python-version = "3.10"
+baseline = "pyrefly-baseline.json"
+
+[tool.slop-lint]
+enable = ["banned-words", "max-sentence-length", "passive-voice"]
+max-sentence-length = 20

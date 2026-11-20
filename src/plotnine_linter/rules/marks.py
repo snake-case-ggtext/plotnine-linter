@@ -8,8 +8,16 @@ from ..registry import Hit, rule
 from ._util import is_unordered_column, ordinal_like
 
 UNCERTAINTY_GEOMS = {
-    "geom_errorbar", "geom_linerange", "geom_pointrange", "geom_crossbar", "geom_point",
-    "geom_jitter", "geom_boxplot", "geom_violin", "geom_sina", "geom_dotplot",
+    "geom_errorbar",
+    "geom_linerange",
+    "geom_pointrange",
+    "geom_crossbar",
+    "geom_point",
+    "geom_jitter",
+    "geom_boxplot",
+    "geom_violin",
+    "geom_sina",
+    "geom_dotplot",
 }
 
 
@@ -28,7 +36,11 @@ def mk101(desc, cfg):
                 continue
             for aes in ("x", "y"):
                 if spec.is_discrete(aes) and aes in data:
-                    counts = data.groupby(["PANEL", aes]).size() if "PANEL" in data else data.groupby(aes).size()
+                    counts = (
+                        data.groupby(["PANEL", aes]).size()
+                        if "PANEL" in data
+                        else data.groupby(aes).size()
+                    )
                     if len(counts) and counts.max() >= per_cat:
                         yield Hit(
                             f"`geom_point` stacks up to {int(counts.max())} points on each category of the "
@@ -52,7 +64,9 @@ def mk101(desc, cfg):
             disp = panel.ax.transData.transform(xy)
             diam = max(float(np.sqrt(np.median(s.sizes))) * dpi / 72.0, 1.0)
             cells = np.floor(disp / diam).astype(np.int64)
-            _, inverse, counts = np.unique(cells, axis=0, return_inverse=True, return_counts=True)
+            _, inverse, counts = np.unique(
+                cells, axis=0, return_inverse=True, return_counts=True
+            )
             shared = counts[inverse.ravel()] > 1
             frac = float(shared.mean()) if len(shared) else 0.0
             if frac > threshold:
@@ -101,7 +115,13 @@ def mk103(desc, cfg):
             if not is_unordered_column(col) or ordinal_like(col.dropna().unique()):
                 continue
             data = layer.built_data
-            if "group" in data and data.groupby(["PANEL", "group"] if "PANEL" in data else "group").size().max() < 2:
+            if (
+                "group" in data
+                and data.groupby(["PANEL", "group"] if "PANEL" in data else "group")
+                .size()
+                .max()
+                < 2
+            ):
                 continue  # plotnine draws nothing between single-point groups
             yield Hit(
                 f"`{layer.geom}` connects the unordered categories of `{layer.mapping['x']}`.",
@@ -154,11 +174,23 @@ def mk202(desc, cfg):
             data = layer.built_data
             if "group" not in data:
                 continue
-            key = "color" if "color" in data and data["color"].nunique() > 1 else "group"
-            per_panel = data.groupby("PANEL")[key].nunique() if "PANEL" in data else data[key].nunique()
-            n = int(np.max(per_panel))  # distinctly colored lines; many gray lines + a few colored ones is fine
+            key = (
+                "color" if "color" in data and data["color"].nunique() > 1 else "group"
+            )
+            per_panel = (
+                data.groupby("PANEL")[key].nunique()
+                if "PANEL" in data
+                else data[key].nunique()
+            )
+            n = int(
+                np.max(per_panel)
+            )  # distinctly colored lines; many gray lines + a few colored ones is fine
             if n > limit:
-                group_var = layer.mapping.get("color") or layer.mapping.get("group") or "the grouping variable"
+                group_var = (
+                    layer.mapping.get("color")
+                    or layer.mapping.get("group")
+                    or "the grouping variable"
+                )
                 yield Hit(
                     f"One panel draws {n} differently colored lines (more than {limit}).",
                     fix=f"Gray most lines and color a few, or `facet_wrap('{group_var}')`.",
@@ -168,7 +200,9 @@ def mk202(desc, cfg):
 
     for panel in desc.render.panels:
         lines = panel.of_kind("line")
-        n = len({tuple(np.round(s.color[:3], 3)) for s in lines if s.color is not None}) or len(lines)
+        n = len(
+            {tuple(np.round(s.color[:3], 3)) for s in lines if s.color is not None}
+        ) or len(lines)
         if n > limit:
             yield Hit(
                 f"This panel draws {n} differently colored lines (more than {limit}).",
@@ -185,7 +219,11 @@ def mk203(desc, cfg):
     spec = desc.spec
     if spec is None:
         return
-    summary_bars = [l for l in spec.layers if l.geom in ("geom_bar", "geom_col") and l.stat == "stat_summary"]
+    summary_bars = [
+        l
+        for l in spec.layers
+        if l.geom in ("geom_bar", "geom_col") and l.stat == "stat_summary"
+    ]
     if not summary_bars:
         return
     if any(l.geom in UNCERTAINTY_GEOMS for l in spec.layers):
@@ -240,7 +278,10 @@ def mk205(desc, cfg):
     if desc.spec is not None:
         spec = desc.spec
         for layer in spec.layers:
-            if layer.geom not in ("geom_bar", "geom_col") or layer.position not in ("position_stack", "position_fill"):
+            if layer.geom not in ("geom_bar", "geom_col") or layer.position not in (
+                "position_stack",
+                "position_fill",
+            ):
                 continue
             for aes in ("fill", "color"):
                 col = spec.column(layer, aes)
@@ -259,7 +300,11 @@ def mk205(desc, cfg):
 
     for panel in desc.render.panels:
         bars = [s for s in panel.of_kind("bar") if not s.from_hist]
-        stacked = [s for s in bars if s.bottoms is not None and np.any(np.abs(s.bottoms) > 1e-12)]
+        stacked = [
+            s
+            for s in bars
+            if s.bottoms is not None and np.any(np.abs(s.bottoms) > 1e-12)
+        ]
         if stacked and len(bars) > limit:
             yield Hit(
                 f"Bars stack {len(bars)} segments; only the bottom one can be compared across bars.",

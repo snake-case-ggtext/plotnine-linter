@@ -53,23 +53,24 @@ def _display(report) -> None:
 
 def _lint_quietly(obj, source):
     from .api import lint
-
     from .session import Session
 
     session = _STATE.setdefault("session", Session())
     try:
         report = lint(obj, source=source, session=session, **_STATE["options"])
-    except Exception as exc:  # never break a student's notebook
+    except Exception as exc:  # noqa: BLE001  # never break a student's notebook
         from .findings import Report
 
-        report = Report(internal_errors=[f"plotnine-linter could not lint this plot: {exc}"])
+        report = Report(
+            internal_errors=[f"plotnine-linter could not lint this plot: {exc}"]
+        )
     _STATE["last_plot"] = obj
     if _STATE.get("audit") and not report.empty:  # `plotnine-linter audit`
         try:
             from .audit import audit
 
             report.audit = audit(obj, session=session, source=source)
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001  # the audit is extra; keep the lint report
             report.internal_errors.append(f"audit failed: {exc}")
     save_dir = _STATE.get("save_dir")
     if save_dir:
@@ -96,8 +97,8 @@ def _save_image(obj, report, save_dir) -> None:
         else:
             obj.savefig(path, dpi=80, bbox_inches="tight")  # as the notebook shows it
         report.image = path
-    except Exception:
-        pass
+    except Exception as exc:  # noqa: BLE001  # saving is best effort; the lint report still counts
+        report.internal_errors.append(f"could not save the plot image: {exc}")
 
 
 def _make_callbacks(ip):
@@ -115,7 +116,7 @@ def _make_callbacks(ip):
             return
         try:
             from matplotlib._pylab_helpers import Gcf
-        except Exception:  # pragma: no cover
+        except ImportError:  # pragma: no cover
             return
         for manager in Gcf.get_all_fig_managers():
             fig = manager.canvas.figure
@@ -157,7 +158,9 @@ def _patch_ggplot_show():
     original = ggplot.show
 
     def show(self, *args, **kwargs):
-        _STATE["in_ggplot_show"] = True  # its matplotlib figure is linted from the spec instead
+        _STATE["in_ggplot_show"] = (
+            True  # its matplotlib figure is linted from the spec instead
+        )
         try:
             out = original(self, *args, **kwargs)
         finally:
@@ -215,7 +218,9 @@ def _parse_magic(line: str) -> str:
             _STATE["options"].pop("profile", None)
             return "plotnine-linter profile cleared"
         if name.lower() not in profiles():
-            raise ValueError(f"unknown profile {name!r}; available: {', '.join(profiles())}")
+            raise ValueError(
+                f"unknown profile {name!r}; available: {', '.join(profiles())}"
+            )
         _STATE["options"]["profile"] = name.lower()
         return f"plotnine-linter profile: {name.lower()} ({profiles()[name.lower()]['description']})"
     for part in words:
@@ -279,7 +284,7 @@ def _audit_magic(ip, args: list[str]) -> None:
     markdown = "--markdown" in args
     names = [a for a in args if not a.startswith("--")]
     if names:
-        obj = eval(names[0], ip.user_ns)  # noqa: S307 (the user's own expression)
+        obj = eval(names[0], ip.user_ns)
     else:
         obj = _STATE.get("last_plot")
         if obj is None:
@@ -334,7 +339,9 @@ class NotebookSummary:
         lines = [f"plotnine-linter: {len(self.history)} plot(s) linted"]
         for i, cell, sev, ids, _ in self._rows():
             where = f"cell [{cell}]" if cell else "cell [?]"
-            lines.append(f"  plot {i} ({where}): {', '.join(ids) if ids else 'no issues'}")
+            lines.append(
+                f"  plot {i} ({where}): {', '.join(ids) if ids else 'no issues'}"
+            )
         return "\n".join(lines)
 
     __repr__ = __str__
@@ -346,7 +353,7 @@ class NotebookSummary:
         from ._html import FONT, MUTED, RULE_LINE, pill
 
         if not self.history:
-            return f"<div style=\"{FONT}\">No plots linted yet in this session.</div>"
+            return f'<div style="{FONT}">No plots linted yet in this session.</div>'
         rows = self._rows()
         totals = Counter()
         rule_counts = Counter()
@@ -363,13 +370,18 @@ class NotebookSummary:
         )
         common = ""
         if rule_counts:
-            items = ", ".join(f"<code>{r}</code> ({n})" for r, n in rule_counts.most_common(5))
-            common = f"<div style='margin-bottom:6px;{MUTED}'>Most common: {items}</div>"
+            items = ", ".join(
+                f"<code>{r}</code> ({n})" for r, n in rule_counts.most_common(5)
+            )
+            common = (
+                f"<div style='margin-bottom:6px;{MUTED}'>Most common: {items}</div>"
+            )
         cell_style = f"padding:3px 8px;{RULE_LINE};text-align:left;vertical-align:top"
         body = []
         for i, cell, sev, ids, report in rows:
             msgs = "<br>".join(
-                f"<code>{html.escape(f.rule_id)}</code> {html.escape(f.message)}" for f in report.findings
+                f"<code>{html.escape(f.rule_id)}</code> {html.escape(f.message)}"
+                for f in report.findings
             ) or pill("no issues", "ok")
             body.append(
                 f"<tr><td style='{cell_style}'>{i}</td><td style='{cell_style}'>[{cell or '?'}]</td>"
@@ -379,10 +391,15 @@ class NotebookSummary:
             )
         table = (
             "<table style='border-collapse:collapse;font-size:12.5px;color:inherit;background:transparent'><thead><tr>"
-            + "".join(f"<th style='{cell_style}'>{h}</th>" for h in ("Plot", "Cell", "Errors", "Warnings", "Findings"))
-            + "</tr></thead><tbody>" + "".join(body) + "</tbody></table>"
+            + "".join(
+                f"<th style='{cell_style}'>{h}</th>"
+                for h in ("Plot", "Cell", "Errors", "Warnings", "Findings")
+            )
+            + "</tr></thead><tbody>"
+            + "".join(body)
+            + "</tbody></table>"
         )
-        return f"<div style=\"{FONT};max-width:900px\">{head}{common}{table}</div>"
+        return f'<div style="{FONT};max-width:900px">{head}{common}{table}</div>'
 
 
 def summary() -> NotebookSummary:

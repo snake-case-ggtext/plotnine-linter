@@ -10,10 +10,10 @@ that receives a :class:`ChartDescription` and a :class:`Config`, and yields
 from __future__ import annotations
 
 import json
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from functools import lru_cache
 from pathlib import Path
-from typing import Callable, Iterable
 
 from .findings import Severity
 
@@ -41,7 +41,9 @@ class Rule:
     fix: str
     check: Callable[..., Iterable[Hit]]
     heuristic: bool = False
-    chartability: list[str] = field(default_factory=list)  # Chartability tests this rule checks
+    chartability: list[str] = field(
+        default_factory=list
+    )  # Chartability tests this rule checks
     wcag: list[str] = field(default_factory=list)  # WCAG success criteria
 
     @property
@@ -72,7 +74,9 @@ def rule(id: str):
     entry = _catalog_entry(id)
     tier = int(id[2])
     if tier != entry["tier"] or tier not in TIER_SEVERITY:
-        raise ValueError(f"rule {id}: the third character must match its catalog tier ({entry['tier']})")
+        raise ValueError(
+            f"rule {id}: the third character must match its catalog tier ({entry['tier']})"
+        )
 
     def decorator(fn):
         if id in RULES:

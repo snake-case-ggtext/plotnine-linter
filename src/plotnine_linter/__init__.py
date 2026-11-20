@@ -22,19 +22,19 @@ from .registry import RULES, all_rules
 __version__ = "0.1.0"
 
 __all__ = [
-    "lint",
-    "alt_text",
-    "audit",
-    "data_table",
-    "show_rules",
-    "describe",
+    "RULES",
     "Config",
-    "load_config",
     "Finding",
     "Report",
     "Severity",
-    "RULES",
     "all_rules",
+    "alt_text",
+    "audit",
+    "data_table",
+    "describe",
+    "lint",
+    "load_config",
     "load_ipython_extension",
+    "show_rules",
     "unload_ipython_extension",
 ]

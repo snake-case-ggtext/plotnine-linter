@@ -11,7 +11,10 @@ from ..registry import Hit, rule
 def st301(desc, cfg):
     if desc.spec is not None:
         if not desc.spec.user_labels.get("title"):
-            yield Hit("The plot has no title.", fix="`+ labs(title='What the reader should take away')`")
+            yield Hit(
+                "The plot has no title.",
+                fix="`+ labs(title='What the reader should take away')`",
+            )
         return
     fig = desc.render.figure
     suptitle = getattr(fig, "_suptitle", None)
@@ -19,15 +22,27 @@ def st301(desc, cfg):
         p.ax.get_title().strip() for p in desc.render.panels
     )
     if not has:
-        yield Hit("The figure has no title.", fix="`ax.set_title('...')` or `fig.suptitle('...')`", source="render")
+        yield Hit(
+            "The figure has no title.",
+            fix="`ax.set_title('...')` or `fig.suptitle('...')`",
+            source="render",
+        )
 
 
 @rule("ST303")
 def st303(desc, cfg):
     if desc.spec is not None:
         for layer in desc.spec.layers:
-            if layer.geom in ("geom_line", "geom_path") and "color" in layer.mapping and layer.built_data is not None:
-                n = layer.built_data["group"].nunique() if "group" in layer.built_data else 0
+            if (
+                layer.geom in ("geom_line", "geom_path")
+                and "color" in layer.mapping
+                and layer.built_data is not None
+            ):
+                n = (
+                    layer.built_data["group"].nunique()
+                    if "group" in layer.built_data
+                    else 0
+                )
                 if 2 <= n <= 4 and desc.render.has_legend:
                     yield Hit(
                         f"{n} lines are matched to a legend.",
@@ -54,7 +69,12 @@ _DECIMALS = re.compile(r"\.(\d+)")
 def st307(desc, cfg):
     for panel in desc.render.panels:
         for which, axis in (("x", panel.x), ("y", panel.y)):
-            decimals = [len(m.group(1)) for t in axis.tick_labels for m in [_DECIMALS.search(t.text)] if m]
+            decimals = [
+                len(m.group(1))
+                for t in axis.tick_labels
+                for m in [_DECIMALS.search(t.text)]
+                if m
+            ]
             if decimals and min(decimals) >= 3:
                 yield Hit(
                     f"{which}-axis tick labels show {min(decimals)}+ decimal places.",
@@ -81,7 +101,11 @@ def st305(desc, cfg):
             if before and before != color:
                 yield Hit(
                     f"'{label}' is {color} here but was {before} in figure {i} of this notebook.",
-                    fix="Make one mapping, e.g. `palette = {'" + label + "': '" + before + "', ...}`, and pass it to "
+                    fix="Make one mapping, e.g. `palette = {'"
+                    + label
+                    + "': '"
+                    + before
+                    + "', ...}`, and pass it to "
                     "every plot (`scale_color_manual(values=palette)` / `palette=palette` in seaborn).",
                     source="render",
                 )
@@ -103,7 +127,11 @@ def st306(desc, cfg):
             "`plt.style.use(...)` (matplotlib).",
             source="render",
         )
-    elif now.font_size and first.font_size and abs(now.font_size - first.font_size) >= 1.5:
+    elif (
+        now.font_size
+        and first.font_size
+        and abs(now.font_size - first.font_size) >= 1.5
+    ):
         yield Hit(
             f"Tick labels here are {now.font_size:.1f} pt; in the first figure they were {first.font_size:.1f} pt.",
             fix="Set the base font size once, e.g. `theme_set(theme_gray(base_size=12))` or "

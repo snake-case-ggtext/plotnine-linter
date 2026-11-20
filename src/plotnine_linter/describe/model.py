@@ -19,6 +19,27 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
+
+def _probe_errors() -> tuple[type[BaseException], ...]:
+    errors: list[type[BaseException]] = [
+        AttributeError,
+        TypeError,
+        ValueError,
+        LookupError,
+    ]
+    try:
+        from plotnine.exceptions import PlotnineError
+    except ImportError:
+        pass
+    else:
+        errors.append(PlotnineError)
+    return tuple(errors)
+
+
+# What reading an attribute of a user's plot, scale or artist can raise. Probes that
+# catch these fall back to "unknown" instead of failing the rule.
+PROBE_ERRORS = _probe_errors()
+
 # ---------------------------------------------------------------------------
 # Render side
 # ---------------------------------------------------------------------------
@@ -63,7 +84,9 @@ class Series:
     bottoms: np.ndarray | None = None  # bars only: baseline per bar
     heights: np.ndarray | None = None  # bars only: signed length per bar
     from_hist: bool = False  # bars only: drawn by Axes.hist
-    palette: list[tuple] | None = None  # scatter with per-point colors: its distinct colors
+    palette: list[tuple] | None = (
+        None  # scatter with per-point colors: its distinct colors
+    )
 
 
 @dataclass
@@ -92,8 +115,14 @@ class PanelInfo:
         """False for empty axes (e.g. a cell that made a figure, then failed before plotting)."""
         ax = self.ax
         return bool(
-            self.series or self.n_wedges or self.cmaps or self.is_3d
-            or len(ax.collections) or len(ax.images) or len(ax.patches) or len(ax.lines)
+            self.series
+            or self.n_wedges
+            or self.cmaps
+            or self.is_3d
+            or len(ax.collections)
+            or len(ax.images)
+            or len(ax.patches)
+            or len(ax.lines)
         )
 
 
@@ -109,7 +138,9 @@ class RenderInfo:
 
     @property
     def has_legend(self) -> bool:
-        return bool(self.legend_bboxes) or any(p.legend is not None for p in self.panels)
+        return bool(self.legend_bboxes) or any(
+            p.legend is not None for p in self.panels
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -146,7 +177,9 @@ class SpecInfo:
     facet_type: str
     coord: str
     coord_limits: dict[str, Any]
-    panel_ranges: list[dict[str, tuple[float, float]]]  # per panel, keyed by data aesthetic x/y
+    panel_ranges: list[
+        dict[str, tuple[float, float]]
+    ]  # per panel, keyed by data aesthetic x/y
     legend_position: Any = None
 
     # ----- helpers rules use ------------------------------------------
@@ -178,7 +211,9 @@ class SpecInfo:
 
     def is_datetime(self, aes: str) -> bool:
         s = self.scale_for(aes)
-        return s is not None and any(k in type(s).__name__ for k in ("datetime", "date", "timedelta"))
+        return s is not None and any(
+            k in type(s).__name__ for k in ("datetime", "date", "timedelta")
+        )
 
 
 def _is_discrete_scale(scale: Any) -> bool:
@@ -196,7 +231,9 @@ class ChartDescription:
     spec: SpecInfo | None = None
     render: RenderInfo | None = None
     errors: list[str] = field(default_factory=list)  # adapter problems, for debugging
-    session: Any = None  # a session.Session when figures are linted as a set (notebooks)
+    session: Any = (
+        None  # a session.Session when figures are linted as a set (notebooks)
+    )
 
 
 def scale_categories(scale: Any) -> list[str]:
@@ -207,7 +244,7 @@ def scale_categories(scale: Any) -> list[str]:
         try:
             value = getattr(scale, attr)
             value = value() if callable(value) else value
-        except Exception:
+        except PROBE_ERRORS:
             continue
         if value is not None and len(value) and all(isinstance(v, str) for v in value):
             return [str(v) for v in value]

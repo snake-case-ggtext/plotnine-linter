@@ -33,7 +33,9 @@ def syllables(word: str) -> int:
 @dataclass
 class Readability:
     words: int = 0
-    grade: float | None = None  # Flesch-Kincaid grade, when there is enough text to score
+    grade: float | None = (
+        None  # Flesch-Kincaid grade, when there is enough text to score
+    )
     long_words: list[str] = field(default_factory=list)  # 4+ syllables
     abbreviations: list[str] = field(default_factory=list)  # undefined ones
 
@@ -74,7 +76,9 @@ def undefined_abbreviations(texts: list[str]) -> list[str]:
             abbr = m.group(1)
             if abbr in KNOWN_ABBREVIATIONS or abbr in found or abbr.isdigit():
                 continue
-            if re.search(rf"\(\s*{re.escape(abbr)}\s*\)|\b{re.escape(abbr)}\s*[=:]\s*\w", joined):
+            if re.search(
+                rf"\(\s*{re.escape(abbr)}\s*\)|\b{re.escape(abbr)}\s*[=:]\s*\w", joined
+            ):
                 continue  # defined on the chart: "reaction time (RT)" or "RT = reaction time"
             found.append(abbr)
     return found
