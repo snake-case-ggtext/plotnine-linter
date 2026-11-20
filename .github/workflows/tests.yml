@@ -34,13 +34,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # GitHub pastes the pins into the script as plain text. Quote each spec
+        # so bash passes < and * to pip as they are.
         include:
           - python: "3.10"
-            pins: "plotnine==0.13.* matplotlib==3.8.* pandas==2.1.* numpy<2"
+            pins: "'plotnine==0.13.*' 'matplotlib==3.8.*' 'pandas==2.1.*' 'numpy<2'"
           - python: "3.11"
-            pins: "plotnine==0.14.* matplotlib==3.9.*"
+            pins: "'plotnine==0.14.*' 'matplotlib==3.9.*'"
           - python: "3.12"
-            pins: "plotnine==0.15.* matplotlib==3.10.*"
+            pins: "'plotnine==0.15.*' 'matplotlib==3.10.*'"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
