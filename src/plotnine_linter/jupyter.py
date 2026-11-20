@@ -1,21 +1,11 @@
-"""Jupyter integration: lint every plot as it is displayed.
+"""Jupyter integration: lint every plot when the notebook shows it.
 
-    %load_ext plotnine_linter
+After ``%load_ext plotnine_linter``, the findings for each plot appear under
+the cell's output. The ``%plotlint`` magic controls the linter. The README
+lists its commands: ``on``, ``off``, ``status``, ``reset``, ``rules``,
+``summary``, ``profile``, ``audit``, ``select=`` and ``ignore=``.
 
-After that, each cell's plots are linted and any findings appear under the
-cell's output. Control it with the ``%plotlint`` magic::
-
-    %plotlint off            # pause
-    %plotlint on             # resume
-    %plotlint select=tier1,tier2,ST301
-    %plotlint ignore=AX203
-    %plotlint status
-    %plotlint rules          # the rule catalog (also: %plotlint rules 1, %plotlint rules AX)
-    %plotlint summary        # every plot linted so far in this notebook, with its findings
-    %plotlint profile accessibility   # Chartability/WCAG rules at their published thresholds
-    %plotlint audit          # Chartability audit of the last plot (also: %plotlint audit p --markdown)
-
-Suppress a rule for one cell with a comment in that cell::
+To suppress a rule for one cell, write a comment in that cell:
 
     # plotlint: ignore[AX201] months are ordinal
 """
@@ -28,7 +18,7 @@ from typing import Any
 _STATE: dict[str, Any] = {
     "enabled": True,
     "options": {},
-    "pending": [],  # reports waiting to be shown after the cell output
+    "pending": [],  # reports to show after the cell output
     "linted": weakref.WeakSet(),
     "callbacks": [],
     "history": [],  # (cell number, report) for every plot linted this session
@@ -53,23 +43,24 @@ def _display(report) -> None:
 
 def _lint_quietly(obj, source):
     from .api import lint
-
     from .session import Session
 
     session = _STATE.setdefault("session", Session())
     try:
         report = lint(obj, source=source, session=session, **_STATE["options"])
-    except Exception as exc:  # never break a student's notebook
+    except Exception as exc:  # noqa: BLE001  # never break a student's notebook
         from .findings import Report
 
-        report = Report(internal_errors=[f"plotnine-linter could not lint this plot: {exc}"])
+        report = Report(
+            internal_errors=[f"plotnine-linter could not lint this plot: {exc}"]
+        )
     _STATE["last_plot"] = obj
     if _STATE.get("audit") and not report.empty:  # `plotnine-linter audit`
         try:
             from .audit import audit
 
             report.audit = audit(obj, session=session, source=source)
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001  # the audit is extra; keep the lint report
             report.internal_errors.append(f"audit failed: {exc}")
     save_dir = _STATE.get("save_dir")
     if save_dir:
@@ -96,8 +87,8 @@ def _save_image(obj, report, save_dir) -> None:
         else:
             obj.savefig(path, dpi=80, bbox_inches="tight")  # as the notebook shows it
         report.image = path
-    except Exception:
-        pass
+    except Exception as exc:  # noqa: BLE001  # saving is best effort; the lint report still counts
+        report.internal_errors.append(f"could not save the plot image: {exc}")
 
 
 def _make_callbacks(ip):
@@ -115,7 +106,7 @@ def _make_callbacks(ip):
             return
         try:
             from matplotlib._pylab_helpers import Gcf
-        except Exception:  # pragma: no cover
+        except ImportError:  # pragma: no cover
             return
         for manager in Gcf.get_all_fig_managers():
             fig = manager.canvas.figure
@@ -157,7 +148,8 @@ def _patch_ggplot_show():
     original = ggplot.show
 
     def show(self, *args, **kwargs):
-        _STATE["in_ggplot_show"] = True  # its matplotlib figure is linted from the spec instead
+        # the linter reads this plot from its spec, not from its matplotlib figure
+        _STATE["in_ggplot_show"] = True
         try:
             out = original(self, *args, **kwargs)
         finally:
@@ -166,9 +158,9 @@ def _patch_ggplot_show():
             _STATE["pending"].append(_lint_quietly(self, _STATE.get("cell")))
         return out
 
-    show._plotnine_linter = True
-    show._original = original
-    ggplot.show = show
+    setattr(show, "_plotnine_linter", True)  # noqa: B010
+    setattr(show, "_original", original)  # noqa: B010
+    setattr(ggplot, "show", show)  # noqa: B010
 
 
 def _patch_pyplot_show(before_flush):
@@ -184,9 +176,9 @@ def _patch_pyplot_show(before_flush):
             before_flush()
         return original(*args, **kwargs)
 
-    show._plotnine_linter = True
-    show._original = original
-    plt.show = show
+    setattr(show, "_plotnine_linter", True)  # noqa: B010
+    setattr(show, "_original", original)  # noqa: B010
+    setattr(plt, "show", show)  # noqa: B010
 
 
 def _parse_magic(line: str) -> str:
@@ -215,7 +207,9 @@ def _parse_magic(line: str) -> str:
             _STATE["options"].pop("profile", None)
             return "plotnine-linter profile cleared"
         if name.lower() not in profiles():
-            raise ValueError(f"unknown profile {name!r}; available: {', '.join(profiles())}")
+            raise ValueError(
+                f"unknown profile {name!r}; available: {', '.join(profiles())}"
+            )
         _STATE["options"]["profile"] = name.lower()
         return f"plotnine-linter profile: {name.lower()} ({profiles()[name.lower()]['description']})"
     for part in words:
@@ -279,7 +273,7 @@ def _audit_magic(ip, args: list[str]) -> None:
     markdown = "--markdown" in args
     names = [a for a in args if not a.startswith("--")]
     if names:
-        obj = eval(names[0], ip.user_ns)  # noqa: S307 (the user's own expression)
+        obj = eval(names[0], ip.user_ns)
     else:
         obj = _STATE.get("last_plot")
         if obj is None:
@@ -304,13 +298,13 @@ def unload_ipython_extension(ip) -> None:
         from plotnine import ggplot
 
         if getattr(ggplot.show, "_plotnine_linter", False):
-            ggplot.show = ggplot.show._original
+            setattr(ggplot, "show", getattr(ggplot.show, "_original"))  # noqa: B009, B010
     except ImportError:
         pass
     import matplotlib.pyplot as plt
 
     if getattr(plt.show, "_plotnine_linter", False):
-        plt.show = plt.show._original
+        setattr(plt, "show", getattr(plt.show, "_original"))  # noqa: B009, B010
 
 
 class NotebookSummary:
@@ -334,7 +328,9 @@ class NotebookSummary:
         lines = [f"plotnine-linter: {len(self.history)} plot(s) linted"]
         for i, cell, sev, ids, _ in self._rows():
             where = f"cell [{cell}]" if cell else "cell [?]"
-            lines.append(f"  plot {i} ({where}): {', '.join(ids) if ids else 'no issues'}")
+            lines.append(
+                f"  plot {i} ({where}): {', '.join(ids) if ids else 'no issues'}"
+            )
         return "\n".join(lines)
 
     __repr__ = __str__
@@ -346,7 +342,7 @@ class NotebookSummary:
         from ._html import FONT, MUTED, RULE_LINE, pill
 
         if not self.history:
-            return f"<div style=\"{FONT}\">No plots linted yet in this session.</div>"
+            return f'<div style="{FONT}">No plots linted yet in this session.</div>'
         rows = self._rows()
         totals = Counter()
         rule_counts = Counter()
@@ -363,13 +359,18 @@ class NotebookSummary:
         )
         common = ""
         if rule_counts:
-            items = ", ".join(f"<code>{r}</code> ({n})" for r, n in rule_counts.most_common(5))
-            common = f"<div style='margin-bottom:6px;{MUTED}'>Most common: {items}</div>"
+            items = ", ".join(
+                f"<code>{r}</code> ({n})" for r, n in rule_counts.most_common(5)
+            )
+            common = (
+                f"<div style='margin-bottom:6px;{MUTED}'>Most common: {items}</div>"
+            )
         cell_style = f"padding:3px 8px;{RULE_LINE};text-align:left;vertical-align:top"
         body = []
         for i, cell, sev, ids, report in rows:
             msgs = "<br>".join(
-                f"<code>{html.escape(f.rule_id)}</code> {html.escape(f.message)}" for f in report.findings
+                f"<code>{html.escape(f.rule_id)}</code> {html.escape(f.message)}"
+                for f in report.findings
             ) or pill("no issues", "ok")
             body.append(
                 f"<tr><td style='{cell_style}'>{i}</td><td style='{cell_style}'>[{cell or '?'}]</td>"
@@ -379,10 +380,15 @@ class NotebookSummary:
             )
         table = (
             "<table style='border-collapse:collapse;font-size:12.5px;color:inherit;background:transparent'><thead><tr>"
-            + "".join(f"<th style='{cell_style}'>{h}</th>" for h in ("Plot", "Cell", "Errors", "Warnings", "Findings"))
-            + "</tr></thead><tbody>" + "".join(body) + "</tbody></table>"
+            + "".join(
+                f"<th style='{cell_style}'>{h}</th>"
+                for h in ("Plot", "Cell", "Errors", "Warnings", "Findings")
+            )
+            + "</tr></thead><tbody>"
+            + "".join(body)
+            + "</tbody></table>"
         )
-        return f"<div style=\"{FONT};max-width:900px\">{head}{common}{table}</div>"
+        return f'<div style="{FONT};max-width:900px">{head}{common}{table}</div>'
 
 
 def summary() -> NotebookSummary:

@@ -1,12 +1,11 @@
 """Lint every plot in a Jupyter notebook by running it.
 
-    plotnine-linter check project.ipynb
-    plotnine-linter check projects/*.ipynb --format json
+The notebook runs in a fresh kernel, with its own folder as the working
+directory and the linter loaded. A cell can fail, for example when a data file
+is missing. The run then records the error and continues. So the linter checks
+every plot that the notebook can draw. It never changes the notebook file.
 
-The notebook runs in a fresh kernel (its own folder as the working directory)
-with the linter loaded. Cells that fail, for example because a data file is
-missing, are recorded and the run continues, so every plot that can be drawn
-is linted. The notebook file itself is never modified.
+    plotnine-linter check project.ipynb
 """
 
 from __future__ import annotations
@@ -38,7 +37,9 @@ class PlotResult:
 class NotebookReport:
     path: str
     plots: list[PlotResult] = field(default_factory=list)
-    failed_cells: list[tuple[int, str]] = field(default_factory=list)  # (cell, error name: message)
+    failed_cells: list[tuple[int, str]] = field(
+        default_factory=list
+    )  # (cell, error name: message)
     code_cells: int = 0
     empty_figures: int = 0  # figures with no data (not counted as plots)
     error: str | None = None  # the notebook couldn't be run at all
@@ -63,11 +64,15 @@ class NotebookReport:
         }
 
     def __str__(self) -> str:
-        lines = [f"{self.path}: {len(self.plots)} plot(s) linted, {len(self.findings)} finding(s)"]
+        lines = [
+            f"{self.path}: {len(self.plots)} plot(s) linted, {len(self.findings)} finding(s)"
+        ]
         if self.error:
             lines.append(f"  could not run: {self.error}")
         if self.empty_figures:
-            lines.append(f"  {self.empty_figures} empty figure(s) skipped (no data was plotted)")
+            lines.append(
+                f"  {self.empty_figures} empty figure(s) skipped (no data was plotted)"
+            )
         if self.failed_cells:
             first = self.failed_cells[0]
             lines.append(
@@ -124,19 +129,20 @@ def check_notebook(
 ) -> NotebookReport:
     """Run ``path`` in a fresh kernel and lint every plot it draws.
 
-    With ``save_images_to``, a PNG of each linted plot is saved in that folder and its
-    path recorded in the plot's report (``report.image``). With ``audit=True``, each plot
+    With ``save_images_to``, it saves a PNG of each linted plot in that folder. The
+    plot's report records the path (``report.image``). With ``audit=True``, each plot
     also gets a Chartability audit (``result.plots[i].audit``).
     """
     import nbformat
     from nbclient import NotebookClient
     from nbclient.exceptions import CellTimeoutError, DeadKernelError
+    from nbformat import NotebookNode
 
     path = Path(path)
     result = NotebookReport(path=str(path))
     try:
-        nb = nbformat.read(path, as_version=4)
-    except Exception as exc:
+        nb: NotebookNode = nbformat.read(path, as_version=4)  # pyrefly: ignore[bad-assignment]
+    except (OSError, ValueError) as exc:
         result.error = f"unreadable notebook: {exc}"
         return result
 
@@ -166,7 +172,7 @@ def check_notebook(
     def run() -> None:
         try:
             client.execute()
-        except Exception as exc:  # recorded below
+        except Exception as exc:  # noqa: BLE001  # recorded below
             failure["exc"] = exc
 
     worker = threading.Thread(target=run, daemon=True)
@@ -178,14 +184,18 @@ def check_notebook(
         try:
             from jupyter_client.utils import run_sync
 
-            run_sync(client.km.shutdown_kernel)(now=True)
-        except Exception:
+            if client.km is not None:
+                # nbclient's kernel manager is async; its stubs say otherwise
+                run_sync(client.km.shutdown_kernel)(now=True)  # pyrefly: ignore[bad-argument-type]
+        except Exception:  # noqa: BLE001, S110  # best effort: the kernel may already be gone
             pass
         worker.join(10)
     elif "exc" in failure:
         exc = failure["exc"]
         if isinstance(exc, (CellTimeoutError, DeadKernelError)):
-            result.error = f"{type(exc).__name__}: {str(exc).splitlines()[0] if str(exc) else ''}"
+            result.error = (
+                f"{type(exc).__name__}: {str(exc).splitlines()[0] if str(exc) else ''}"
+            )
         else:  # kernel failed to start, etc.
             result.error = f"{type(exc).__name__}: {exc}"
 
@@ -196,7 +206,9 @@ def check_notebook(
         n += 1
         for out in cell.get("outputs", []):
             if out.get("output_type") == "error":
-                result.failed_cells.append((n, f"{out.get('ename')}: {str(out.get('evalue'))[:120]}"))
+                result.failed_cells.append(
+                    (n, f"{out.get('ename')}: {str(out.get('evalue'))[:120]}")
+                )
             data = out.get("data", {})
             if COLLECT_MIME in data:
                 report = _report_from_dict(data[COLLECT_MIME])

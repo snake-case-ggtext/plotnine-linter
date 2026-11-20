@@ -1,16 +1,15 @@
-"""Build the before/after example gallery (docs/GALLERY.md + docs/gallery/img/).
+"""Build the before/after gallery: docs/gallery.md and docs/gallery/img/.
 
-For every rule in the catalog this script runs a short BEFORE snippet that breaks
-the rule and an AFTER snippet that follows the rule's fix, lints both with all
-three tiers selected, and fails loudly unless BEFORE is flagged with the rule and
-AFTER is not. AFTER plots are meant to be model answers: any finding left on one
-is printed at the end (and the script exits non-zero with ``--strict``).
+Each rule in the catalog has a BEFORE snippet that breaks the rule. It also
+has an AFTER snippet that follows the rule's fix. The script lints both with
+all three tiers. It fails unless the rule flags BEFORE and not AFTER.
 
-    python docs/gallery/make_gallery.py            # from the package root
-    python docs/gallery/make_gallery.py --strict   # also fail if an AFTER has any finding
-    python docs/gallery/make_gallery.py --only AX101 MK202
+AFTER plots are model answers. The script prints any finding left on one. With
+``--strict``, those findings also make it exit with an error.
 
-The snippets below are exactly what runs; GALLERY.md shows them as diffs.
+gallery.md shows the snippets below as diffs. Run it from the package root:
+
+    python docs/gallery/make_gallery.py --strict
 """
 
 from __future__ import annotations
@@ -29,21 +28,23 @@ import matplotlib
 
 matplotlib.use("Agg")
 
-import matplotlib.pyplot as plt  # noqa: E402
-import numpy as np  # noqa: E402
-import plotnine  # noqa: E402
-from plotnine import ggplot, theme_gray, theme_set  # noqa: E402
+import matplotlib.pyplot as plt
+import numpy as np
+from plotnine import ggplot, theme_gray, theme_set
 
-from plotnine_linter import lint  # noqa: E402
-from plotnine_linter.config import Config  # noqa: E402
-from plotnine_linter.registry import load_catalog  # noqa: E402
-from plotnine_linter.session import Session  # noqa: E402
+from plotnine_linter import lint
+from plotnine_linter.config import Config
+from plotnine_linter.registry import load_catalog
+from plotnine_linter.session import Session
 
 HERE = Path(__file__).resolve().parent
 IMG = HERE / "img"
-GALLERY_MD = HERE.parent / "GALLERY.md"
+GALLERY_MD = HERE.parent / "gallery.md"
 
-SELECT = ["tier1", "tier2"]  # the default rules, plus each example's own rule (for opt-in tier 3)
+SELECT = [
+    "tier1",
+    "tier2",
+]  # the default rules, plus each example's own rule (for opt-in tier 3)
 SIZE = (5.0, 3.5)  # inches, one figure
 SMALL = (3.6, 2.7)  # inches, each figure of a two-figure (session) example
 DPI = 90
@@ -82,7 +83,11 @@ class Example:
     note: str = ""  # extra explanation shown under the images
 
     def __post_init__(self):
-        self.data, self.before, self.after = code(self.data), code(self.before), code(self.after)
+        self.data, self.before, self.after = (
+            code(self.data),
+            code(self.before),
+            code(self.after),
+        )
 
     @property
     def multi(self) -> bool:
@@ -740,10 +745,13 @@ EXAMPLES = [
     ),
     Example(
         "LB203",
-        join(INCOME, """
+        join(
+            INCOME,
+            """
         income["region"] = pd.Categorical(income["region"],
                                           categories=income.sort_values("income")["region"])
-        """),
+        """,
+        ),
         before="""
         p = (ggplot(income, aes("region", "income", fill="region"))
              + geom_col()
@@ -1072,10 +1080,13 @@ EXAMPLES = [
     ),
     Example(
         "ST306",
-        join(INCOME, """
+        join(
+            INCOME,
+            """
         trend = pd.DataFrame({"year": range(2015, 2025),
                               "income": [44, 45, 47, 48, 50, 49, 51, 53, 55, 56]})
-        """),
+        """,
+        ),
         before="""
         figs = [ggplot(income, aes("reorder(region, income)", "income")) + geom_col() + coord_flip()
                 + theme_minimal()
@@ -1138,9 +1149,10 @@ class GalleryError(AssertionError):
 
 def _run(snippet: str, data: str):
     ns: dict = {}
-    exec(PRELUDE, ns)
-    exec(data, ns)
-    exec(snippet, ns)
+    # The gallery runs its own snippets, so exec is the point here.
+    exec(PRELUDE, ns)  # noqa: S102
+    exec(data, ns)  # noqa: S102
+    exec(snippet, ns)  # noqa: S102
     if "figs" in ns:
         return list(ns["figs"])
     return [ns["p"]]
@@ -1148,14 +1160,19 @@ def _run(snippet: str, data: str):
 
 def _lint_all(objs, multi: bool, rule_id: str):
     session = Session() if multi else None
-    return [lint(o, select=[*SELECT, rule_id], config=Config(), session=session) for o in objs]
+    return [
+        lint(o, select=[*SELECT, rule_id], config=Config(), session=session)
+        for o in objs
+    ]
 
 
 def _save(obj, path: Path, size) -> None:
     if isinstance(obj, ggplot):
         obj.save(path, width=size[0], height=size[1], dpi=DPI, verbose=False)
     else:
-        obj.savefig(path, dpi=DPI, bbox_inches="tight", pad_inches=0.08, facecolor="white")
+        obj.savefig(
+            path, dpi=DPI, bbox_inches="tight", pad_inches=0.08, facecolor="white"
+        )
         plt.close(obj)
 
 
@@ -1169,7 +1186,9 @@ def _save_side_by_side(objs, path: Path, size) -> None:
             imgs.append(im)
     h = max(im.shape[0] for im in imgs)
     gap = np.ones((h, 16, 3))
-    padded = [np.vstack([im, np.ones((h - im.shape[0], im.shape[1], 3))]) for im in imgs]
+    padded = [
+        np.vstack([im, np.ones((h - im.shape[0], im.shape[1], 3))]) for im in imgs
+    ]
     row = [padded[0]]
     for im in padded[1:]:
         row += [gap, im]
@@ -1177,9 +1196,17 @@ def _save_side_by_side(objs, path: Path, size) -> None:
 
 
 def _configure(size) -> None:
+    import plotnine.options
+
     plotnine.options.figure_size = size
     plotnine.options.dpi = DPI
-    plt.rcParams.update({"figure.figsize": size, "figure.dpi": DPI, "figure.constrained_layout.use": True})
+    plt.rcParams.update(
+        {
+            "figure.figsize": size,
+            "figure.dpi": DPI,
+            "figure.constrained_layout.use": True,
+        }
+    )
 
 
 def run_example(ex: Example) -> Result:
@@ -1192,11 +1219,15 @@ def run_example(ex: Example) -> Result:
         try:
             objs = _run(snippet, ex.data)
             reports = _lint_all(objs, ex.multi, ex.rule)
-        except Exception as e:  # noqa: BLE001
-            raise GalleryError(f"{ex.rule} {which}: snippet failed: {type(e).__name__}: {e}") from e
+        except Exception as e:
+            raise GalleryError(
+                f"{ex.rule} {which}: snippet failed: {type(e).__name__}: {e}"
+            ) from e
         for r in reports:
             if r.internal_errors:
-                raise GalleryError(f"{ex.rule} {which}: linter internal errors: {r.internal_errors}")
+                raise GalleryError(
+                    f"{ex.rule} {which}: linter internal errors: {r.internal_errors}"
+                )
         path = IMG / f"{ex.rule}_{which}.png"
         if ex.multi:
             _save_side_by_side(objs, path, size)
@@ -1207,11 +1238,15 @@ def run_example(ex: Example) -> Result:
 
     target = out["before"][-1]
     if ex.rule not in target.ids:
-        raise GalleryError(f"{ex.rule}: BEFORE was not flagged with {ex.rule}; got {target.ids}")
+        raise GalleryError(
+            f"{ex.rule}: BEFORE was not flagged with {ex.rule}; got {target.ids}"
+        )
     flagged_after = [r for r in out["after"] if ex.rule in r.ids]
     if flagged_after:
         msgs = [str(f) for r in flagged_after for f in r if f.rule_id == ex.rule]
-        raise GalleryError(f"{ex.rule}: AFTER is still flagged:\n  " + "\n  ".join(msgs))
+        raise GalleryError(
+            f"{ex.rule}: AFTER is still flagged:\n  " + "\n  ".join(msgs)
+        )
     return Result(ex, out["before"], out["after"])
 
 
@@ -1237,19 +1272,22 @@ def _md_inline(text: str) -> str:
 
 
 def render_markdown(results: list[Result], catalog: dict) -> str:
-    by_id = {r["id"]: r for r in catalog["rules"]}
     tiers = catalog["tiers"]
     shown = {res.example.rule for res in results}
     out = [
         "# Before / after gallery",
         "",
-        "One broken chart and one fixed chart for every rule in the catalog. Each *before* plot is "
-        "flagged by `plotnine_linter.lint()` for its rule; each *after* plot follows the rule's fix and "
-        "lints clean with the default rules (tiers 1 and 2) plus the example's own rule selected.",
+        (
+            "One broken chart and one fixed chart for every rule in the catalog. Each *before* plot is "
+            "flagged by `plotnine_linter.lint()` for its rule; each *after* plot follows the rule's fix and "
+            "lints clean with the default rules (tiers 1 and 2) plus the example's own rule selected."
+        ),
         "",
-        "Generated by [`docs/gallery/make_gallery.py`](gallery/make_gallery.py), which runs every snippet "
-        "below and fails if a before plot isn't flagged or an after plot is. Don't edit this file by hand: "
-        "change the script and rerun `python docs/gallery/make_gallery.py`.",
+        (
+            "Generated by [`docs/gallery/make_gallery.py`](gallery/make_gallery.py), which runs every snippet "
+            "below and fails if a before plot isn't flagged or an after plot is. Don't edit this file by hand: "
+            "change the script and rerun `python docs/gallery/make_gallery.py`."
+        ),
         "",
         "Every snippet starts from:",
         "",
@@ -1257,28 +1295,44 @@ def render_markdown(results: list[Result], catalog: dict) -> str:
         PRELUDE.rstrip(),
         "```",
         "",
-        f"Figures are {SIZE[0]:g} x {SIZE[1]:g} in (`plotnine.options.figure_size`, or `figure.figsize` with "
-        "constrained layout for matplotlib).",
+        (
+            f"Figures are {SIZE[0]:g} x {SIZE[1]:g} in (`plotnine.options.figure_size`, or `figure.figsize` "
+            "with constrained layout for matplotlib)."
+        ),
         "",
     ]
     # table of contents
     for tier_key, tier in tiers.items():
-        ids = [r["id"] for r in catalog["rules"] if str(r["tier"]) == tier_key and r["id"] in shown]
+        ids = [
+            r["id"]
+            for r in catalog["rules"]
+            if str(r["tier"]) == tier_key and r["id"] in shown
+        ]
         links = " · ".join(f"[{i}](#{i.lower()})" for i in ids)
-        out.append(f"- **Tier {tier_key}, {tier['name']}** ({tier['severity']}): {links}")
+        out.append(
+            f"- **Tier {tier_key}, {tier['name']}** ({tier['severity']}): {links}"
+        )
     out.append("")
 
     res_by_id = {res.example.rule: res for res in results}
     for tier_key, tier in tiers.items():
         default = "on by default" if tier["default"] else "opt-in"
-        out += [f"## Tier {tier_key}: {tier['name']} ({tier['severity']}, {default})", ""]
+        out += [
+            f"## Tier {tier_key}: {tier['name']} ({tier['severity']}, {default})",
+            "",
+        ]
         for rule in catalog["rules"]:
             if str(rule["tier"]) != tier_key or rule["id"] not in res_by_id:
                 continue
             res = res_by_id[rule["id"]]
             ex = res.example
             rid = rule["id"]
-            out += [f'<a id="{rid.lower()}"></a>', "", f"### {rid} — {rule['title']}", ""]
+            out += [
+                f'<a id="{rid.lower()}"></a>',
+                "",
+                f"### {rid} — {rule['title']}",
+                "",
+            ]
             out += [_first_sentence(rule["why"]), ""]
             label_b = "Before (two figures in one notebook)" if ex.multi else "Before"
             label_a = "After (two figures in one notebook)" if ex.multi else "After"
@@ -1295,9 +1349,13 @@ def render_markdown(results: list[Result], catalog: dict) -> str:
             for f in target:
                 out.append(str(f))
             out += ["```", ""]
-            others = sorted({f.rule_id for r in res.before_reports for f in r if f.rule_id != rid})
+            others = sorted(
+                {f.rule_id for r in res.before_reports for f in r if f.rule_id != rid}
+            )
             if others:
-                links = ", ".join(f"[{o}](#{o.lower()})" if o in shown else o for o in others)
+                links = ", ".join(
+                    f"[{o}](#{o.lower()})" if o in shown else o for o in others
+                )
                 out += [f"The before plot also trips {links}.", ""]
             leftover = sorted({f.rule_id for r in res.after_reports for f in r})
             if leftover:
@@ -1323,9 +1381,17 @@ def render_markdown(results: list[Result], catalog: dict) -> str:
 
 # --------------------------------------------------------------------------- main
 def main(argv=None) -> int:
-    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--strict", action="store_true", help="fail if any AFTER plot has any finding")
-    ap.add_argument("--only", nargs="*", help="run only these rule IDs (GALLERY.md is not rewritten)")
+    ap = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    ap.add_argument(
+        "--strict", action="store_true", help="fail if any AFTER plot has any finding"
+    )
+    ap.add_argument(
+        "--only",
+        nargs="*",
+        help="run only these rule IDs (gallery.md is not rewritten)",
+    )
     args = ap.parse_args(argv)
 
     warnings.filterwarnings("ignore")
@@ -1338,9 +1404,13 @@ def main(argv=None) -> int:
     extra = [i for i in example_ids if i not in catalog_ids]
     dupes = sorted({i for i in example_ids if example_ids.count(i) > 1})
     if (missing or extra or dupes) and not args.only:
-        raise GalleryError(f"catalog/example mismatch: missing={missing} unknown={extra} duplicated={dupes}")
+        raise GalleryError(
+            f"catalog/example mismatch: missing={missing} unknown={extra} duplicated={dupes}"
+        )
 
-    todo = [e for e in EXAMPLES if not args.only or e.rule in {s.upper() for s in args.only}]
+    todo = [
+        e for e in EXAMPLES if not args.only or e.rule in {s.upper() for s in args.only}
+    ]
     results, failures = [], []
     for ex in todo:
         try:
@@ -1351,7 +1421,11 @@ def main(argv=None) -> int:
             continue
         results.append(res)
         leftover = [f"{f.rule_id}: {f.message}" for r in res.after_reports for f in r]
-        status = "ok" if not leftover else "ok (after not clean: " + "; ".join(leftover) + ")"
+        status = (
+            "ok"
+            if not leftover
+            else "ok (after not clean: " + "; ".join(leftover) + ")"
+        )
         print(f"{ex.rule:6} before={','.join(res.before_reports[-1].ids)}  {status}")
 
     if failures:
@@ -1360,7 +1434,10 @@ def main(argv=None) -> int:
             print(" -", f.splitlines()[0], file=sys.stderr)
         return 1
 
-    unclean = {r.example.rule: sorted({f.rule_id for rep in r.after_reports for f in rep}) for r in results}
+    unclean = {
+        r.example.rule: sorted({f.rule_id for rep in r.after_reports for f in rep})
+        for r in results
+    }
     unclean = {k: v for k, v in unclean.items() if v}
     if not args.only:
         GALLERY_MD.write_text(render_markdown(results, catalog), encoding="utf-8")

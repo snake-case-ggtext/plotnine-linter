@@ -1,18 +1,12 @@
 """Configuration: which rules run, at what severity, with which thresholds.
 
-Settings are read from the nearest ``pyproject.toml`` (searching upward from
-the working directory) under ``[tool.plotnine-linter]``::
+The linter reads ``[tool.plotnine-linter]`` from the nearest ``pyproject.toml``.
+It searches upward from the working directory. An instructor can ship this
+file with course materials, so every student sees the same rules.
 
     [tool.plotnine-linter]
-    select = ["tier1", "tier2", "ST301"]   # tiers, area prefixes or rule IDs
+    select = ["tier1", "tier2", "ST301"]
     ignore = ["AX203"]
-    severity = { LB202 = "warning" }
-
-    [tool.plotnine-linter.thresholds]
-    max_pie_slices = 4
-
-An instructor can ship this file with course materials so every student
-sees the same rules.
 """
 
 from __future__ import annotations
@@ -35,7 +29,9 @@ except ModuleNotFoundError:  # pragma: no cover - Python 3.10
 def _default_thresholds() -> dict[str, float]:
     from .registry import load_catalog
 
-    return {name: spec["default"] for name, spec in load_catalog()["thresholds"].items()}
+    return {
+        name: spec["default"] for name, spec in load_catalog()["thresholds"].items()
+    }
 
 
 # documented, with the rule each one affects, in data/rules.json
@@ -47,7 +43,9 @@ class Config:
     select: tuple[str, ...] = ("tier1", "tier2")
     ignore: tuple[str, ...] = ()
     severity: dict[str, Severity] = field(default_factory=dict)
-    thresholds: dict[str, float] = field(default_factory=lambda: dict(DEFAULT_THRESHOLDS))
+    thresholds: dict[str, float] = field(
+        default_factory=lambda: dict(DEFAULT_THRESHOLDS)
+    )
     profile: str | None = None
 
     def is_selected(self, rule_id: str, tier: int) -> bool:
@@ -71,11 +69,11 @@ class Config:
     def t(self, name: str) -> float:
         return self.thresholds.get(name, DEFAULT_THRESHOLDS[name])
 
-    def merged(self, **overrides) -> "Config":
-        """Return a copy with keyword overrides applied (None values are skipped).
+    def merged(self, **overrides) -> Config:
+        """Return a copy with the keyword overrides. It skips overrides that are None.
 
-        ``profile`` (e.g. "accessibility") is applied first; explicit select, severity
-        and thresholds then override it. ``profile="none"`` clears a profile.
+        A ``profile`` (e.g. "accessibility") comes first. Explicit select, severity and
+        thresholds then override it. ``profile="none"`` clears a profile.
         """
         profile = overrides.pop("profile", None)
         base = self.with_profile(profile) if profile else self
@@ -86,23 +84,31 @@ class Config:
             if key in {"select", "ignore"}:
                 value = tuple([value] if isinstance(value, str) else value)
             elif key == "severity":
-                value = {**base.severity, **{k: Severity.parse(v) for k, v in value.items()}}
+                value = {
+                    **base.severity,
+                    **{k: Severity.parse(v) for k, v in value.items()},
+                }
             elif key == "thresholds":
                 value = {**base.thresholds, **value}
             kwargs[key] = value
         return replace(base, **kwargs)
 
-    def with_profile(self, name: str) -> "Config":
+    def with_profile(self, name: str) -> Config:
         """Apply a preset from the catalog's "profiles" (e.g. "accessibility"); "none" resets."""
         if str(name).lower() in ("none", "default", ""):
             return Config(severity=dict(self.severity))
         spec = profiles().get(str(name).lower())
         if spec is None:
-            raise ValueError(f"unknown profile {name!r}; available: {', '.join(profiles())}")
+            raise ValueError(
+                f"unknown profile {name!r}; available: {', '.join(profiles())}"
+            )
         return replace(
             self,
             select=tuple(spec.get("select", self.select)),
-            severity={**self.severity, **{k: Severity.parse(v) for k, v in spec.get("severity", {}).items()}},
+            severity={
+                **self.severity,
+                **{k: Severity.parse(v) for k, v in spec.get("severity", {}).items()},
+            },
             thresholds={**self.thresholds, **spec.get("thresholds", {})},
             profile=str(name).lower(),
         )
@@ -112,8 +118,6 @@ def profiles() -> dict:
     from .registry import load_catalog
 
     return load_catalog().get("profiles", {})
-
-
 
 
 def _find_pyproject(start: Path) -> Path | None:
@@ -133,7 +137,7 @@ def load_config(path: str | os.PathLike | None = None) -> Config:
         return Config()
     try:
         data = tomllib.loads(pyproject.read_text())
-    except Exception:
+    except (OSError, UnicodeDecodeError, tomllib.TOMLDecodeError):
         return Config()
     section = data.get("tool", {}).get("plotnine-linter")
     if not section:

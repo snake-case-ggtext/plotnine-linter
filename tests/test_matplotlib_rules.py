@@ -8,13 +8,24 @@ from plotnine_linter import lint
 
 from .conftest import ids
 
-OKABE = ["#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#000000"]
+OKABE = [
+    "#E69F00",
+    "#56B4E9",
+    "#009E73",
+    "#F0E442",
+    "#0072B2",
+    "#D55E00",
+    "#CC79A7",
+    "#000000",
+]
 
 
 def good_bar():
     fig, ax = plt.subplots()
-    s = pd.Series({"West": 52, "North": 58, "East": 61, "Central": 50, "South": 47}).sort_values()
-    ax.barh(s.index, s.values, color="#4C72B0")
+    s = pd.Series(
+        {"West": 52, "North": 58, "East": 61, "Central": 50, "South": 47}
+    ).sort_values()
+    ax.barh(s.index, s.to_numpy(), color="#4C72B0")
     ax.set_xlabel("Average income (USD, thousands)")
     ax.set_title("East earns the most")
     return fig
@@ -147,7 +158,9 @@ def test_mk103_line_over_categories():
 
 # ---------------------------------------------------------------- tier 2
 def test_lb201_pandas_plot_labels():
-    df = pd.DataFrame({"year": [2020, 2021, 2022], "total_sales": [3, 4, 5]}).set_index("year")
+    df = pd.DataFrame({"year": [2020, 2021, 2022], "total_sales": [3, 4, 5]}).set_index(
+        "year"
+    )
     ax = df.plot()
     report = lint(ax.figure)
     assert "LB201" in ids(report)  # legend entry "total_sales"
@@ -272,7 +285,9 @@ def test_cl203_each_bar_its_own_color():
 
 
 def test_lb203_single_entry_legend():
-    s = pd.Series([3, 4, 5], index=pd.Index([2020, 2021, 2022], name="Year"), name="Sales")
+    s = pd.Series(
+        [3, 4, 5], index=pd.Index([2020, 2021, 2022], name="Year"), name="Sales"
+    )
     ax = s.plot(legend=True)
     assert "LB203" in ids(lint(ax.figure))
 
@@ -288,7 +303,9 @@ def test_lb205_percent_label_on_fractions():
 
 def test_lb205_density_label_on_counts():
     fig, ax = plt.subplots()
-    ax.hist(np.random.default_rng(0).normal(size=300), bins=np.arange(-4, 4.5, 0.5))
+    ax.hist(
+        np.random.default_rng(0).normal(size=300), bins=np.arange(-4, 4.5, 0.5).tolist()
+    )
     ax.set_xlabel("Score (z)")
     ax.set_ylabel("Density")
     assert "LB205" in ids(lint(fig))
@@ -326,7 +343,9 @@ def test_ax207_fractional_year_ticks():
 
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
     assert "AX207" not in ids(lint(fig))
-    fig2, ax2 = plt.subplots()  # two measurements at 1 s and 2 s: fractional ticks are fine
+    fig2, ax2 = (
+        plt.subplots()
+    )  # two measurements at 1 s and 2 s: fractional ticks are fine
     ax2.plot([1, 2], [1, 2])
     ax2.set_xlabel("Time (s)")
     ax2.set_ylabel("Distance (m)")
@@ -378,7 +397,9 @@ def test_cl204_gray_context_and_outlines_are_fine():
 
 def test_cl301_color_only_in_grayscale_opt_in():
     fig, ax = plt.subplots()
-    ax.plot([0, 1], [0, 1], color="#E69F00", label="A")  # Okabe orange and sky blue: same gray
+    ax.plot(
+        [0, 1], [0, 1], color="#E69F00", label="A"
+    )  # Okabe orange and sky blue: same gray
     ax.plot([0, 1], [1, 0], color="#56B4E9", label="B")
     ax.legend()
     assert "CL301" not in ids(lint(fig))  # tier 3: off by default
@@ -393,7 +414,7 @@ def test_cl301_color_only_in_grayscale_opt_in():
 
 # ---------------------------------------------------------------- calibration regressions (COGS 108 run)
 def test_empty_figure_is_not_linted():
-    fig, ax = plt.subplots()  # a cell that failed before plotting
+    fig, _ax = plt.subplots()  # a cell that failed before plotting
     report = lint(fig)
     assert report.empty and report.findings == []
 

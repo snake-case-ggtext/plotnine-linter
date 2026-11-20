@@ -1,22 +1,19 @@
-"""Chartability audit: every test that applies to a static chart, with a verdict.
+"""Chartability audit: a verdict for every test that applies to a static chart.
+
+``lint()`` reports only problems. ``audit()`` marks each of the 50 tests in
+Chartability (https://chartability.github.io/POUR-CAF/):
+
+- **pass** or **fail**: the linter's rules decide.
+- **partly checked**: the linter gathers evidence, and the author answers a question.
+- **your call**: only the author can decide, so the audit asks.
+- **n/a**: the test is about interactive or web charts.
+
+In a notebook, ``%plotlint audit`` audits the last plot. The command
+``plotnine-linter audit`` audits every plot in a notebook. With
+``--check-answers``, it lists the checklist items that students left open.
 
     from plotnine_linter import audit
-    a = audit(p)            # a plotnine plot, or a matplotlib Figure/Axes
-    a                       # in a notebook: the checklist, with a status for every test
-    print(a.to_markdown())  # paste into a markdown cell under the chart and answer it
-
-``lint()`` reports only problems. ``audit()`` walks through Chartability's
-tests (https://chartability.github.io/POUR-CAF/) and marks each one:
-
-- **pass** / **fail**: decided by the linter's rules
-- **partly checked**: the linter gathered evidence; the author answers a question
-- **your call**: only the author can decide; the audit asks
-- **n/a**: about interactive or web charts, not a static plot
-
-In a notebook, ``%plotlint audit`` audits the last plot. On the command line,
-``plotnine-linter audit project.ipynb`` audits every plot in a notebook, and
-``plotnine-linter audit project.ipynb --check-answers`` reports checklist items
-students left unanswered.
+    print(audit(p).to_markdown())
 """
 
 from __future__ import annotations
@@ -24,16 +21,28 @@ from __future__ import annotations
 import hashlib
 import html
 import re
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import pandas as pd
 
 from .findings import Finding, Severity
 
+if TYPE_CHECKING:
+    from .config import Config
+    from .describe.model import ChartDescription
+    from .session import Session
+
 PASS, FAIL, PARTLY, ASK, NA = "pass", "fail", "partly", "ask", "na"
-STATUS_LABEL = {PASS: "Pass", FAIL: "Fail", PARTLY: "Partly checked", ASK: "Your call", NA: "N/A"}
+STATUS_LABEL = {
+    PASS: "Pass",
+    FAIL: "Fail",
+    PARTLY: "Partly checked",
+    ASK: "Your call",
+    NA: "N/A",
+}
 _STATUS_PILL = {PASS: "ok", FAIL: "error", PARTLY: "warning", ASK: "info", NA: "off"}
 _ORDER = {FAIL: 0, PARTLY: 1, ASK: 2, PASS: 3, NA: 4}
 MARKER = "<!-- plotnine-linter audit"
@@ -74,7 +83,7 @@ class Audit:
     title: str = ""
     kind: str = ""  # e.g. "bar chart"
     source: str = ""
-    table_rows: int | None = None  # rows in data_table(), if one could be built
+    table_rows: int | None = None  # rows in data_table(), when the audit could make one
     internal_errors: list[str] = field(default_factory=list)
 
     # ----- convenience -------------------------------------------------
@@ -100,7 +109,10 @@ class Audit:
     @property
     def to_answer(self) -> list[AuditItem]:
         """Items the author still has to fix or answer, worst first."""
-        return sorted((i for i in self.items if i.needs_author), key=lambda i: (_ORDER[i.status], not i.critical))
+        return sorted(
+            (i for i in self.items if i.needs_author),
+            key=lambda i: (_ORDER[i.status], not i.critical),
+        )
 
     def to_dict(self) -> dict:
         return {
@@ -115,7 +127,7 @@ class Audit:
         }
 
     @classmethod
-    def from_dict(cls, d: dict) -> "Audit":
+    def from_dict(cls, d: dict) -> Audit:
         from .notebook import _finding_from_dict
 
         items = [
@@ -144,11 +156,19 @@ class Audit:
     # ----- output ------------------------------------------------------
     def _headline(self) -> str:
         c = self.counts
-        parts = [f"{c[s]} {STATUS_LABEL[s].lower()}" for s in (PASS, FAIL, PARTLY, ASK, NA) if c[s]]
+        parts = [
+            f"{c[s]} {STATUS_LABEL[s].lower()}"
+            for s in (PASS, FAIL, PARTLY, ASK, NA)
+            if c[s]
+        ]
         return ", ".join(parts)
 
     def __str__(self) -> str:
-        name = f": {self.title}" if self.title else (f": untitled {self.kind}" if self.kind else "")
+        name = (
+            f": {self.title}"
+            if self.title
+            else (f": untitled {self.kind}" if self.kind else "")
+        )
         lines = [f"Chartability audit{name} ({self._headline()})"]
         for item in sorted(self.items, key=lambda i: _ORDER[i.status]):
             if item.status == NA:
@@ -163,7 +183,9 @@ class Audit:
                     lines.append(f"      fix: {f.fix}")
             if item.question and item.status != FAIL:
                 lines.append(f"      -> {item.question}")
-        lines.append(f"  ({self.counts[NA]} tests don't apply to a static chart; * = critical)")
+        lines.append(
+            f"  ({self.counts[NA]} tests don't apply to a static chart; * = critical)"
+        )
         return "\n".join(lines)
 
     __repr__ = __str__
@@ -172,18 +194,29 @@ class Audit:
         """A checklist to paste into a markdown cell under the chart.
 
         Automatic passes are pre-checked. Everything else is an open box; questions get an
-        ``Answer:`` line. The draft alt text is filled in for the author to edit.
+        ``Answer:`` line. The checklist includes the draft alt text for the author to edit.
         ``plotnine-linter audit --check-answers`` reads these checklists back.
         """
         h = "#" * heading_level
         name = self.title or (self.kind.capitalize() if self.kind else "chart")
-        out = [f"{h} Accessibility checklist: {name}", f"{MARKER} v1 draft={_digest(self.alt_text)} -->", ""]
+        out = [
+            f"{h} Accessibility checklist: {name}",
+            f"{MARKER} v1 draft={_digest(self.alt_text)} -->",
+            "",
+        ]
         if self.alt_text:
-            out += ["**Alt text** (a draft: edit it to say your takeaway):", "", f"> {self.alt_text}", ""]
+            out += [
+                "**Alt text** (a draft: edit it to say your takeaway):",
+                "",
+                f"> {self.alt_text}",
+                "",
+            ]
         for item in self.to_answer:
             label = f"**{item.test}**" + (" (critical)" if item.critical else "")
             if item.status == FAIL:
-                details = " ".join(_finding_line(f) for f in item.findings) or item.evidence
+                details = (
+                    " ".join(_finding_line(f) for f in item.findings) or item.evidence
+                )
                 out.append(f"- [ ] Fix: {label}. {details}")
             else:
                 evidence = f" {item.evidence}" if item.evidence else ""
@@ -191,7 +224,11 @@ class Audit:
                 if not item.question.endswith("Then check this box."):
                     out.append("  - Answer: ")
         for item in self.by_status(PASS):
-            out.append(f"- [x] {item.test} (checked automatically): {item.evidence}".rstrip(": "))
+            out.append(
+                f"- [x] {item.test} (checked automatically): {item.evidence}".rstrip(
+                    ": "
+                )
+            )
         na = self.by_status(NA)
         if na:
             out += [
@@ -208,23 +245,41 @@ class Audit:
         from ._html import FONT, MUTED, RULE_LINE, pill
         from .findings import _md_code
 
-        name = html.escape(self.title) if self.title else f"untitled {self.kind or 'chart'}"
+        name = (
+            html.escape(self.title)
+            if self.title
+            else f"untitled {self.kind or 'chart'}"
+        )
         pills = " ".join(
-            pill(f"{n} {STATUS_LABEL[s].lower()}", _STATUS_PILL[s]) for s, n in self.counts.items() if n
+            pill(f"{n} {STATUS_LABEL[s].lower()}", _STATUS_PILL[s])
+            for s, n in self.counts.items()
+            if n
         )
         rows = []
-        for item in sorted(self.items, key=lambda i: (_ORDER[i.status], not i.critical)):
+        for item in sorted(
+            self.items, key=lambda i: (_ORDER[i.status], not i.critical)
+        ):
             if item.status == NA:
                 continue
-            crit = f" <span style='{MUTED};font-size:11.5px'>critical</span>" if item.critical else ""
+            crit = (
+                f" <span style='{MUTED};font-size:11.5px'>critical</span>"
+                if item.critical
+                else ""
+            )
             meta = f"<span style='{MUTED};font-size:11.5px'> · {item.principle}"
-            meta += (" · " + ", ".join(item.rules)) if item.rules and item.status == FAIL else ""
+            meta += (
+                (" · " + ", ".join(item.rules))
+                if item.rules and item.status == FAIL
+                else ""
+            )
             meta += "</span>"
             body = []
             if item.status == FAIL and item.findings:
                 for f in item.findings:
                     fix = f" <b>Fix:</b> {_md_code(f.fix)}" if f.fix else ""
-                    body.append(f"<div><code>{f.rule_id}</code> {_md_code(f.message)}{fix}</div>")
+                    body.append(
+                        f"<div><code>{f.rule_id}</code> {_md_code(f.message)}{fix}</div>"
+                    )
             elif item.evidence:
                 body.append(f"<div style='{MUTED}'>{_md_code(item.evidence)}</div>")
             if item.question and item.status != FAIL:
@@ -265,7 +320,14 @@ class Audit:
 # ---------------------------------------------------------------------------
 # Running the audit
 # ---------------------------------------------------------------------------
-def audit(obj: Any, *, session=None, config=None, source: str | None = None, suppress=None) -> Audit:
+def audit(
+    obj: Any,
+    *,
+    session: Session | None = None,
+    config: Config | None = None,
+    source: str | None = None,
+    suppress: Mapping[str, str] | Iterable[str] | None = None,
+) -> Audit:
     """Audit a plotnine plot or a matplotlib Figure/Axes against Chartability's tests.
 
     Rules run under the accessibility profile (marks 3:1, text at least 9 pt). Pass a
@@ -281,13 +343,19 @@ def audit(obj: Any, *, session=None, config=None, source: str | None = None, sup
     try:
         return audit_description(desc, cfg, source=source, suppress=suppress)
     finally:
-        if desc.source == "plotnine" and desc.render is not None:
+        if desc.source == "plotnine":
             import matplotlib.pyplot as plt
 
             plt.close(desc.render.figure)
 
 
-def audit_description(desc, cfg, *, source=None, suppress=None) -> Audit:
+def audit_description(
+    desc: ChartDescription,
+    cfg: Config,
+    *,
+    source: str | None = None,
+    suppress: Mapping[str, str] | Iterable[str] | None = None,
+) -> Audit:
     from .api import lint_description
     from .registry import all_rules, load_catalog
 
@@ -301,7 +369,9 @@ def audit_description(desc, cfg, *, source=None, suppress=None) -> Audit:
     items = []
     for t in tests:
         name, typ = t["name"], t["static"]
-        item = AuditItem(test=name, principle=t["principle"], critical=t["critical"], status=NA)
+        item = AuditItem(
+            test=name, principle=t["principle"], critical=t["critical"], status=NA
+        )
         if typ == "na":
             item.evidence = t.get("na", "")
             items.append(item)
@@ -310,7 +380,9 @@ def audit_description(desc, cfg, *, source=None, suppress=None) -> Audit:
         item.rules = [r.id for r in rules]
         active = [r for r in rules if cfg.is_selected(r.id, r.tier)]
         found = [f for f in report.findings if f.rule_id in item.rules]
-        suppressed = [(f, why) for f, why in report.suppressed if f.rule_id in item.rules]
+        suppressed = [
+            (f, why) for f, why in report.suppressed if f.rule_id in item.rules
+        ]
         if t.get("needs_session") and desc.session is None:
             item.evidence = "Needs the other charts in the notebook; use `%plotlint audit` or audit the notebook."
             items.append(item)
@@ -323,16 +395,21 @@ def audit_description(desc, cfg, *, source=None, suppress=None) -> Audit:
         elif suppressed:
             item.status = PARTLY
             item.evidence = " ".join(
-                f"{f.rule_id} is suppressed ({why or 'no reason given'}): {f.message}" for f, why in suppressed
+                f"{f.rule_id} is suppressed ({why or 'no reason given'}): {f.message}"
+                for f, why in suppressed
             )
             item.question = "Check that the reason still holds for readers with low vision or color-vision deficiency."
         elif soft:  # heuristic findings: the linter isn't sure
             item.status = PARTLY
             item.evidence = " ".join(f"{f.rule_id}: {f.message}" for f in soft)
-            item.question = "The linter isn't sure about this one. Look at the chart and decide."
+            item.question = (
+                "The linter isn't sure about this one. Look at the chart and decide."
+            )
         elif rules and not active:
             item.status = ASK
-            item.evidence = f"Not checked: {', '.join(item.rules)} turned off in your settings."
+            item.evidence = (
+                f"Not checked: {', '.join(item.rules)} turned off in your settings."
+            )
             item.question = t.get("ask", "Check this yourself.")
         elif special is not None:
             special(item, t, ctx)
@@ -366,7 +443,7 @@ class _Context:
         self.title = self.texts.get("title", "")
         try:
             self.table = _table(desc)
-        except Exception:
+        except Exception:  # noqa: BLE001  # the table is optional evidence
             self.table = None
         from .readability import analyze
 
@@ -376,7 +453,9 @@ class _Context:
 # ----- per-test evidence ------------------------------------------------------
 def _content_only_visual(item, t, ctx):
     item.status = PARTLY
-    item.evidence = "A draft alt text is filled in above." if ctx.report.alt_text else ""
+    item.evidence = (
+        "A draft alt text is filled in above." if ctx.report.alt_text else ""
+    )
     item.question = t["ask"] + " Then check this box."
 
 
@@ -409,8 +488,14 @@ def _title(item, t, ctx):
         return
     item.status = PARTLY
     caption = ctx.texts.get("subtitle") or ctx.texts.get("caption")
-    item.evidence = f"Title: “{title}”." + (f" Caption: “{caption}”." if caption else " No subtitle or caption.")
-    names_variables = re.search(r"\b(by|vs\.?|versus|over|across|against)\b|^(distribution|number|count|average|mean) of\b", title, re.I)
+    item.evidence = f"Title: “{title}”." + (
+        f" Caption: “{caption}”." if caption else " No subtitle or caption."
+    )
+    names_variables = re.search(
+        r"\b(by|vs\.?|versus|over|across|against)\b|^(distribution|number|count|average|mean) of\b",
+        title,
+        re.IGNORECASE,
+    )
     item.question = (
         "The title names what is plotted. Could it say what to notice instead?"
         if names_variables
@@ -423,12 +508,16 @@ def _reading_level(item, t, ctx):
     if r.scored and r.grade > 10:
         item.status = PARTLY
         long = f" Long words: {', '.join(r.long_words[:4])}." if r.long_words else ""
-        item.evidence = f"The chart's text reads at grade {r.grade:.0f} ({r.words} words).{long}"
+        item.evidence = (
+            f"The chart's text reads at grade {r.grade:.0f} ({r.words} words).{long}"
+        )
         item.question = t["ask"] + " Aim for grade 9 or below."
         return
     item.status = PASS
     item.evidence = (
-        f"The chart's text reads at grade {r.grade:.0f}." if r.scored else f"Too little text to score ({r.words} word{'s' if r.words != 1 else ''})."
+        f"The chart's text reads at grade {r.grade:.0f}."
+        if r.scored
+        else f"Too little text to score ({r.words} word{'s' if r.words != 1 else ''})."
     )
     if r.long_words:
         item.status = PARTLY
@@ -454,7 +543,9 @@ def _uncertainty(item, t, ctx):
         return
     what = {"errorbar": "error bars", "ribbon": "a confidence band"}
     item.status = PARTLY
-    item.evidence = "The chart draws " + " and ".join(what[m] for m in sorted(marks)) + "."
+    item.evidence = (
+        "The chart draws " + " and ".join(what[m] for m in sorted(marks)) + "."
+    )
     item.question = t["ask"]
 
 
@@ -498,7 +589,9 @@ def _difficult(item, t, ctx):
     kinds = [hard[k] for k in hard if k in ctx.features]
     if not kinds:
         item.status = PASS
-        item.evidence = f"A familiar chart type ({f_kind(ctx)})." if f_kind(ctx) else t["pass"]
+        item.evidence = (
+            f"A familiar chart type ({f_kind(ctx)})." if f_kind(ctx) else t["pass"]
+        )
         return
     item.status = PARTLY
     item.evidence = f"{kinds[0]} are hard for many readers."
@@ -506,8 +599,16 @@ def _difficult(item, t, ctx):
 
 
 def _smallest_text(ctx) -> str:
-    sizes = [t.fontsize for t in ctx.desc.render.texts if t.text.strip()] if ctx.desc.render else []
-    return f"The smallest text is {min(sizes):.1f} pt (at least 9 pt is the target)." if sizes else ""
+    sizes = (
+        [t.fontsize for t in ctx.desc.render.texts if t.text.strip()]
+        if ctx.desc.render
+        else []
+    )
+    return (
+        f"The smallest text is {min(sizes):.1f} pt (at least 9 pt is the target)."
+        if sizes
+        else ""
+    )
 
 
 _PASS_EVIDENCE = {"Small text size": _smallest_text}
@@ -536,7 +637,17 @@ _KIND_NAMES = {
 
 
 def f_kind(ctx) -> str:
-    for k in ("boxplot", "violin", "heatmap", "pie", "density", "hist", "bar", "line", "scatter"):
+    for k in (
+        "boxplot",
+        "violin",
+        "heatmap",
+        "pie",
+        "density",
+        "hist",
+        "bar",
+        "line",
+        "scatter",
+    ):
         if k in ctx.features:
             return _KIND_NAMES[k]
     return ""
@@ -551,11 +662,19 @@ def chart_features(desc) -> set[str]:
 
         for layer in spec.layers:
             g = layer.geom
-            if g in ("geom_errorbar", "geom_errorbarh", "geom_pointrange", "geom_linerange", "geom_crossbar"):
+            if g in (
+                "geom_errorbar",
+                "geom_errorbarh",
+                "geom_pointrange",
+                "geom_linerange",
+                "geom_crossbar",
+            ):
                 f.add("errorbar")
             if layer.stat == "stat_summary":
                 f.add("errorbar")
-            if g == "geom_ribbon" or (g == "geom_smooth" and layer.stat_params.get("se", True)):
+            if g == "geom_ribbon" or (
+                g == "geom_smooth" and layer.stat_params.get("se", True)
+            ):
                 f.add("ribbon")
             kind = {
                 "geom_boxplot": "boxplot", "geom_violin": "violin", "geom_tile": "heatmap", "geom_raster": "heatmap",
@@ -572,40 +691,39 @@ def chart_features(desc) -> set[str]:
                 f.add(f"log_{aes}")
         if spec.coord == "coord_polar":
             f.add("polar")
-    if render is not None:
-        for p in render.panels:
-            if p.n_wedges:
-                f.add("pie")
-            if p.twin_of is not None:
-                f.add("twin")
-            if getattr(p, "is_3d", False):
-                f.add("3d")
-            if spec is None:
-                if p.cmaps:
-                    f.add("heatmap")
-                bars = [s for s in p.series if s.kind == "bar"]
-                if bars:
-                    f.add("hist" if all(s.from_hist for s in bars) else "bar")
-                if p.of_kind("line"):
-                    f.add("line")
-                if p.of_kind("scatter"):
-                    f.add("scatter")
-                if p.x.scale in ("log", "symlog"):
-                    f.add("log_x")
-                if p.y.scale in ("log", "symlog"):
-                    f.add("log_y")
-                if getattr(p.ax, "name", "") == "polar":
-                    f.add("polar")
-                for c in getattr(p.ax, "containers", []):
-                    if type(c).__name__ == "ErrorbarContainer":
-                        f.add("errorbar")
-                for coll in p.ax.collections:
-                    if type(coll).__name__ == "FillBetweenPolyCollection" or (
-                        type(coll).__name__ == "PolyCollection" and p.of_kind("line")
-                    ):
-                        f.add("ribbon")
-                if _mpl_boxplot(p):
-                    f.add("boxplot")
+    for p in render.panels:
+        if p.n_wedges:
+            f.add("pie")
+        if p.twin_of is not None:
+            f.add("twin")
+        if getattr(p, "is_3d", False):
+            f.add("3d")
+        if spec is None:
+            if p.cmaps:
+                f.add("heatmap")
+            bars = [s for s in p.series if s.kind == "bar"]
+            if bars:
+                f.add("hist" if all(s.from_hist for s in bars) else "bar")
+            if p.of_kind("line"):
+                f.add("line")
+            if p.of_kind("scatter"):
+                f.add("scatter")
+            if p.x.scale in ("log", "symlog"):
+                f.add("log_x")
+            if p.y.scale in ("log", "symlog"):
+                f.add("log_y")
+            if getattr(p.ax, "name", "") == "polar":
+                f.add("polar")
+            for c in getattr(p.ax, "containers", []):
+                if type(c).__name__ == "ErrorbarContainer":
+                    f.add("errorbar")
+            for coll in p.ax.collections:
+                if type(coll).__name__ == "FillBetweenPolyCollection" or (
+                    type(coll).__name__ == "PolyCollection" and p.of_kind("line")
+                ):
+                    f.add("ribbon")
+            if _mpl_boxplot(p):
+                f.add("boxplot")
     return f
 
 
@@ -614,7 +732,9 @@ def _mpl_boxplot(p) -> bool:
     segments = [s for s in p.series if s.kind == "segment"]
     if not segments or p.of_kind("line"):
         return False
-    if any(type(c).__name__ == "ErrorbarContainer" for c in getattr(p.ax, "containers", [])):
+    if any(
+        type(c).__name__ == "ErrorbarContainer" for c in getattr(p.ax, "containers", [])
+    ):
         return False
     points = sum(len(s.x) for s in p.of_kind("scatter") if s.x is not None)
     if points > 2 * len(segments):  # a scatter plot, not outliers drawn by a box plot
@@ -631,10 +751,23 @@ def chart_texts(desc) -> dict[str, str]:
 
         labels = dict(desc.spec.final_labels)
         labels.update(desc.spec.user_labels)
-        for key in ("title", "subtitle", "caption", "x", "y", "color", "colour", "fill", "size", "shape"):
+        for key in (
+            "title",
+            "subtitle",
+            "caption",
+            "x",
+            "y",
+            "color",
+            "colour",
+            "fill",
+            "size",
+            "shape",
+        ):
             v = labels.get(key)
             if v and str(v).strip() and not looks_like_code(str(v)):
-                out.setdefault("colour" if key == "color" else key, " ".join(str(v).split()))
+                out.setdefault(
+                    "colour" if key == "color" else key, " ".join(str(v).split())
+                )
         return out
     render = desc.render
     fig = render.figure
@@ -666,7 +799,11 @@ def _extreme_value(desc) -> str | None:
     for p in desc.render.panels:
         if p.y.scale != "linear":
             continue
-        bars = [s for s in p.series if s.kind == "bar" and not s.from_hist and s.heights is not None]
+        bars = [
+            s
+            for s in p.series
+            if s.kind == "bar" and not s.from_hist and s.heights is not None
+        ]
         if bars:
             h = np.concatenate([np.abs(np.asarray(s.heights, float)) for s in bars])
             h = h[np.isfinite(h) & (h > 0)]
@@ -676,7 +813,9 @@ def _extreme_value(desc) -> str | None:
                 if ratio >= 10:
                     return f"The largest bar is {ratio:.0f}× the median bar, so the smaller bars are hard to compare."
             continue
-        ys = [s.y for s in p.series if s.kind in ("scatter", "line") and s.y is not None]
+        ys = [
+            s.y for s in p.series if s.kind in ("scatter", "line") and s.y is not None
+        ]
         if ys:
             y = np.concatenate([np.asarray(v, float) for v in ys])
             y = y[np.isfinite(y)]
@@ -695,8 +834,8 @@ def _extreme_value(desc) -> str | None:
 def data_table(obj: Any) -> pd.DataFrame:
     """The data behind a chart, as a DataFrame you can show under it.
 
-    For a plotnine plot with computed statistics (histograms, counts, box plots), the
-    computed values; otherwise the plotted columns, named by their axis labels.
+    A plotnine plot with computed statistics (histograms, counts, box plots) gives the
+    computed values. Other plots give the plotted columns, named by their axis labels.
     """
     from .describe import describe
 
@@ -704,7 +843,7 @@ def data_table(obj: Any) -> pd.DataFrame:
     try:
         table = _table(desc)
     finally:
-        if desc.source == "plotnine" and desc.render is not None:
+        if desc.source == "plotnine":
             import matplotlib.pyplot as plt
 
             plt.close(desc.render.figure)
@@ -713,8 +852,33 @@ def data_table(obj: Any) -> pd.DataFrame:
     return table
 
 
-_AES_ORDER = ("x", "y", "ymin", "ymax", "xmin", "xmax", "color", "colour", "fill", "size", "shape", "label")
-_STAT_COLUMNS = ("x", "xmin", "xmax", "count", "density", "y", "ymin", "lower", "middle", "upper", "ymax")
+_AES_ORDER = (
+    "x",
+    "y",
+    "ymin",
+    "ymax",
+    "xmin",
+    "xmax",
+    "color",
+    "colour",
+    "fill",
+    "size",
+    "shape",
+    "label",
+)
+_STAT_COLUMNS = (
+    "x",
+    "xmin",
+    "xmax",
+    "count",
+    "density",
+    "y",
+    "ymin",
+    "lower",
+    "middle",
+    "upper",
+    "ymax",
+)
 
 
 def _table(desc) -> pd.DataFrame | None:
@@ -724,11 +888,19 @@ def _table(desc) -> pd.DataFrame | None:
 
 
 def _plotnine_table(desc) -> pd.DataFrame | None:
-    from .describe.model import scale_categories
+    from .describe.model import PROBE_ERRORS, scale_categories
 
     spec = desc.spec
     labels = spec.final_labels
-    skip = {"geom_text", "geom_label", "geom_hline", "geom_vline", "geom_abline", "geom_smooth", "geom_errorbar"}
+    skip = {
+        "geom_text",
+        "geom_label",
+        "geom_hline",
+        "geom_vline",
+        "geom_abline",
+        "geom_smooth",
+        "geom_errorbar",
+    }
     layers = [l for l in spec.layers if l.geom not in skip] or spec.layers
     if not layers:
         return None
@@ -741,7 +913,11 @@ def _plotnine_table(desc) -> pd.DataFrame | None:
             expr = layer.mapping.get(aes)
             if isinstance(expr, str) and expr not in layer.raw_data.columns:
                 expr = base_var(expr)  # reorder(region, income) -> region
-            if isinstance(expr, str) and expr in layer.raw_data.columns and expr not in cols:
+            if (
+                isinstance(expr, str)
+                and expr in layer.raw_data.columns
+                and expr not in cols
+            ):
                 cols.append(expr)
                 label = labels.get(aes)
                 if label and label != expr:
@@ -757,14 +933,19 @@ def _plotnine_table(desc) -> pd.DataFrame | None:
     table = data[cols].copy()
     if layer.stat == "stat_bin" and {"xmin", "xmax", "count"} <= set(table):
         label = " ".join(str(labels.get("x", "x")).split())
-        table = table[["xmin", "xmax", "count"]].rename(columns={"xmin": f"{label} from", "xmax": f"{label} to"})
+        table = table[["xmin", "xmax", "count"]].rename(
+            columns={"xmin": f"{label} from", "xmax": f"{label} to"}
+        )
         return table.reset_index(drop=True)
     for aes in ("x", "y"):
         if aes in table and spec.is_discrete(aes):
             try:
                 cats = scale_categories(spec.scale_for(aes))
-                table[aes] = [cats[int(round(v)) - 1] if 1 <= round(v) <= len(cats) else v for v in table[aes]]
-            except Exception:
+                table[aes] = [
+                    cats[round(v) - 1] if 1 <= round(v) <= len(cats) else v
+                    for v in table[aes]
+                ]
+            except PROBE_ERRORS:
                 pass
     if "fill" in layer.mapping or "color" in layer.mapping:
         aes = "fill" if "fill" in layer.mapping else "color"
@@ -773,15 +954,21 @@ def _plotnine_table(desc) -> pd.DataFrame | None:
             if "group" in data and data["group"].nunique() == len(cats):
                 order = sorted(data["group"].unique())
                 lookup = {g: cats[i] for i, g in enumerate(order)}
-                table.insert(0, " ".join(str(labels.get(aes, aes)).split()), data["group"].map(lookup).values)
-        except Exception:
+                table.insert(
+                    0,
+                    " ".join(str(labels.get(aes, aes)).split()),
+                    data["group"].map(lookup).values,
+                )
+        except PROBE_ERRORS:
             pass
     if "PANEL" in data and data["PANEL"].nunique() > 1:
         table.insert(0, "panel", data["PANEL"].astype(int).values)
     rename = {"x": labels.get("x", "x"), "y": labels.get("y", "y")}
     if spec.coord == "coord_flip":
         rename = {"x": labels.get("y", "x"), "y": labels.get("x", "y")}
-    table = table.rename(columns={k: " ".join(str(v).split()) for k, v in rename.items() if k in table})
+    table = table.rename(
+        columns={k: " ".join(str(v).split()) for k, v in rename.items() if k in table}
+    )
     return table.reset_index(drop=True)
 
 
@@ -796,12 +983,26 @@ def _matplotlib_table(desc) -> pd.DataFrame | None:
                 vertical = s.orientation == "vertical"
                 ticks = p.ax.get_xticks() if vertical else p.ax.get_yticks()
                 labs = p.ax.get_xticklabels() if vertical else p.ax.get_yticklabels()
-                lookup = {round(float(t), 6): lab.get_text() for t, lab in zip(ticks, labs)}
-                cat_label = (p.x.label if vertical else p.y.label) or ("bin" if s.from_hist else "category")
-                val_label = (p.y.label if vertical else p.x.label) or ("count" if s.from_hist else "value")
+                lookup = {
+                    round(float(t), 6): lab.get_text() for t, lab in zip(ticks, labs)
+                }
+                cat_label = (p.x.label if vertical else p.y.label) or (
+                    "bin" if s.from_hist else "category"
+                )
+                val_label = (p.y.label if vertical else p.x.label) or (
+                    "count" if s.from_hist else "value"
+                )
                 for pos, h in zip(np.asarray(s.x, float), np.asarray(s.heights, float)):
-                    cat = lookup.get(round(float(pos), 6)) or (round(float(pos), 6) if s.from_hist else "")
-                    rows.append({"series": name, cat_label: cat if cat != "" else pos, val_label: h})
+                    cat = lookup.get(round(float(pos), 6)) or (
+                        round(float(pos), 6) if s.from_hist else ""
+                    )
+                    rows.append(
+                        {
+                            "series": name,
+                            cat_label: cat if cat != "" else pos,
+                            val_label: h,
+                        }
+                    )
             elif s.kind in ("line", "scatter") and s.x is not None and s.y is not None:
                 xl, yl = p.x.label or "x", p.y.label or "y"
                 for xv, yv in zip(np.asarray(s.x), np.asarray(s.y)):
@@ -809,7 +1010,11 @@ def _matplotlib_table(desc) -> pd.DataFrame | None:
         if not rows:
             continue
         df = pd.DataFrame(rows)
-        if df["series"].eq("").all() or df["series"].nunique() == 1 and len(p.series) == 1:
+        if (
+            df["series"].eq("").all()
+            or df["series"].nunique() == 1
+            and len(p.series) == 1
+        ):
             df = df.drop(columns="series")
         if len(panels) > 1:
             df.insert(0, "panel", p.index + 1)
@@ -831,7 +1036,9 @@ _DRAFT = re.compile(r"draft=([0-9a-f]{8})")
 class ChecklistStatus:
     title: str
     open_items: list[str] = field(default_factory=list)  # unchecked boxes
-    blank_answers: list[str] = field(default_factory=list)  # checked, but the Answer line is empty
+    blank_answers: list[str] = field(
+        default_factory=list
+    )  # checked, but the Answer line is empty
     alt_text_unchanged: bool = False
 
     @property
@@ -841,7 +1048,9 @@ class ChecklistStatus:
     def __str__(self) -> str:
         if self.complete:
             return f"{self.title}: complete"
-        lines = [f"{self.title}: {len(self.open_items) + len(self.blank_answers)} item(s) left"]
+        lines = [
+            f"{self.title}: {len(self.open_items) + len(self.blank_answers)} item(s) left"
+        ]
         lines += [f"  open: {t}" for t in self.open_items]
         lines += [f"  checked but unanswered: {t}" for t in self.blank_answers]
         if self.alt_text_unchanged:
@@ -863,8 +1072,16 @@ def read_checklists(markdown: str) -> list[ChecklistStatus]:
             if current is not None:
                 _finish(current, draft, quote)
                 results.append(current)
-            heading = next((lines[j] for j in range(i - 1, -1, -1) if lines[j].startswith("#")), "checklist")
-            current = ChecklistStatus(title=heading.lstrip("#").strip().removeprefix("Accessibility checklist:").strip())
+            heading = next(
+                (lines[j] for j in range(i - 1, -1, -1) if lines[j].startswith("#")),
+                "checklist",
+            )
+            current = ChecklistStatus(
+                title=heading.lstrip("#")
+                .strip()
+                .removeprefix("Accessibility checklist:")
+                .strip()
+            )
             m = _DRAFT.search(line)
             draft, quote = (m.group(1) if m else None), []
             continue
@@ -906,4 +1123,3 @@ def _digest(text: str) -> str:
 def _finding_line(f: Finding) -> str:
     fix = f" Fix: {f.fix}" if f.fix else ""
     return f"{f.rule_id}: {f.message}{fix}"
-

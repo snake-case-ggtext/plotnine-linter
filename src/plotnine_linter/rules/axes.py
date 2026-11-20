@@ -3,12 +3,25 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Iterator
+from typing import TYPE_CHECKING
 
 import numpy as np
 
+from ..describe.model import PROBE_ERRORS, scale_categories
 from ..registry import Hit, rule
-from ._util import is_unordered_column, monotone, natural_order, ordinal_like, plural, quote
-from ..describe.model import scale_categories
+from ._util import (
+    is_unordered_column,
+    monotone,
+    natural_order,
+    ordinal_like,
+    plural,
+    quote,
+)
+
+if TYPE_CHECKING:
+    from ..config import Config
+    from ..describe.model import ChartDescription
 
 BAR_GEOMS = {"geom_bar", "geom_col", "geom_area", "geom_histogram"}
 
@@ -17,16 +30,20 @@ def _log_scale(scale) -> bool:
     if scale is None:
         return False
     trans = getattr(scale, "trans", None)
-    name = trans if isinstance(trans, str) else getattr(trans, "__name__", type(trans).__name__)
+    name = (
+        trans
+        if isinstance(trans, str)
+        else getattr(trans, "__name__", type(trans).__name__)
+    )
     text = f"{name} {type(scale).__name__}".lower()
     if "symlog" in text or "pseudo" in text:
-        return False  # defined at zero; nothing is dropped
+        return False  # defined at zero, so the scale drops nothing
     return "log" in text
 
 
 # ---------------------------------------------------------------- AX101
 @rule("AX101")
-def ax101(desc, cfg):
+def ax101(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     if desc.spec is not None:
         spec = desc.spec
         if _log_scale(spec.user_scale_for("y")):
@@ -55,7 +72,9 @@ def ax101(desc, cfg):
             lo, hi = sorted(axis.limits)
             base = 0.0
             span = hi - lo
-            if not (lo - 1e-9 * max(1, abs(span)) <= base <= hi + 1e-9 * max(1, abs(span))):
+            if not (
+                lo - 1e-9 * max(1, abs(span)) <= base <= hi + 1e-9 * max(1, abs(span))
+            ):
                 which = "y" if s.orientation == "vertical" else "x"
                 yield Hit(
                     f"Bars start at zero, but the {which}-axis shows {lo:.3g} to {hi:.3g}, "
@@ -70,14 +89,14 @@ def ax101(desc, cfg):
 
 # ---------------------------------------------------------------- AX102
 @rule("AX102")
-def ax102(desc, cfg):
-    if desc.render is None:
-        return
+def ax102(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     for panel in desc.render.panels:
         if panel.twin_of is None:
             continue
         own = panel.y if panel.twin_shared == "x" else panel.x
-        if own.visible and own.tick_labels:  # seaborn pairplot's hidden diagonal twins don't count
+        if (
+            own.visible and own.tick_labels
+        ):  # seaborn pairplot's hidden diagonal twins don't count
             yield Hit(
                 "This figure overlays two axes with independent scales (`twinx`/`twiny`).",
                 fix="Use `fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True)`, or index both series "
@@ -90,7 +109,7 @@ def ax102(desc, cfg):
 
 # ---------------------------------------------------------------- AX103
 @rule("AX103")
-def ax103(desc, cfg):
+def ax103(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     if desc.spec is not None:
         spec = desc.spec
         for aes in ("x", "y"):
@@ -121,7 +140,9 @@ def ax103(desc, cfg):
                     along = "y" if s.orientation == "vertical" else "x"
                     vals = s.y if which == along else None
                     if vals is not None and s.from_hist:
-                        vals = np.asarray(vals, dtype=float)[np.asarray(s.heights) != 0]  # empty bins
+                        vals = np.asarray(vals, dtype=float)[
+                            np.asarray(s.heights) != 0
+                        ]  # empty bins
                 else:
                     vals = s.x if which == "x" else s.y
                 if vals is not None:
@@ -139,7 +160,7 @@ def ax103(desc, cfg):
 
 # ---------------------------------------------------------------- AX201
 @rule("AX201")
-def ax201(desc, cfg):
+def ax201(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     min_bars = int(cfg.t("min_bars_to_sort"))
     if desc.spec is not None:
         spec = desc.spec
@@ -159,7 +180,9 @@ def ax201(desc, cfg):
                 continue
             first_panel = data[data["PANEL"] == data["PANEL"].iloc[0]]
             value = "ymax" if "ymax" in first_panel else "y"
-            totals = first_panel.groupby(first_panel["x"].round())[value].max().sort_index()
+            totals = (
+                first_panel.groupby(first_panel["x"].round())[value].max().sort_index()
+            )
             if len(totals) >= min_bars and not monotone(totals.values):
                 xname = layer.mapping.get("x")
                 yname = layer.mapping.get("y", "count")
@@ -183,6 +206,8 @@ def ax201(desc, cfg):
             continue
         s = bars[0]
         axis = panel.x if s.orientation == "vertical" else panel.y
+        if s.x is None or s.heights is None:
+            continue
         if axis.kind != "discrete" or len(s.heights) < min_bars:
             continue
         labels = [t.text for t in axis.tick_labels]
@@ -206,14 +231,16 @@ def _is_rotated(angle: float) -> bool:
 
 
 @rule("AX202")
-def ax202(desc, cfg):
-    if desc.render is None:
-        return
+def ax202(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     plotnine = desc.source == "plotnine"
     reported = set()
     for panel in desc.render.panels:
         for which, axis in (("x", panel.x), ("y", panel.y)):
-            if which in reported or not axis.tick_labels or axis.kind not in ("discrete", "datetime"):
+            if (
+                which in reported
+                or not axis.tick_labels
+                or axis.kind not in ("discrete", "datetime")
+            ):
                 continue
             rotated = [t for t in axis.tick_labels if _is_rotated(t.rotation)]
             if axis.kind == "datetime":
@@ -235,7 +262,11 @@ def ax202(desc, cfg):
             other = panel.y if which == "x" else panel.x
             if other.kind == "discrete":
                 continue  # both axes categorical (a heatmap): swapping axes doesn't help
-            swap = "`coord_flip()`" if plotnine else "a horizontal layout (`barh`, or swap x and y)"
+            swap = (
+                "`coord_flip()`"
+                if plotnine
+                else "a horizontal layout (`barh`, or swap x and y)"
+            )
             if rotated:
                 reported.add(which)
                 yield Hit(
@@ -249,7 +280,7 @@ def ax202(desc, cfg):
 
 # ---------------------------------------------------------------- AX203
 @rule("AX203")
-def ax203(desc, cfg):
+def ax203(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     spec = desc.spec
     if spec is None or spec.facet_type == "facet_null":
         return
@@ -265,13 +296,17 @@ def ax203(desc, cfg):
 
 # ---------------------------------------------------------------- AX204
 @rule("AX204")
-def ax204(desc, cfg):
+def ax204(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     if desc.spec is not None:
         for layer in desc.spec.layers:
             if layer.stat != "stat_bin":
                 continue
             p = layer.stat_params
-            if p.get("bins") is None and p.get("binwidth") is None and p.get("breaks") is None:
+            if (
+                p.get("bins") is None
+                and p.get("binwidth") is None
+                and p.get("breaks") is None
+            ):
                 yield Hit(
                     f"`{layer.geom}` uses plotnine's automatic bins.",
                     fix="Set a meaningful width, e.g. `geom_histogram(binwidth=5)` for 5-year age bands.",
@@ -281,7 +316,7 @@ def ax204(desc, cfg):
 
     for panel in desc.render.panels:
         for s in panel.of_kind("bar"):
-            if s.from_hist and len(s.heights) == 10:
+            if s.from_hist and s.heights is not None and len(s.heights) == 10:
                 yield Hit(
                     "This histogram has 10 equal bins, matplotlib's default.",
                     fix="Pass bin edges with meaning, e.g. `ax.hist(x, bins=np.arange(0, 101, 5))`.",
@@ -294,13 +329,11 @@ def ax204(desc, cfg):
 
 # ---------------------------------------------------------------- AX205
 @rule("AX205")
-def ax205(desc, cfg):
+def ax205(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     spec = desc.spec
 
     def categorical_fix(expr, natural):
-        return (
-            f"`df['{expr}'] = pd.Categorical(df['{expr}'], categories={natural!r}, ordered=True)` before plotting."
-        )
+        return f"`df['{expr}'] = pd.Categorical(df['{expr}'], categories={natural!r}, ordered=True)` before plotting."
 
     # legends (plotnine): the scale's categories in legend order
     if spec is not None:
@@ -309,11 +342,17 @@ def ax205(desc, cfg):
                 continue
             try:
                 shown = scale_categories(spec.scale_for(aes))
-            except Exception:
+            except PROBE_ERRORS:
                 continue
             natural = natural_order(shown)
-            if natural is not None and natural != shown and list(reversed(natural)) != shown:
-                expr = next((l.mapping[aes] for l in spec.layers if aes in l.mapping), aes)
+            if (
+                natural is not None
+                and natural != shown
+                and list(reversed(natural)) != shown
+            ):
+                expr = next(
+                    (l.mapping[aes] for l in spec.layers if aes in l.mapping), aes
+                )
                 yield Hit(
                     f"The {aes} legend lists `{expr}` alphabetically ({', '.join(shown[:4])}…) instead of in "
                     f"its natural order ({', '.join(natural[:4])}…).",
@@ -334,7 +373,10 @@ def ax205(desc, cfg):
                 continue  # natural order either way round (Small to Large, or Large to Small)
             if spec is not None:
                 data_aes = {"x": "y", "y": "x"}[which] if flipped else which
-                expr = next((l.mapping[data_aes] for l in spec.layers if data_aes in l.mapping), data_aes)
+                expr = next(
+                    (l.mapping[data_aes] for l in spec.layers if data_aes in l.mapping),
+                    data_aes,
+                )
                 yield Hit(
                     f"`{expr}` is shown in alphabetical order ({', '.join(shown[:4])}…) instead of its "
                     f"natural order ({', '.join(natural[:4])}…).",
@@ -353,18 +395,22 @@ def ax205(desc, cfg):
 
 
 # ---------------------------------------------------------------- AX206
-_LOG_LABEL = re.compile(r"\blog\s*\d*\b|\blog\s*\(|\bln\b|\bln\s*\(|log10|log_|_log\b", re.I)
+_LOG_LABEL = re.compile(
+    r"\blog\s*\d*\b|\blog\s*\(|\bln\b|\bln\s*\(|log10|log_|_log\b", re.IGNORECASE
+)
 
 
 @rule("AX206")
-def ax206(desc, cfg):
-    if desc.render is None:
-        return
+def ax206(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     for panel in desc.render.panels:
         for which, axis in (("x", panel.x), ("y", panel.y)):
-            if axis.kind != "continuous" or axis.scale != "linear" or not _LOG_LABEL.search(axis.label):
+            if (
+                axis.kind != "continuous"
+                or axis.scale != "linear"
+                or not _LOG_LABEL.search(axis.label)
+            ):
                 continue
-            if re.search(r"log[ -]?scale|\(log\)", axis.label, re.I):
+            if re.search(r"log[ -]?scale|\(log\)", axis.label, re.IGNORECASE):
                 continue  # the label says the axis itself is log-scaled
             if desc.spec is not None:
                 flipped = desc.spec.coord == "coord_flip"
@@ -405,9 +451,7 @@ def _whole(values) -> bool:
 
 
 @rule("AX207")
-def ax207(desc, cfg):
-    if desc.render is None:
-        return
+def ax207(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     spec = desc.spec
     flipped = spec is not None and spec.coord == "coord_flip"
     for panel in desc.render.panels:
@@ -422,14 +466,22 @@ def ax207(desc, cfg):
             if spec is not None:
                 data_aes = {"x": "y", "y": "x"}[which] if flipped else which
                 cols = [spec.column(l, data_aes) for l in spec.layers]
-                cols = [c for c in cols if c is not None and np.issubdtype(np.asarray(c).dtype, np.number)]
+                cols = [
+                    c
+                    for c in cols
+                    if c is not None and np.issubdtype(np.asarray(c).dtype, np.number)
+                ]
                 if not cols or not all(_whole(c) for c in cols):
                     continue
                 if any(l.stat == "stat_bin" for l in spec.layers):
                     continue  # histograms bin the axis themselves
                 fix = f"`scale_{data_aes}_continuous(breaks=range(start, stop + 1))`, or map a whole-number step."
             else:
-                vals = [s.x if which == "x" else s.y for s in panel.series if s.kind in ("line", "scatter")]
+                vals = [
+                    s.x if which == "x" else s.y
+                    for s in panel.series
+                    if s.kind in ("line", "scatter")
+                ]
                 vals = [v for v in vals if v is not None]
                 if not vals or not all(_whole(v) for v in vals):
                     continue

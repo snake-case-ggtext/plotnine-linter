@@ -1,3 +1,7 @@
+# Rule catalog
+
+Every rule, with why it matters and how to fix it. Tiers 1 and 2 run by default. This file comes from `src/plotnine_linter/data/rules.json`: run `make rules` after you change the catalog.
+
 ## Tier 1 — Errors (on by default)
 
 | ID | Rule | Why | Fix |
@@ -53,4 +57,3 @@
 | ST305 | Same category, different colors across figures | Readers carry color meaning from one figure to the next. If 'West' is orange in one chart and blue in the next, they'll misread the second. | Define one palette per variable (a dict of category to color) and reuse it in every figure. |
 | ST306 | Inconsistent themes across figures | Figures in one report read as a set. Switching themes or base font sizes between them looks unfinished and makes comparisons harder. | Set the theme and font size once at the top of the notebook. |
 | ST307 | Excess precision in tick labels | Extra decimals add clutter without information. | Format ticks to the precision the step needs. |
-

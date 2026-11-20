@@ -2,28 +2,46 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
+from typing import TYPE_CHECKING
+
 import numpy as np
 import pandas as pd
 from matplotlib.colors import to_hex, to_rgb
 
-from ..colors import blend, confusable_pairs, contrast_ratio
-from ..describe.model import scale_categories
+from ..colors import confusable_pairs, contrast_ratio
+from ..describe.model import PROBE_ERRORS, scale_categories
 from ..registry import Hit, rule
 from ._util import base_var, is_discrete_column
 
-RAINBOW = {"jet", "rainbow", "hsv", "gist_rainbow", "nipy_spectral", "gist_ncar", "prism", "flag"}
+if TYPE_CHECKING:
+    from ..config import Config
+    from ..describe.model import ChartDescription
+
+RAINBOW = {
+    "jet",
+    "rainbow",
+    "hsv",
+    "gist_rainbow",
+    "nipy_spectral",
+    "gist_ncar",
+    "prism",
+    "flag",
+}
 # Okabe-Ito without its yellow, which has too little contrast on white (1.3:1)
-OKABE_ITO = '["#E69F00", "#56B4E9", "#009E73", "#0072B2", "#D55E00", "#CC79A7", "#000000"]'
+OKABE_ITO = (
+    '["#E69F00", "#56B4E9", "#009E73", "#0072B2", "#D55E00", "#CC79A7", "#000000"]'
+)
 
 
 def _base_cmap(name: str) -> str:
     name = str(name)
-    return name[:-2] if name.endswith("_r") else name
+    return name.removesuffix("_r")
 
 
 # ---------------------------------------------------------------- CL101
 @rule("CL101")
-def cl101(desc, cfg):
+def cl101(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     if desc.spec is not None:
         for scale in desc.spec.user_scales:
             palette = getattr(scale, "palette", None)
@@ -53,14 +71,16 @@ def cl101(desc, cfg):
 
 # ---------------------------------------------------------------- CL102
 @rule("CL102")
-def cl102(desc, cfg):
+def cl102(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     limit = int(cfg.t("max_categorical_colors"))
     if desc.spec is not None:
         spec = desc.spec
         for aes in ("color", "fill"):
             for layer in spec.layers:
                 col = spec.column(layer, aes)
-                if col is None or not (is_discrete_column(col) or spec.is_discrete(aes)):
+                if col is None or not (
+                    is_discrete_column(col) or spec.is_discrete(aes)
+                ):
                     continue
                 n = col.nunique(dropna=True)
                 if n > limit:
@@ -79,7 +99,11 @@ def cl102(desc, cfg):
         if panel.legend is not None and len(panel.legend_labels) > limit:
             n = len(panel.legend_labels)
         else:
-            colors = {tuple(round(c, 3) for c in s.color[:3]) for s in panel.series if s.color is not None}
+            colors = {
+                tuple(round(c, 3) for c in s.color[:3])
+                for s in panel.series
+                if s.color is not None
+            }
             n = len(colors) if len(panel.series) > 1 else 0
         if n > limit:
             yield Hit(
@@ -93,22 +117,33 @@ def cl102(desc, cfg):
 def _colors_repeat_axis(panel) -> bool:
     """Each color sits on its own category (seaborn hue=x, per-bar palettes)."""
     bars = [s for s in panel.of_kind("bar") if not s.from_hist]
-    if not bars or len(bars) != len([s for s in panel.series if s.kind in ("bar", "line", "scatter")]):
+    if not bars or len(bars) != len(
+        [s for s in panel.series if s.kind in ("bar", "line", "scatter")]
+    ):
         return False
     if len(bars) == 1:
         return False
-    occupied = [set(np.round(np.asarray(b.x)[np.abs(np.asarray(b.heights)) > 0], 6)) for b in bars]
+    occupied = [
+        set(np.round(np.asarray(b.x)[np.abs(np.asarray(b.heights)) > 0], 6))
+        for b in bars
+    ]
     if any(not o for o in occupied):
         occupied = [o for o in occupied if o]
-    disjoint = all(occupied[i].isdisjoint(occupied[j]) for i in range(len(occupied)) for j in range(i))
+    disjoint = all(
+        occupied[i].isdisjoint(occupied[j])
+        for i in range(len(occupied))
+        for j in range(i)
+    )
     ticks = {t.text.strip() for t in (panel.x.tick_labels + panel.y.tick_labels)}
-    legend_is_axis = bool(panel.legend_labels) and set(l.strip() for l in panel.legend_labels) <= ticks
+    legend_is_axis = (
+        bool(panel.legend_labels) and {l.strip() for l in panel.legend_labels} <= ticks
+    )
     return disjoint or legend_is_axis
 
 
 # ---------------------------------------------------------------- CL201
 @rule("CL201")
-def cl201(desc, cfg):
+def cl201(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     min_de = float(cfg.t("cvd_min_delta_e"))
     if desc.spec is not None:
         spec = desc.spec
@@ -123,14 +158,20 @@ def cl201(desc, cfg):
             # redundant encodings: the same variable is also shown by shape, linetype or position
             bases = {base_var(e) for e in exprs}
             redundant = any(
-                base_var(l.mapping.get(other)) in bases for l in spec.layers for other in ("shape", "linetype", "x", "y")
+                base_var(l.mapping.get(other)) in bases
+                for l in spec.layers
+                for other in ("shape", "linetype", "x", "y")
             )
             if redundant:
                 continue
             colors = []
             for layer in layers:
                 if layer.built_data is not None and aes in layer.built_data:
-                    colors += [c for c in pd.unique(layer.built_data[aes].dropna()) if isinstance(c, str)]
+                    colors += [
+                        c
+                        for c in pd.unique(layer.built_data[aes].dropna())
+                        if isinstance(c, str)
+                    ]
             pairs = confusable_pairs(colors, min_de)
             if pairs:
                 done_exprs |= exprs
@@ -151,19 +192,26 @@ def cl201(desc, cfg):
         return
 
     for panel in desc.render.panels:
-        series = [s for s in panel.series if s.kind in ("line", "scatter", "bar") and (s.color is not None or s.palette)]
+        series = [
+            s
+            for s in panel.series
+            if s.kind in ("line", "scatter", "bar")
+            and (s.color is not None or s.palette)
+        ]
         if _colors_repeat_axis(panel):
             continue  # each color sits on its own category (hue=x): color repeats the axis
         style_of, colors = {}, []
         for s in series:
-            for c in (s.palette or [s.color]):
+            for c in s.palette or ([s.color] if s.color is not None else []):
                 colors.append(c[:3])
                 style_of.setdefault(to_hex(c[:3]), _style(s))
         if len(colors) < 2:
             continue
         pairs = [
-            p for p in confusable_pairs(colors, min_de)
-            if style_of.get(p[0]) == style_of.get(p[1])  # a different marker or linestyle keeps a pair apart
+            p
+            for p in confusable_pairs(colors, min_de)
+            if style_of.get(p[0])
+            == style_of.get(p[1])  # a different marker or linestyle keeps a pair apart
         ]
         if pairs:
             a, b, kind, d = pairs[0]
@@ -186,21 +234,81 @@ def _color_names(spec, aes) -> dict[str, str]:
         limits = scale_categories(scale)
         colors = scale.palette(len(limits))
         return {str(c).lower(): f"'{lim}'" for lim, c in zip(limits, colors)}
-    except Exception:
+    except PROBE_ERRORS:
         return {}
 
 
 # ---------------------------------------------------------------- CL202
 SEQUENTIAL = {
-    "viridis", "plasma", "inferno", "magma", "cividis", "rocket", "mako", "flare", "crest", "turbo",
-    "Blues", "Reds", "Greens", "Greys", "Oranges", "Purples", "BuGn", "BuPu", "GnBu", "OrRd", "PuBu",
-    "PuBuGn", "PuRd", "RdPu", "YlGn", "YlGnBu", "YlOrBr", "YlOrRd", "gray", "grey", "binary", "bone",
-    "pink", "hot", "afmhot", "cool", "copper", "summer", "autumn", "winter", "spring", "Wistia",
-    "jet", "rainbow", "gist_rainbow", "hsv", "nipy_spectral", "gist_ncar", "cubehelix", "gist_heat",
+    "viridis",
+    "plasma",
+    "inferno",
+    "magma",
+    "cividis",
+    "rocket",
+    "mako",
+    "flare",
+    "crest",
+    "turbo",
+    "Blues",
+    "Reds",
+    "Greens",
+    "Greys",
+    "Oranges",
+    "Purples",
+    "BuGn",
+    "BuPu",
+    "GnBu",
+    "OrRd",
+    "PuBu",
+    "PuBuGn",
+    "PuRd",
+    "RdPu",
+    "YlGn",
+    "YlGnBu",
+    "YlOrBr",
+    "YlOrRd",
+    "gray",
+    "grey",
+    "binary",
+    "bone",
+    "pink",
+    "hot",
+    "afmhot",
+    "cool",
+    "copper",
+    "summer",
+    "autumn",
+    "winter",
+    "spring",
+    "Wistia",
+    "jet",
+    "rainbow",
+    "gist_rainbow",
+    "hsv",
+    "nipy_spectral",
+    "gist_ncar",
+    "cubehelix",
+    "gist_heat",
 }
 DIVERGING = {
-    "RdBu", "coolwarm", "bwr", "seismic", "PuOr", "BrBG", "PiYG", "PRGn", "RdGy", "RdYlBu", "RdYlGn",
-    "Spectral", "icefire", "vlag", "managua", "berlin", "vanimo",
+    "RdBu",
+    "coolwarm",
+    "bwr",
+    "seismic",
+    "PuOr",
+    "BrBG",
+    "PiYG",
+    "PRGn",
+    "RdGy",
+    "RdYlBu",
+    "RdYlGn",
+    "Spectral",
+    "icefire",
+    "vlag",
+    "managua",
+    "berlin",
+    "vanimo",
 }
 
 
@@ -211,26 +319,45 @@ def _spans_zero(values) -> bool:
         return False
     lo, hi = v.min(), v.max()
     span = hi - lo
-    return lo < 0 < hi and min(-lo, hi) >= 0.1 * span  # real values on both sides of zero
+    return (
+        lo < 0 < hi and min(-lo, hi) >= 0.1 * span
+    )  # real values on both sides of zero
 
 
 @rule("CL202")
-def cl202(desc, cfg):
+def cl202(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     if desc.spec is not None:
         spec = desc.spec
         for aes in ("fill", "color"):
             if spec.is_discrete(aes):
                 continue
             col = next(
-                (spec.column(l, aes) for l in spec.layers if spec.column(l, aes) is not None), None
+                (
+                    spec.column(l, aes)
+                    for l in spec.layers
+                    if spec.column(l, aes) is not None
+                ),
+                None,
             )
-            if col is None or not pd.api.types.is_numeric_dtype(col) or not _spans_zero(col):
+            if (
+                col is None
+                or not pd.api.types.is_numeric_dtype(col)
+                or not _spans_zero(col)
+            ):
                 continue
             scale = spec.user_scale_for(aes)
-            name = type(scale).__name__ if scale is not None else f"scale_{aes}_continuous"
-            palette = getattr(getattr(scale, "palette", None), "name", None) or getattr(scale, "palette", None)
+            name = (
+                type(scale).__name__ if scale is not None else f"scale_{aes}_continuous"
+            )
+            palette = getattr(getattr(scale, "palette", None), "name", None) or getattr(
+                scale, "palette", None
+            )
             pal = _base_cmap(palette) if isinstance(palette, str) else None
-            if "gradient2" in name or (pal is not None and pal in DIVERGING) or "gradientn" in name:
+            if (
+                "gradient2" in name
+                or (pal is not None and pal in DIVERGING)
+                or "gradientn" in name
+            ):
                 continue
             if pal is not None and pal not in SEQUENTIAL and "cmap" in name:
                 continue  # an unfamiliar colormap: can't tell
@@ -251,9 +378,11 @@ def cl202(desc, cfg):
             try:
                 arr = get_array()
                 cmap_name = _base_cmap(artist.get_cmap().name)
-            except Exception:
+            except PROBE_ERRORS:
                 continue
-            if arr is None or not _spans_zero(np.ma.filled(np.ma.asarray(arr, dtype=float), np.nan)):
+            if arr is None or not _spans_zero(
+                np.ma.filled(np.ma.asarray(arr, dtype=float), np.nan)
+            ):
                 continue
             if cmap_name in SEQUENTIAL:
                 yield Hit(
@@ -269,7 +398,11 @@ def cl202(desc, cfg):
                 if type(norm).__name__ in ("TwoSlopeNorm", "CenteredNorm"):
                     continue
                 vmin, vmax = norm.vmin, norm.vmax
-                if vmin is not None and vmax is not None and abs(vmin + vmax) > 0.1 * (vmax - vmin):
+                if (
+                    vmin is not None
+                    and vmax is not None
+                    and abs(vmin + vmax) > 0.1 * (vmax - vmin)
+                ):
                     yield Hit(
                         f"The diverging colormap `{cmap_name}` isn't centered at zero "
                         f"(color limits {vmin:.3g} to {vmax:.3g}), so its neutral color isn't zero.",
@@ -282,16 +415,24 @@ def cl202(desc, cfg):
 
 # ---------------------------------------------------------------- CL203
 @rule("CL203")
-def cl203(desc, cfg):
+def cl203(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     if desc.spec is not None:
         spec = desc.spec
-        legend_hidden = spec.legend_position == "none" or (desc.render is not None and not desc.render.has_legend)
+        legend_hidden = spec.legend_position == "none" or (not desc.render.has_legend)
         for layer in spec.layers:
-            if layer.geom not in ("geom_col", "geom_bar", "geom_boxplot", "geom_violin"):
+            if layer.geom not in (
+                "geom_col",
+                "geom_bar",
+                "geom_boxplot",
+                "geom_violin",
+            ):
                 continue
             for aes in ("fill", "color"):
                 expr = layer.mapping.get(aes)
-                if expr is None or base_var(expr) not in (base_var(layer.mapping.get("x")), base_var(layer.mapping.get("y"))):
+                if expr is None or base_var(expr) not in (
+                    base_var(layer.mapping.get("x")),
+                    base_var(layer.mapping.get("y")),
+                ):
                     continue
                 if legend_hidden or layer.show_legend is False:
                     yield Hit(
@@ -307,7 +448,10 @@ def cl203(desc, cfg):
             continue  # with a legend, LB203 covers color that repeats the axis
         bars = [s for s in panel.of_kind("bar") if not s.from_hist]
         if len(bars) == 1:
-            colors = {tuple(np.round(r.get_facecolor()[:3], 3)) for r in bars[0].artist.patches}
+            colors = {
+                tuple(np.round(r.get_facecolor()[:3], 3))
+                for r in bars[0].artist.patches
+            }
             if len(colors) >= 3 and len(colors) == len(bars[0].artist.patches):
                 yield Hit(
                     f"Each of the {len(colors)} bars has its own color, but the colors don't stand for anything.",
@@ -317,10 +461,18 @@ def cl203(desc, cfg):
                 )
                 return
         elif len(bars) >= 3:
-            positions = [set(np.round(b.x, 6)) for b in bars]
-            disjoint = all(positions[i].isdisjoint(positions[j]) for i in range(len(bars)) for j in range(i))
+            positions = [set(np.round(np.asarray(b.x, dtype=float), 6)) for b in bars]
+            disjoint = all(
+                positions[i].isdisjoint(positions[j])
+                for i in range(len(bars))
+                for j in range(i)
+            )
             colors = {b.color[:3] for b in bars if b.color is not None}
-            if disjoint and len(colors) == len(bars) and all(len(p) == 1 for p in positions):
+            if (
+                disjoint
+                and len(colors) == len(bars)
+                and all(len(p) == 1 for p in positions)
+            ):
                 yield Hit(
                     f"Each of the {len(bars)} bars has its own color, but the colors don't stand for anything.",
                     fix="Use one color (seaborn: drop `hue=` or pass `color=`), and keep color for a real variable.",
@@ -354,8 +506,17 @@ def _mark_colors(desc, panel):
                 continue
             if "PANEL" in data:
                 data = data[data["PANEL"].astype(str) == str(panel.index + 1)]
-            filled = layer.geom in ("geom_col", "geom_bar", "geom_histogram", "geom_area", "geom_boxplot",
-                                    "geom_violin", "geom_tile", "geom_density", "geom_ribbon")
+            filled = layer.geom in (
+                "geom_col",
+                "geom_bar",
+                "geom_histogram",
+                "geom_area",
+                "geom_boxplot",
+                "geom_violin",
+                "geom_tile",
+                "geom_density",
+                "geom_ribbon",
+            )
             key = "fill" if filled else "color"
             if key not in data:
                 continue
@@ -397,16 +558,18 @@ def _mark_colors(desc, panel):
 
 # ---------------------------------------------------------------- CL204
 @rule("CL204")
-def cl204(desc, cfg):
-    if desc.render is None:
-        return
+def cl204(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     min_cr = float(cfg.t("min_mark_contrast"))
     for panel in desc.render.panels:
         bg = _panel_bg(panel.ax)
-        marks = [m for m in _mark_colors(desc, panel) if m[2] >= 0.9]  # translucent marks are deliberate
+        marks = [
+            m for m in _mark_colors(desc, panel) if m[2] >= 0.9
+        ]  # translucent marks are deliberate
         if not marks:
             continue
-        ratios = [(contrast_ratio(rgb, bg), name, rgb, edge) for name, rgb, _, edge in marks]
+        ratios = [
+            (contrast_ratio(rgb, bg), name, rgb, edge) for name, rgb, _, edge in marks
+        ]
         best = max(r[0] for r in ratios)
         for cr, name, rgb, edge in sorted(ratios, key=lambda r: r[0]):
             if cr >= min_cr:
@@ -437,7 +600,7 @@ def _style(series) -> tuple:
     artist = series.artist
     if hasattr(artist, "get_marker"):  # Line2D
         return (str(artist.get_linestyle()), str(artist.get_marker()))
-    paths = getattr(artist, "get_paths", lambda: [])()
+    paths = getattr(artist, "get_paths", list)()
     if paths:  # PathCollection (scatter): compare marker shapes
         return ("scatter", np.round(paths[0].vertices, 2).tobytes())
     return ("", id(artist))
@@ -445,7 +608,7 @@ def _style(series) -> tuple:
 
 # ---------------------------------------------------------------- CL301
 @rule("CL301")
-def cl301(desc, cfg):
+def cl301(desc: ChartDescription, cfg: Config) -> Iterator[Hit]:
     min_de = float(cfg.t("cvd_min_delta_e"))
     spec = desc.spec
     if spec is not None:
@@ -456,18 +619,30 @@ def cl301(desc, cfg):
             if not exprs:
                 continue
             bases = {base_var(e) for e in exprs}
-            if any(base_var(l.mapping.get(o)) in bases for l in spec.layers for o in ("shape", "linetype", "x", "y")):
+            if any(
+                base_var(l.mapping.get(o)) in bases
+                for l in spec.layers
+                for o in ("shape", "linetype", "x", "y")
+            ):
                 continue
             if any(l.geom in ("geom_text", "geom_label") for l in spec.layers):
                 continue  # direct labels
             colors = []
             for layer in spec.layers:
-                if aes in layer.mapping and layer.built_data is not None and aes in layer.built_data:
-                    colors += [c for c in pd.unique(layer.built_data[aes].dropna()) if isinstance(c, str)]
+                if (
+                    aes in layer.mapping
+                    and layer.built_data is not None
+                    and aes in layer.built_data
+                ):
+                    colors += [
+                        c
+                        for c in pd.unique(layer.built_data[aes].dropna())
+                        if isinstance(c, str)
+                    ]
             pairs = confusable_pairs(colors, min_de, kinds=("grayscale",))
             if pairs:
                 names = _color_names(spec, aes)
-                a, b, _, d = pairs[0]
+                a, b, _, _ = pairs[0]
                 expr = next(iter(exprs))
                 yield Hit(
                     f"`{expr}` is shown by color alone, and in grayscale {names.get(a, a)} and {names.get(b, b)} "
@@ -481,7 +656,11 @@ def cl301(desc, cfg):
                 return
         return
     for panel in desc.render.panels:
-        series = [s for s in panel.series if s.kind in ("line", "scatter") and (s.color is not None or s.palette)]
+        series = [
+            s
+            for s in panel.series
+            if s.kind in ("line", "scatter") and (s.color is not None or s.palette)
+        ]
         if len(series) < 2 and not any(s.palette for s in series):
             continue
         styles = {_style(s) for s in series}
@@ -489,10 +668,13 @@ def cl301(desc, cfg):
             continue  # every series also differs in linestyle or marker shape
         colors = []
         for s in series:
-            colors += [c[:3] for c in s.palette] if s.palette else [s.color[:3]]
+            if s.palette:
+                colors += [c[:3] for c in s.palette]
+            elif s.color is not None:
+                colors.append(s.color[:3])
         pairs = confusable_pairs(colors, min_de, kinds=("grayscale",))
         if pairs:
-            a, b, _, d = pairs[0]
+            a, b, _, _d = pairs[0]
             yield Hit(
                 f"Groups are told apart by color alone, and in grayscale {a} and {b} look the same.",
                 fix="Vary markers or linestyles too (seaborn: `style=` the same variable as `hue=`), or label the "

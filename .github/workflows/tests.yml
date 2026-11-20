@@ -2,29 +2,45 @@ name: tests
 
 on:
   push:
+    branches: [main]
   pull_request:
 
+env:
+  UV_LOCKED: "1"  # fail if uv.lock is out of date with pyproject.toml
+
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.13"  # slop-lint needs Python 3.12 or later
+      - run: make lint
+
   test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.13"
+      - run: make test
+
+  # The oldest stacks the linter supports. uv.lock pins the newest versions, so
+  # these jobs install with pip and pin plotnine and matplotlib by hand.
+  compat:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         include:
-          # oldest supported stack
           - python: "3.10"
-            plotnine: "plotnine==0.13.*"
-            matplotlib: "matplotlib==3.8.*"
+            pins: "plotnine==0.13.* matplotlib==3.8.* pandas==2.1.* numpy<2"
           - python: "3.11"
-            plotnine: "plotnine==0.14.*"
-            matplotlib: "matplotlib==3.9.*"
+            pins: "plotnine==0.14.* matplotlib==3.9.*"
           - python: "3.12"
-            plotnine: "plotnine==0.15.*"
-            matplotlib: "matplotlib==3.10.*"
-          # newest
-          - python: "3.13"
-            plotnine: "plotnine"
-            matplotlib: "matplotlib"
+            pins: "plotnine==0.15.* matplotlib==3.10.*"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -32,15 +48,8 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: Install
         run: |
-          python -m pip install --upgrade pip
-          pip install "${{ matrix.plotnine }}" "${{ matrix.matplotlib }}"
-          pip install -e ".[dev]"
-          pip install "${{ matrix.plotnine }}" "${{ matrix.matplotlib }}"  # keep the pinned versions
+          python -m pip install --upgrade "pip>=25.1"
+          pip install -e . --group test ${{ matrix.pins }}
       - name: Versions
         run: python -c "import plotnine, matplotlib, pandas; print(plotnine.__version__, matplotlib.__version__, pandas.__version__)"
-      - name: Test
-        run: pytest -q
-      - name: Rule docs are current
-        run: |
-          plotnine-linter rules --markdown > /tmp/RULES.md
-          diff -u docs/RULES.md /tmp/RULES.md
+      - run: pytest -q

@@ -1,12 +1,12 @@
 """plotnine-linter: a teaching-first linter for plotnine and matplotlib charts.
 
-    from plotnine_linter import lint
-    lint(p)            # a plotnine ggplot
-    lint(fig)          # a matplotlib Figure (or Axes)
+``lint()`` checks a plotnine ``ggplot`` or a matplotlib ``Figure`` or ``Axes``.
+In Jupyter, ``%load_ext plotnine_linter`` lints every plot as it appears.
+``show_rules()`` lists the rule catalog. ``audit()`` runs a Chartability
+accessibility audit.
 
-In Jupyter, ``%load_ext plotnine_linter`` lints every plot as it appears;
-``show_rules()`` (or ``%plotlint rules``) shows the rule catalog, and
-``audit(p)`` (or ``%plotlint audit``) runs a Chartability accessibility audit.
+    from plotnine_linter import lint
+    lint(p)
 """
 
 from .alttext import alt_text
@@ -22,19 +22,19 @@ from .registry import RULES, all_rules
 __version__ = "0.1.0"
 
 __all__ = [
-    "lint",
-    "alt_text",
-    "audit",
-    "data_table",
-    "show_rules",
-    "describe",
+    "RULES",
     "Config",
-    "load_config",
     "Finding",
     "Report",
     "Severity",
-    "RULES",
     "all_rules",
+    "alt_text",
+    "audit",
+    "data_table",
+    "describe",
+    "lint",
+    "load_config",
     "load_ipython_extension",
+    "show_rules",
     "unload_ipython_extension",
 ]

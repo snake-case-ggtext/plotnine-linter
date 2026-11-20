@@ -14,10 +14,21 @@ import seaborn as sns
 from plotnine import *
 from mizani.labels import label_percent
 
+
 def plain(breaks):  # tick labels like 0.1, 10, 1,000 instead of 1e-1, 1e1, 1e3
     return [f"{b:,g}" for b in breaks]
 
-OKABE = ["#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7", "#000000"]
+
+OKABE = [
+    "#E69F00",
+    "#56B4E9",
+    "#009E73",
+    "#F0E442",
+    "#0072B2",
+    "#D55E00",
+    "#CC79A7",
+    "#000000",
+]
 rng = np.random.default_rng(2026)
 ```
 
@@ -61,10 +72,12 @@ AX101 error: `geom_col` draws bars from zero, but the value axis shows 44.1 to 6
 <details><summary>Data for this example</summary>
 
 ```python
-income = pd.DataFrame({
-    "region": ["West", "East", "South", "North", "Central"],
-    "income": [52, 61, 47, 58, 50],
-})
+income = pd.DataFrame(
+    {
+        "region": ["West", "East", "South", "North", "Central"],
+        "income": [52, 61, 47, 58, 50],
+    }
+)
 ```
 
 </details>
@@ -155,10 +168,12 @@ AX103 error: The y-axis is log-scaled, but `downloads` has 3 values at or below 
 <details><summary>Data for this example</summary>
 
 ```python
-pkg = pd.DataFrame({
-    "week": range(1, 13),
-    "downloads": [0, 3, 0, 12, 40, 95, 0, 310, 820, 1500, 4100, 9800],
-})
+pkg = pd.DataFrame(
+    {
+        "week": range(1, 13),
+        "downloads": [0, 3, 0, 12, 40, 95, 0, 310, 820, 1500, 4100, 9800],
+    }
+)
 ```
 
 </details>
@@ -197,12 +212,17 @@ CL101 error: `scale_fill_cmap` uses the rainbow colormap `jet`.
 
 ```python
 days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-trips = pd.DataFrame([(d, h) for d in days for h in range(6, 23)], columns=["day", "hour"])
+trips = pd.DataFrame(
+    [(d, h) for d in days for h in range(6, 23)], columns=["day", "hour"]
+)
 weekday = trips["day"].isin(days[:5])
 trips["trips"] = np.where(
     weekday,
-    40 + 220 * np.exp(-(trips.hour - 8) ** 2 / 2) + 240 * np.exp(-(trips.hour - 17.5) ** 2 / 3),
-    60 + 130 * np.exp(-(trips.hour - 14) ** 2 / 12)).round()
+    40
+    + 220 * np.exp(-((trips.hour - 8) ** 2) / 2)
+    + 240 * np.exp(-((trips.hour - 17.5) ** 2) / 3),
+    60 + 130 * np.exp(-((trips.hour - 14) ** 2) / 12),
+).round()
 trips["day"] = pd.Categorical(trips["day"], categories=days[::-1], ordered=True)
 ```
 
@@ -246,12 +266,26 @@ The before plot also trips [CL201](#cl201).
 <details><summary>Data for this example</summary>
 
 ```python
-cities = pd.DataFrame({
-    "city": ["Oslo", "Lisbon", "Cairo", "Lagos", "Mumbai", "Tokyo",
-             "Sydney", "Lima", "Montreal", "Denver", "Miami", "Seattle"],
-    "jan_temp": [-4, 11, 14, 27, 24, 5, 23, 19, -10, -1, 20, 5],
-    "rain": [760, 730, 25, 1500, 2200, 1530, 1200, 15, 1000, 400, 1570, 950],
-})
+cities = pd.DataFrame(
+    {
+        "city": [
+            "Oslo",
+            "Lisbon",
+            "Cairo",
+            "Lagos",
+            "Mumbai",
+            "Tokyo",
+            "Sydney",
+            "Lima",
+            "Montreal",
+            "Denver",
+            "Miami",
+            "Seattle",
+        ],
+        "jan_temp": [-4, 11, 14, 27, 24, 5, 23, 19, -10, -1, 20, 5],
+        "rain": [760, 730, 25, 1500, 2200, 1530, 1200, 15, 1000, 400, 1570, 950],
+    }
+)
 ```
 
 </details>
@@ -325,12 +359,21 @@ LY101 error: 7 pair(s) of x-axis tick labels overlap (e.g. 'International S…' 
 <details><summary>Data for this example</summary>
 
 ```python
-majors = pd.DataFrame({
-    "major": ["Cognitive Science", "Computer Engineering", "Data Science",
-              "Political Science", "Human Biology", "Mechanical Engineering",
-              "International Studies", "Mathematics-Computer Science"],
-    "students": [1450, 1320, 1180, 760, 980, 890, 540, 610],
-})
+majors = pd.DataFrame(
+    {
+        "major": [
+            "Cognitive Science",
+            "Computer Engineering",
+            "Data Science",
+            "Political Science",
+            "Human Biology",
+            "Mechanical Engineering",
+            "International Studies",
+            "Mathematics-Computer Science",
+        ],
+        "students": [1450, 1320, 1180, 760, 980, 890, 540, 610],
+    }
+)
 ```
 
 </details>
@@ -370,11 +413,17 @@ LY102 error: The legend sits on top of 2 data point(s).
 
 ```python
 n = 60
-birds = pd.DataFrame({
-    "Species": np.repeat(["Adelie", "Chinstrap", "Gentoo"], n),
-    "Bill length (mm)": np.concatenate([rng.normal(m, 2.5, n) for m in (38.5, 49, 47.5)]),
-    "Flipper length (mm)": np.concatenate([rng.normal(m, 6, n) for m in (190, 196, 217)]),
-})
+birds = pd.DataFrame(
+    {
+        "Species": np.repeat(["Adelie", "Chinstrap", "Gentoo"], n),
+        "Bill length (mm)": np.concatenate(
+            [rng.normal(m, 2.5, n) for m in (38.5, 49, 47.5)]
+        ),
+        "Flipper length (mm)": np.concatenate(
+            [rng.normal(m, 6, n) for m in (190, 196, 217)]
+        ),
+    }
+)
 ```
 
 </details>
@@ -455,7 +504,9 @@ MK101 error: 87% of the 3000 points overlap another point at full opacity.
 ```python
 n = 3000
 height = rng.normal(170, 9, n)
-people = pd.DataFrame({"height": height, "weight": 0.9 * height - 85 + rng.normal(0, 9, n)})
+people = pd.DataFrame(
+    {"height": height, "weight": 0.9 * height - 85 + rng.normal(0, 9, n)}
+)
 ```
 
 </details>
@@ -536,10 +587,12 @@ MK103 error: `geom_line` connects the unordered categories of `drink`.
 <details><summary>Data for this example</summary>
 
 ```python
-drinks = pd.DataFrame({
-    "drink": ["Latte", "Mocha", "Espresso", "Cold brew", "Chai"],
-    "orders": [140, 55, 80, 120, 45],
-})
+drinks = pd.DataFrame(
+    {
+        "drink": ["Latte", "Mocha", "Espresso", "Cold brew", "Chai"],
+        "orders": [140, 55, 80, 120, 45],
+    }
+)
 ```
 
 </details>
@@ -577,10 +630,12 @@ AX201 warning: The 5 bars for `region` are in alphabetical order, not sorted by 
 <details><summary>Data for this example</summary>
 
 ```python
-income = pd.DataFrame({
-    "region": ["West", "East", "South", "North", "Central"],
-    "income": [52, 61, 47, 58, 50],
-})
+income = pd.DataFrame(
+    {
+        "region": ["West", "East", "South", "North", "Central"],
+        "income": [52, 61, 47, 58, 50],
+    }
+)
 ```
 
 </details>
@@ -617,10 +672,19 @@ AX202 warning: Category labels on the x-axis are rotated 45° (e.g. 'Finland').
 <details><summary>Data for this example</summary>
 
 ```python
-coffee = pd.DataFrame({
-    "country": ["Finland", "Norway", "Netherlands", "Germany", "United States", "United Kingdom"],
-    "kg": [12.0, 9.9, 8.4, 5.5, 4.4, 2.8],
-})
+coffee = pd.DataFrame(
+    {
+        "country": [
+            "Finland",
+            "Norway",
+            "Netherlands",
+            "Germany",
+            "United States",
+            "United Kingdom",
+        ],
+        "kg": [12.0, 9.9, 8.4, 5.5, 4.4, 2.8],
+    }
+)
 ```
 
 </details>
@@ -660,13 +724,38 @@ AX203 warning: Facets use `scales='free_y'`, so panels aren't on a common y scal
 <details><summary>Data for this example</summary>
 
 ```python
-parks = pd.DataFrame({
-    "year": np.tile(np.arange(2016, 2024), 3),
-    "park": np.repeat(["Yosemite", "Joshua Tree", "Pinnacles"], 8),
-    "visitors": [5.0, 4.3, 4.0, 4.4, 2.3, 3.3, 3.7, 3.9,
-                 2.5, 2.9, 2.9, 3.0, 2.4, 3.1, 3.1, 2.9,
-                 0.33, 0.22, 0.18, 0.18, 0.14, 0.35, 0.35, 0.28],
-})
+parks = pd.DataFrame(
+    {
+        "year": np.tile(np.arange(2016, 2024), 3),
+        "park": np.repeat(["Yosemite", "Joshua Tree", "Pinnacles"], 8),
+        "visitors": [
+            5.0,
+            4.3,
+            4.0,
+            4.4,
+            2.3,
+            3.3,
+            3.7,
+            3.9,
+            2.5,
+            2.9,
+            2.9,
+            3.0,
+            2.4,
+            3.1,
+            3.1,
+            2.9,
+            0.33,
+            0.22,
+            0.18,
+            0.18,
+            0.14,
+            0.35,
+            0.35,
+            0.28,
+        ],
+    }
+)
 ```
 
 </details>
@@ -739,10 +828,23 @@ AX205 warning: `month` is shown in alphabetical order (Apr, Aug, Dec, Feb…) in
 <details><summary>Data for this example</summary>
 
 ```python
-MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
-          "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-rain = pd.DataFrame({"month": MONTHS,
-                     "mm": [50, 58, 45, 20, 5, 2, 1, 1, 4, 15, 25, 40]})
+MONTHS = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+]
+rain = pd.DataFrame(
+    {"month": MONTHS, "mm": [50, 58, 45, 20, 5, 2, 1, 1, 4, 15, 25, 40]}
+)
 ```
 
 </details>
@@ -783,12 +885,27 @@ AX206 info: The x-axis shows log-transformed values ('log10 body mass (kg)') on 
 <details><summary>Data for this example</summary>
 
 ```python
-mammals = pd.DataFrame({
-    "animal": ["Mouse", "Mole", "Rat", "Rabbit", "Cat", "Dog", "Goat",
-               "Chimpanzee", "Human", "Pig", "Cow", "Horse", "Elephant"],
-    "body_kg": [0.023, 0.12, 0.28, 2.5, 3.3, 10, 27.7, 52, 62, 192, 465, 521, 6654],
-    "brain_g": [0.4, 1.2, 1.9, 12.1, 25.6, 72, 115, 440, 1320, 180, 423, 655, 5712],
-})
+mammals = pd.DataFrame(
+    {
+        "animal": [
+            "Mouse",
+            "Mole",
+            "Rat",
+            "Rabbit",
+            "Cat",
+            "Dog",
+            "Goat",
+            "Chimpanzee",
+            "Human",
+            "Pig",
+            "Cow",
+            "Horse",
+            "Elephant",
+        ],
+        "body_kg": [0.023, 0.12, 0.28, 2.5, 3.3, 10, 27.7, 52, 62, 192, 465, 521, 6654],
+        "brain_g": [0.4, 1.2, 1.9, 12.1, 25.6, 72, 115, 440, 1320, 180, 423, 655, 5712],
+    }
+)
 ```
 
 </details>
@@ -827,8 +944,9 @@ AX207 warning: The x-axis has a tick at 2018.5, but the plotted values are whole
 <details><summary>Data for this example</summary>
 
 ```python
-enrollment = pd.DataFrame({"year": [2019, 2020, 2021, 2022, 2023],
-                           "students": [612, 655, 701, 690, 748]})
+enrollment = pd.DataFrame(
+    {"year": [2019, 2020, 2021, 2022, 2023], "students": [612, 655, 701, 690, 748]}
+)
 ```
 
 </details>
@@ -867,11 +985,15 @@ CL201 warning: With deuteranopia, the colors for 'Flipped' and 'Hybrid' look nea
 ```python
 n = 25
 hours = rng.uniform(1, 12, 3 * n)
-study = pd.DataFrame({
-    "format": np.repeat(["Lecture", "Flipped", "Hybrid"], n),
-    "hours": hours,
-    "score": np.clip(55 + 3 * hours + np.repeat([0, 6, 3], n) + rng.normal(0, 5, 3 * n), 0, 100),
-})
+study = pd.DataFrame(
+    {
+        "format": np.repeat(["Lecture", "Flipped", "Hybrid"], n),
+        "hours": hours,
+        "score": np.clip(
+            55 + 3 * hours + np.repeat([0, 6, 3], n) + rng.normal(0, 5, 3 * n), 0, 100
+        ),
+    }
+)
 ```
 
 </details>
@@ -910,7 +1032,9 @@ CL202 warning: `change` runs from negative to positive, but fill uses a sequenti
 
 ```python
 cities = ["Phoenix", "Denver", "Chicago", "Boston", "Seattle"]
-temps = pd.DataFrame([(c, y) for c in cities for y in range(2017, 2025)], columns=["city", "year"])
+temps = pd.DataFrame(
+    [(c, y) for c in cities for y in range(2017, 2025)], columns=["city", "year"]
+)
 temps["change"] = np.round(rng.normal(0.6, 0.7, len(temps)), 1)
 ```
 
@@ -950,12 +1074,15 @@ CL203 warning: Each bar gets its own fill from `region`, which the axis already 
 <details><summary>Data for this example</summary>
 
 ```python
-income = pd.DataFrame({
-    "region": ["West", "East", "South", "North", "Central"],
-    "income": [52, 61, 47, 58, 50],
-})
-income["region"] = pd.Categorical(income["region"],
-                                  categories=income.sort_values("income")["region"])
+income = pd.DataFrame(
+    {
+        "region": ["West", "East", "South", "North", "Central"],
+        "income": [52, 61, 47, 58, 50],
+    }
+)
+income["region"] = pd.Categorical(
+    income["region"], categories=income.sort_values("income")["region"]
+)
 ```
 
 </details>
@@ -996,9 +1123,13 @@ CL204 warning: Marks colored #f0e442 have a contrast of only 1.3:1 against the #
 <details><summary>Data for this example</summary>
 
 ```python
-sales = pd.DataFrame({"month": range(1, 13),
-                      "online": [12, 14, 15, 17, 18, 21, 23, 22, 25, 27, 30, 33],
-                      "store": [30, 29, 29, 28, 27, 27, 26, 25, 25, 24, 23, 22]})
+sales = pd.DataFrame(
+    {
+        "month": range(1, 13),
+        "online": [12, 14, 15, 17, 18, 21, 23, 22, 25, 27, 30, 33],
+        "store": [30, 29, 29, 28, 27, 27, 26, 25, 25, 24, 23, 22],
+    }
+)
 ```
 
 </details>
@@ -1037,8 +1168,12 @@ LB201 warning: The y-axis is labeled `exam_pct`, the raw variable name.
 ```python
 n = 40
 study_hrs = rng.uniform(1, 12, n)
-grades = pd.DataFrame({"study_hrs": study_hrs,
-                       "exam_pct": np.clip(55 + 3 * study_hrs + rng.normal(0, 6, n), 0, 100)})
+grades = pd.DataFrame(
+    {
+        "study_hrs": study_hrs,
+        "exam_pct": np.clip(55 + 3 * study_hrs + rng.normal(0, 6, n), 0, 100),
+    }
+)
 ```
 
 </details>
@@ -1077,12 +1212,15 @@ LB203 warning: `region` is mapped to both x and fill, so the legend repeats the 
 <details><summary>Data for this example</summary>
 
 ```python
-income = pd.DataFrame({
-    "region": ["West", "East", "South", "North", "Central"],
-    "income": [52, 61, 47, 58, 50],
-})
-income["region"] = pd.Categorical(income["region"],
-                                  categories=income.sort_values("income")["region"])
+income = pd.DataFrame(
+    {
+        "region": ["West", "East", "South", "North", "Central"],
+        "income": [52, 61, 47, 58, 50],
+    }
+)
+income["region"] = pd.Categorical(
+    income["region"], categories=income.sort_values("income")["region"]
+)
 ```
 
 </details>
@@ -1120,10 +1258,12 @@ LB205 info: The y-axis label says percent ('Pass rate (%)'), but the ticks run 0
 <details><summary>Data for this example</summary>
 
 ```python
-exams = pd.DataFrame({
-    "year": range(2016, 2025),
-    "rate": [0.62, 0.64, 0.63, 0.68, 0.71, 0.70, 0.74, 0.78, 0.81],
-})
+exams = pd.DataFrame(
+    {
+        "year": range(2016, 2025),
+        "rate": [0.62, 0.64, 0.63, 0.68, 0.71, 0.70, 0.74, 0.78, 0.81],
+    }
+)
 ```
 
 </details>
@@ -1201,10 +1341,12 @@ LY201 warning: Some text is 4.8 pt, below 8 pt (other, xtick, ytick).
 <details><summary>Data for this example</summary>
 
 ```python
-income = pd.DataFrame({
-    "region": ["West", "East", "South", "North", "Central"],
-    "income": [52, 61, 47, 58, 50],
-})
+income = pd.DataFrame(
+    {
+        "region": ["West", "East", "South", "North", "Central"],
+        "income": [52, 61, 47, 58, 50],
+    }
+)
 ```
 
 </details>
@@ -1243,15 +1385,59 @@ LY202 warning: The legend lists `language` as C++, Java, JavaScript, Python…, 
 <details><summary>Data for this example</summary>
 
 ```python
-langs = pd.DataFrame({
-    "year": np.tile(np.arange(2016, 2025), 5),
-    "language": np.repeat(["C++", "Java", "JavaScript", "Python", "R"], 9),
-    "share": [12, 11, 11, 10, 10, 9, 9, 8, 8,
-              26, 25, 23, 21, 19, 18, 16, 15, 14,
-              20, 21, 21, 22, 22, 21, 21, 20, 20,
-              10, 13, 16, 19, 22, 25, 27, 29, 31,
-              5, 5, 6, 6, 6, 6, 5, 5, 5],
-})
+langs = pd.DataFrame(
+    {
+        "year": np.tile(np.arange(2016, 2025), 5),
+        "language": np.repeat(["C++", "Java", "JavaScript", "Python", "R"], 9),
+        "share": [
+            12,
+            11,
+            11,
+            10,
+            10,
+            9,
+            9,
+            8,
+            8,
+            26,
+            25,
+            23,
+            21,
+            19,
+            18,
+            16,
+            15,
+            14,
+            20,
+            21,
+            21,
+            22,
+            22,
+            21,
+            21,
+            20,
+            20,
+            10,
+            13,
+            16,
+            19,
+            22,
+            25,
+            27,
+            29,
+            31,
+            5,
+            5,
+            6,
+            6,
+            6,
+            6,
+            5,
+            5,
+            5,
+        ],
+    }
+)
 ```
 
 </details>
@@ -1291,8 +1477,17 @@ MK201 warning: This pie has 7 slices (more than 4).
 <details><summary>Data for this example</summary>
 
 ```python
-budget = pd.Series({"Rent": 1600, "Food": 650, "Transport": 300, "Utilities": 180,
-                    "Health": 220, "Fun": 250, "Savings": 400})
+budget = pd.Series(
+    {
+        "Rent": 1600,
+        "Food": 650,
+        "Transport": 300,
+        "Utilities": 180,
+        "Health": 220,
+        "Fun": 250,
+        "Savings": 400,
+    }
+)
 ```
 
 </details>
@@ -1336,13 +1531,20 @@ The before plot also trips [AX207](#ax207), [CL102](#cl102), [CL201](#cl201), [L
 
 ```python
 states = ["CA", "TX", "NV", "AZ", "NC", "FL", "NY", "MA", "CO", "UT"]
-solar = pd.DataFrame({
-    "year": np.tile(np.arange(2015, 2025), 10),
-    "state": np.repeat(states, 10),
-    "share": np.concatenate([np.linspace(a, b, 10) + rng.normal(0, 0.4, 10)
-                             for a, b in zip([8, 1, 5, 4, 2, 1, 1, 2, 2, 2],
-                                             [28, 7, 26, 16, 9, 7, 5, 9, 9, 10])]).round(1),
-})
+solar = pd.DataFrame(
+    {
+        "year": np.tile(np.arange(2015, 2025), 10),
+        "state": np.repeat(states, 10),
+        "share": np.concatenate(
+            [
+                np.linspace(a, b, 10) + rng.normal(0, 0.4, 10)
+                for a, b in zip(
+                    [8, 1, 5, 4, 2, 1, 1, 2, 2, 2], [28, 7, 26, 16, 9, 7, 5, 9, 9, 10]
+                )
+            ]
+        ).round(1),
+    }
+)
 ```
 
 </details>
@@ -1386,10 +1588,16 @@ MK203 warning: Bars show a summary statistic with no error bars or data points.
 ```python
 n = 15
 conditions = ["Rested", "Sleep-deprived", "Sleep-deprived + caffeine"]
-rt = pd.DataFrame({
-    "condition": pd.Categorical(np.repeat(conditions, n), categories=conditions, ordered=True),
-    "ms": np.concatenate([rng.normal(m, s, n) for m, s in ((310, 25), (380, 60), (360, 45))]),
-})
+rt = pd.DataFrame(
+    {
+        "condition": pd.Categorical(
+            np.repeat(conditions, n), categories=conditions, ordered=True
+        ),
+        "ms": np.concatenate(
+            [rng.normal(m, s, n) for m, s in ((310, 25), (380, 60), (360, 45))]
+        ),
+    }
+)
 ```
 
 </details>
@@ -1429,10 +1637,14 @@ MK204 warning: Some boxes summarize fewer than 10 observations (smallest: `Table
 <details><summary>Data for this example</summary>
 
 ```python
-sessions = pd.DataFrame({
-    "device": ["Desktop"] * 40 + ["Phone"] * 40 + ["Tablet"] * 6,
-    "minutes": np.concatenate([rng.gamma(5, 4, 40), rng.gamma(3, 3, 40), rng.gamma(4, 4, 6)]),
-})
+sessions = pd.DataFrame(
+    {
+        "device": ["Desktop"] * 40 + ["Phone"] * 40 + ["Tablet"] * 6,
+        "minutes": np.concatenate(
+            [rng.gamma(5, 4, 40), rng.gamma(3, 3, 40), rng.gamma(4, 4, 6)]
+        ),
+    }
+)
 ```
 
 </details>
@@ -1475,11 +1687,35 @@ The before plot also trips [CL201](#cl201).
 
 ```python
 modes = ["Car", "Bus", "Rail", "Bike", "Walk", "Scooter", "Other"]
-commute = pd.DataFrame({
-    "city": np.repeat(["Austin", "Chicago", "Portland"], 7),
-    "mode": modes * 3,
-    "share": [72, 4, 1, 2, 3, 1, 17,  48, 13, 15, 2, 7, 1, 14,  58, 9, 3, 6, 6, 1, 17],
-})
+commute = pd.DataFrame(
+    {
+        "city": np.repeat(["Austin", "Chicago", "Portland"], 7),
+        "mode": modes * 3,
+        "share": [
+            72,
+            4,
+            1,
+            2,
+            3,
+            1,
+            17,
+            48,
+            13,
+            15,
+            2,
+            7,
+            1,
+            14,
+            58,
+            9,
+            3,
+            6,
+            6,
+            1,
+            17,
+        ],
+    }
+)
 ```
 
 </details>
@@ -1526,9 +1762,13 @@ CL301 info: `light` is shown by color alone, and in grayscale 'Full sun' and 'Sh
 
 ```python
 t = np.arange(0, 10)
-growth = pd.DataFrame({"day": np.tile(t, 2),
-                       "height": np.r_[2 + 1.1 * t, 2 + 0.6 * t],
-                       "light": np.repeat(["Full sun", "Shade"], len(t))})
+growth = pd.DataFrame(
+    {
+        "day": np.tile(t, 2),
+        "height": np.r_[2 + 1.1 * t, 2 + 0.6 * t],
+        "light": np.repeat(["Full sun", "Shade"], len(t)),
+    }
+)
 ```
 
 </details>
@@ -1566,10 +1806,12 @@ LB301 info: The x-axis label 'Average income' doesn't mention units.
 <details><summary>Data for this example</summary>
 
 ```python
-income = pd.DataFrame({
-    "region": ["West", "East", "South", "North", "Central"],
-    "income": [52, 61, 47, 58, 50],
-})
+income = pd.DataFrame(
+    {
+        "region": ["West", "East", "South", "North", "Central"],
+        "income": [52, 61, 47, 58, 50],
+    }
+)
 ```
 
 </details>
@@ -1606,7 +1848,9 @@ ST301 info: The plot has no title.
 ```python
 n = 40
 temp = rng.uniform(2, 32, n)
-bikes = pd.DataFrame({"temp": temp, "rentals": (800 + 120 * temp + rng.normal(0, 400, n)).round()})
+bikes = pd.DataFrame(
+    {"temp": temp, "rentals": (800 + 120 * temp + rng.normal(0, 400, n)).round()}
+)
 ```
 
 </details>
@@ -1649,14 +1893,47 @@ The before plot also trips [AX207](#ax207).
 <details><summary>Data for this example</summary>
 
 ```python
-homes = pd.DataFrame({
-    "year": np.tile(np.arange(2015, 2025), 3),
-    "city": pd.Categorical(np.repeat(["San Diego", "Denver", "Phoenix"], 10),
-                           categories=["San Diego", "Denver", "Phoenix"]),
-    "price": [480, 510, 545, 570, 600, 650, 760, 850, 880, 930,
-              380, 410, 440, 460, 480, 510, 600, 650, 620, 610,
-              210, 230, 250, 270, 290, 320, 410, 460, 430, 440],
-})
+homes = pd.DataFrame(
+    {
+        "year": np.tile(np.arange(2015, 2025), 3),
+        "city": pd.Categorical(
+            np.repeat(["San Diego", "Denver", "Phoenix"], 10),
+            categories=["San Diego", "Denver", "Phoenix"],
+        ),
+        "price": [
+            480,
+            510,
+            545,
+            570,
+            600,
+            650,
+            760,
+            850,
+            880,
+            930,
+            380,
+            410,
+            440,
+            460,
+            480,
+            510,
+            600,
+            650,
+            620,
+            610,
+            210,
+            230,
+            250,
+            270,
+            290,
+            320,
+            410,
+            460,
+            430,
+            440,
+        ],
+    }
+)
 ```
 
 </details>
@@ -1693,16 +1970,22 @@ ST305 info: 'South' is #e69f00 here but was #009e73 in figure 1 of this notebook
 
 ```python
 n = 15
-stores = pd.DataFrame({
-    "region": np.repeat(["East", "North", "South", "West"], n),
-    "ads": rng.uniform(5, 40, 4 * n),
-})
+stores = pd.DataFrame(
+    {
+        "region": np.repeat(["East", "North", "South", "West"], n),
+        "ads": rng.uniform(5, 40, 4 * n),
+    }
+)
 stores["revenue"] = (60 + 4 * stores["ads"] + rng.normal(0, 20, 4 * n)).round()
 south_west = stores[stores["region"].isin(["South", "West"])]
 
+
 def scatter(df, title):
-    return (ggplot(df, aes("ads", "revenue", color="region")) + geom_point()
-            + labs(x="Ad spend (USD, k)", y="Revenue (USD, k)", color="Region", title=title))
+    return (
+        ggplot(df, aes("ads", "revenue", color="region"))
+        + geom_point()
+        + labs(x="Ad spend (USD, k)", y="Revenue (USD, k)", color="Region", title=title)
+    )
 ```
 
 </details>
@@ -1741,12 +2024,15 @@ ST306 info: This figure's theme (theme_gray) differs from the first figure's (th
 <details><summary>Data for this example</summary>
 
 ```python
-income = pd.DataFrame({
-    "region": ["West", "East", "South", "North", "Central"],
-    "income": [52, 61, 47, 58, 50],
-})
-trend = pd.DataFrame({"year": range(2015, 2025),
-                      "income": [44, 45, 47, 48, 50, 49, 51, 53, 55, 56]})
+income = pd.DataFrame(
+    {
+        "region": ["West", "East", "South", "North", "Central"],
+        "income": [52, 61, 47, 58, 50],
+    }
+)
+trend = pd.DataFrame(
+    {"year": range(2015, 2025), "income": [44, 45, 47, 48, 50, 49, 51, 53, 55, 56]}
+)
 ```
 
 </details>
@@ -1785,10 +2071,12 @@ ST307 info: y-axis tick labels show 3+ decimal places.
 <details><summary>Data for this example</summary>
 
 ```python
-jobs = pd.DataFrame({
-    "year": range(2015, 2025),
-    "rate": [0.046, 0.043, 0.041, 0.038, 0.035, 0.037, 0.039, 0.036, 0.034, 0.033],
-})
+jobs = pd.DataFrame(
+    {
+        "year": range(2015, 2025),
+        "rate": [0.046, 0.043, 0.041, 0.038, 0.035, 0.037, 0.039, 0.036, 0.034, 0.033],
+    }
+)
 ```
 
 </details>

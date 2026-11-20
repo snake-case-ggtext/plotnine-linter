@@ -42,7 +42,15 @@ def test_tier3_is_opt_in():
 def test_ignore_and_select():
     fig = unsorted_bars()
     assert "AX201" not in ids(lint(fig, ignore=["AX201"]))
-    assert ids(lint(fig, select=["AX"])) <= {"AX101", "AX102", "AX103", "AX201", "AX202", "AX203", "AX204"}
+    assert ids(lint(fig, select=["AX"])) <= {
+        "AX101",
+        "AX102",
+        "AX103",
+        "AX201",
+        "AX202",
+        "AX203",
+        "AX204",
+    }
 
 
 def test_severity_override():
@@ -59,13 +67,21 @@ def test_threshold_override():
 
 def test_parse_suppressions():
     src = "x = 1\n# plotlint: ignore[AX201, lb301] months are ordinal\n#plotlint:ignore[MK101]\n"
-    assert parse_suppressions(src) == {"AX201": "months are ordinal", "LB301": "months are ordinal", "MK101": ""}
+    assert parse_suppressions(src) == {
+        "AX201": "months are ordinal",
+        "LB301": "months are ordinal",
+        "MK101": "",
+    }
 
 
 def test_suppression_with_reason_moves_finding():
-    report = lint(unsorted_bars(), source="# plotlint: ignore[AX201] order is by survey question")
+    report = lint(
+        unsorted_bars(), source="# plotlint: ignore[AX201] order is by survey question"
+    )
     assert "AX201" not in ids(report)
-    assert [(f.rule_id, why) for f, why in report.suppressed] == [("AX201", "order is by survey question")]
+    assert [(f.rule_id, why) for f, why in report.suppressed] == [
+        ("AX201", "order is by survey question")
+    ]
 
 
 def test_suppression_without_reason_is_noted():
@@ -126,7 +142,12 @@ def test_broken_rule_does_not_crash(monkeypatch):
 
 
 def test_cli_rules_and_check(tmp_path):
-    out = subprocess.run([sys.executable, "-m", "plotnine_linter", "rules"], capture_output=True, text=True, check=True)
+    out = subprocess.run(
+        [sys.executable, "-m", "plotnine_linter", "rules"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
     assert "AX101" in out.stdout
     script = tmp_path / "plot.py"
     script.write_text(
@@ -136,8 +157,17 @@ def test_cli_rules_and_check(tmp_path):
         "plt.show()\n"
     )
     res = subprocess.run(
-        [sys.executable, "-m", "plotnine_linter", "check", str(script), "--format", "json"],
+        [
+            sys.executable,
+            "-m",
+            "plotnine_linter",
+            "check",
+            str(script),
+            "--format",
+            "json",
+        ],
         capture_output=True,
+        check=False,
         text=True,
     )
     assert res.returncode == 1
@@ -162,7 +192,9 @@ def test_rule_catalog():
     assert frame.loc["CL201", "tier"] == 2
     assert {r.id[:2] for r in show_rules("AX").rules} == {"AX"}
     assert {r.tier for r in show_rules(1).rules} == {1}
-    on = show_rules(config=Config().merged(select=["tier1", "tier2", "tier3"])).to_frame()
+    on = show_rules(
+        config=Config().merged(select=["tier1", "tier2", "tier3"])
+    ).to_frame()
     assert on["enabled"].all()
     assert "AX101" in str(cat)
 
@@ -171,7 +203,7 @@ def test_session_rules_compare_figures():
     from plotnine_linter.session import Session
 
     session = Session()
-    opts = dict(select=["ST305", "ST306"], session=session)
+    opts = {"select": ["ST305", "ST306"], "session": session}
     fig1, ax1 = plt.subplots()
     ax1.plot([0, 1], [0, 1], color="#E69F00", label="West")
     ax1.legend()
@@ -190,11 +222,14 @@ def test_alt_text():
 
     fig, ax = plt.subplots()
     s = pd.Series({"West": 52, "East": 61, "South": 47})
-    ax.bar(s.index, s.values)
+    ax.bar(s.index, s.to_numpy())
     ax.set_xlabel("Region")
     ax.set_ylabel("Income (USD k)")
     text = alt_text(fig)
-    assert text.startswith("Bar chart of Income (USD k) by Region") and "Highest: East (61)" in text
+    assert (
+        text.startswith("Bar chart of Income (USD k) by Region")
+        and "Highest: East (61)" in text
+    )
     assert lint(fig).alt_text == text
 
 
@@ -206,7 +241,9 @@ def test_accessibility_profile():
     assert cfg.is_selected("ST301", 3) and not cfg.is_selected("ST303", 3)
     assert cfg.severity["CL301"] == Severity.WARNING and cfg.is_selected("CL301", 3)
     fig, ax = plt.subplots()
-    ax.plot([1, 2, 3], [1, 3, 2], color="#ff7f0e")  # matplotlib's default orange: 2.5:1 on white
+    ax.plot(
+        [1, 2, 3], [1, 3, 2], color="#ff7f0e"
+    )  # matplotlib's default orange: 2.5:1 on white
     ax.set_xlabel("Time (s)")
     ax.set_ylabel("Distance (m)")
     assert "CL204" not in ids(lint(fig))

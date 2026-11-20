@@ -1,0 +1,1908 @@
+{
+  "errors": [
+    {
+      "column": 21,
+      "path": "docs/gallery/make_gallery.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `_T` for generic class `list[_T]`",
+      "severity": "error"
+    },
+    {
+      "column": 20,
+      "path": "docs/gallery/make_gallery.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `_T` for generic class `list[_T]`",
+      "severity": "error"
+    },
+    {
+      "column": 9,
+      "path": "docs/gallery/make_gallery.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `_KT` for generic class `dict[_KT, _VT]`",
+      "severity": "error"
+    },
+    {
+      "column": 9,
+      "path": "docs/gallery/make_gallery.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `_VT` for generic class `dict[_KT, _VT]`",
+      "severity": "error"
+    },
+    {
+      "column": 15,
+      "path": "docs/gallery/make_gallery.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_lint_all` is missing an annotation for parameter `objs`",
+      "severity": "error"
+    },
+    {
+      "column": 11,
+      "path": "docs/gallery/make_gallery.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_save` is missing an annotation for parameter `obj`",
+      "severity": "error"
+    },
+    {
+      "column": 28,
+      "path": "docs/gallery/make_gallery.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_save` is missing an annotation for parameter `size`",
+      "severity": "error"
+    },
+    {
+      "column": 24,
+      "path": "docs/gallery/make_gallery.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_save_side_by_side` is missing an annotation for parameter `objs`",
+      "severity": "error"
+    },
+    {
+      "column": 42,
+      "path": "docs/gallery/make_gallery.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_save_side_by_side` is missing an annotation for parameter `size`",
+      "severity": "error"
+    },
+    {
+      "column": 16,
+      "path": "docs/gallery/make_gallery.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_configure` is missing an annotation for parameter `size`",
+      "severity": "error"
+    },
+    {
+      "column": 53,
+      "path": "docs/gallery/make_gallery.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `_KT` for generic class `dict[_KT, _VT]`",
+      "severity": "error"
+    },
+    {
+      "column": 53,
+      "path": "docs/gallery/make_gallery.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `_VT` for generic class `dict[_KT, _VT]`",
+      "severity": "error"
+    },
+    {
+      "column": 10,
+      "path": "docs/gallery/make_gallery.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`main` is missing an annotation for parameter `argv`",
+      "severity": "error"
+    },
+    {
+      "column": 25,
+      "path": "docs/gallery/make_gallery.py",
+      "name": "implicit-any-empty-container",
+      "concise_description": "Cannot infer type of empty container; it will be treated as containing `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 29,
+      "path": "docs/gallery/make_gallery.py",
+      "name": "implicit-any-empty-container",
+      "concise_description": "Cannot infer type of empty container; it will be treated as containing `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 17,
+      "path": "src/plotnine_linter/__main__.py",
+      "name": "implicit-any-empty-container",
+      "concise_description": "Cannot infer type of empty container; it will be treated as containing `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 23,
+      "path": "src/plotnine_linter/alttext.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`describe_alt_text` is missing an annotation for parameter `desc`",
+      "severity": "error"
+    },
+    {
+      "column": 19,
+      "path": "src/plotnine_linter/alttext.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_plotnine_alt` is missing an annotation for parameter `desc`",
+      "severity": "error"
+    },
+    {
+      "column": 21,
+      "path": "src/plotnine_linter/alttext.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_category_names` is missing an annotation for parameter `desc`",
+      "severity": "error"
+    },
+    {
+      "column": 19,
+      "path": "src/plotnine_linter/alttext.py",
+      "name": "implicit-any-lambda",
+      "concise_description": "Type of lambda parameter `t` is unknown",
+      "severity": "error"
+    },
+    {
+      "column": 22,
+      "path": "src/plotnine_linter/alttext.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_plotnine_detail` is missing an annotation for parameter `desc`",
+      "severity": "error"
+    },
+    {
+      "column": 28,
+      "path": "src/plotnine_linter/alttext.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_plotnine_detail` is missing an annotation for parameter `main`",
+      "severity": "error"
+    },
+    {
+      "column": 34,
+      "path": "src/plotnine_linter/alttext.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_plotnine_detail` is missing an annotation for parameter `kind`",
+      "severity": "error"
+    },
+    {
+      "column": 21,
+      "path": "src/plotnine_linter/alttext.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_matplotlib_alt` is missing an annotation for parameter `desc`",
+      "severity": "error"
+    },
+    {
+      "column": 21,
+      "path": "src/plotnine_linter/alttext.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_panel_sentence` is missing an annotation for parameter `p`",
+      "severity": "error"
+    },
+    {
+      "column": 27,
+      "path": "src/plotnine_linter/alttext.py",
+      "name": "implicit-any-lambda",
+      "concise_description": "Type of lambda parameter `i` is unknown",
+      "severity": "error"
+    },
+    {
+      "column": 16,
+      "path": "src/plotnine_linter/alttext.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`axis_ticks` is missing an annotation for parameter `p`",
+      "severity": "error"
+    },
+    {
+      "column": 19,
+      "path": "src/plotnine_linter/alttext.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`axis_ticks` is missing an annotation for parameter `orientation`",
+      "severity": "error"
+    },
+    {
+      "column": 12,
+      "path": "src/plotnine_linter/api.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_close` is missing an annotation for parameter `fig`",
+      "severity": "error"
+    },
+    {
+      "column": 26,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `_KT` for generic class `dict[_KT, _VT]`",
+      "severity": "error"
+    },
+    {
+      "column": 26,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `_VT` for generic class `dict[_KT, _VT]`",
+      "severity": "error"
+    },
+    {
+      "column": 26,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `_KT` for generic class `dict[_KT, _VT]`",
+      "severity": "error"
+    },
+    {
+      "column": 26,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `_VT` for generic class `dict[_KT, _VT]`",
+      "severity": "error"
+    },
+    {
+      "column": 27,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `_KT` for generic class `dict[_KT, _VT]`",
+      "severity": "error"
+    },
+    {
+      "column": 27,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `_VT` for generic class `dict[_KT, _VT]`",
+      "severity": "error"
+    },
+    {
+      "column": 26,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `_T` for generic class `list[_T]`",
+      "severity": "error"
+    },
+    {
+      "column": 24,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`__init__` is missing an annotation for parameter `desc`",
+      "severity": "error"
+    },
+    {
+      "column": 30,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`__init__` is missing an annotation for parameter `report`",
+      "severity": "error"
+    },
+    {
+      "column": 26,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-attribute",
+      "concise_description": "This expression is implicitly inferred to be `Any | None`. Please provide an explicit type annotation.",
+      "severity": "error"
+    },
+    {
+      "column": 26,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_content_only_visual` is missing an annotation for parameter `item`",
+      "severity": "error"
+    },
+    {
+      "column": 32,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_content_only_visual` is missing an annotation for parameter `t`",
+      "severity": "error"
+    },
+    {
+      "column": 35,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_content_only_visual` is missing an annotation for parameter `ctx`",
+      "severity": "error"
+    },
+    {
+      "column": 18,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_how_to_read` is missing an annotation for parameter `item`",
+      "severity": "error"
+    },
+    {
+      "column": 24,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_how_to_read` is missing an annotation for parameter `t`",
+      "severity": "error"
+    },
+    {
+      "column": 27,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_how_to_read` is missing an annotation for parameter `ctx`",
+      "severity": "error"
+    },
+    {
+      "column": 12,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_title` is missing an annotation for parameter `item`",
+      "severity": "error"
+    },
+    {
+      "column": 18,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_title` is missing an annotation for parameter `t`",
+      "severity": "error"
+    },
+    {
+      "column": 21,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_title` is missing an annotation for parameter `ctx`",
+      "severity": "error"
+    },
+    {
+      "column": 20,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_reading_level` is missing an annotation for parameter `item`",
+      "severity": "error"
+    },
+    {
+      "column": 26,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_reading_level` is missing an annotation for parameter `t`",
+      "severity": "error"
+    },
+    {
+      "column": 29,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_reading_level` is missing an annotation for parameter `ctx`",
+      "severity": "error"
+    },
+    {
+      "column": 14,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_metrics` is missing an annotation for parameter `item`",
+      "severity": "error"
+    },
+    {
+      "column": 20,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_metrics` is missing an annotation for parameter `t`",
+      "severity": "error"
+    },
+    {
+      "column": 23,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_metrics` is missing an annotation for parameter `ctx`",
+      "severity": "error"
+    },
+    {
+      "column": 18,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_uncertainty` is missing an annotation for parameter `item`",
+      "severity": "error"
+    },
+    {
+      "column": 24,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_uncertainty` is missing an annotation for parameter `t`",
+      "severity": "error"
+    },
+    {
+      "column": 27,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_uncertainty` is missing an annotation for parameter `ctx`",
+      "severity": "error"
+    },
+    {
+      "column": 17,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_table_item` is missing an annotation for parameter `item`",
+      "severity": "error"
+    },
+    {
+      "column": 23,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_table_item` is missing an annotation for parameter `t`",
+      "severity": "error"
+    },
+    {
+      "column": 26,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_table_item` is missing an annotation for parameter `ctx`",
+      "severity": "error"
+    },
+    {
+      "column": 25,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_features_described` is missing an annotation for parameter `item`",
+      "severity": "error"
+    },
+    {
+      "column": 31,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_features_described` is missing an annotation for parameter `t`",
+      "severity": "error"
+    },
+    {
+      "column": 34,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_features_described` is missing an annotation for parameter `ctx`",
+      "severity": "error"
+    },
+    {
+      "column": 15,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_extremes` is missing an annotation for parameter `item`",
+      "severity": "error"
+    },
+    {
+      "column": 21,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_extremes` is missing an annotation for parameter `t`",
+      "severity": "error"
+    },
+    {
+      "column": 24,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_extremes` is missing an annotation for parameter `ctx`",
+      "severity": "error"
+    },
+    {
+      "column": 16,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_difficult` is missing an annotation for parameter `item`",
+      "severity": "error"
+    },
+    {
+      "column": 22,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_difficult` is missing an annotation for parameter `t`",
+      "severity": "error"
+    },
+    {
+      "column": 25,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_difficult` is missing an annotation for parameter `ctx`",
+      "severity": "error"
+    },
+    {
+      "column": 20,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_smallest_text` is missing an annotation for parameter `ctx`",
+      "severity": "error"
+    },
+    {
+      "column": 12,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`f_kind` is missing an annotation for parameter `ctx`",
+      "severity": "error"
+    },
+    {
+      "column": 20,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`chart_features` is missing an annotation for parameter `desc`",
+      "severity": "error"
+    },
+    {
+      "column": 18,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_mpl_boxplot` is missing an annotation for parameter `p`",
+      "severity": "error"
+    },
+    {
+      "column": 17,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`chart_texts` is missing an annotation for parameter `desc`",
+      "severity": "error"
+    },
+    {
+      "column": 20,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_extreme_value` is missing an annotation for parameter `desc`",
+      "severity": "error"
+    },
+    {
+      "column": 12,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_table` is missing an annotation for parameter `desc`",
+      "severity": "error"
+    },
+    {
+      "column": 21,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_plotnine_table` is missing an annotation for parameter `desc`",
+      "severity": "error"
+    },
+    {
+      "column": 23,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-empty-container",
+      "concise_description": "Cannot infer type of empty container; it will be treated as containing `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 27,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-empty-container",
+      "concise_description": "Cannot infer type of empty container; it will be treated as containing `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 23,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_matplotlib_table` is missing an annotation for parameter `desc`",
+      "severity": "error"
+    },
+    {
+      "column": 57,
+      "path": "src/plotnine_linter/audit.py",
+      "name": "implicit-any-empty-container",
+      "concise_description": "Cannot infer type of empty container; it will be treated as containing `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 14,
+      "path": "src/plotnine_linter/colors.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`simulate` is missing an annotation for parameter `color`",
+      "severity": "error"
+    },
+    {
+      "column": 24,
+      "path": "src/plotnine_linter/colors.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`relative_luminance` is missing an annotation for parameter `color`",
+      "severity": "error"
+    },
+    {
+      "column": 20,
+      "path": "src/plotnine_linter/colors.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`contrast_ratio` is missing an annotation for parameter `a`",
+      "severity": "error"
+    },
+    {
+      "column": 23,
+      "path": "src/plotnine_linter/colors.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`contrast_ratio` is missing an annotation for parameter `b`",
+      "severity": "error"
+    },
+    {
+      "column": 11,
+      "path": "src/plotnine_linter/colors.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`blend` is missing an annotation for parameter `color`",
+      "severity": "error"
+    },
+    {
+      "column": 18,
+      "path": "src/plotnine_linter/colors.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`blend` is missing an annotation for parameter `background`",
+      "severity": "error"
+    },
+    {
+      "column": 12,
+      "path": "src/plotnine_linter/colors.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`to_lab` is missing an annotation for parameter `color`",
+      "severity": "error"
+    },
+    {
+      "column": 5,
+      "path": "src/plotnine_linter/colors.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`confusable_pairs` is missing an annotation for parameter `colors`",
+      "severity": "error"
+    },
+    {
+      "column": 33,
+      "path": "src/plotnine_linter/colors.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`confusable_pairs` is missing an annotation for parameter `kinds`",
+      "severity": "error"
+    },
+    {
+      "column": 10,
+      "path": "src/plotnine_linter/colors.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_hex` is missing an annotation for parameter `rgb`",
+      "severity": "error"
+    },
+    {
+      "column": 24,
+      "path": "src/plotnine_linter/config.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`merged` is missing an annotation for parameter `overrides`",
+      "severity": "error"
+    },
+    {
+      "column": 19,
+      "path": "src/plotnine_linter/config.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `_KT` for generic class `dict[_KT, _VT]`",
+      "severity": "error"
+    },
+    {
+      "column": 19,
+      "path": "src/plotnine_linter/config.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `_VT` for generic class `dict[_KT, _VT]`",
+      "severity": "error"
+    },
+    {
+      "column": 29,
+      "path": "src/plotnine_linter/config.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `AnyStr_co` for generic class `PathLike[AnyStr_co]`",
+      "severity": "error"
+    },
+    {
+      "column": 28,
+      "path": "src/plotnine_linter/describe/__init__.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_apply_spec_axis_kinds` is missing an annotation for parameter `spec`",
+      "severity": "error"
+    },
+    {
+      "column": 34,
+      "path": "src/plotnine_linter/describe/__init__.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_apply_spec_axis_kinds` is missing an annotation for parameter `render`",
+      "severity": "error"
+    },
+    {
+      "column": 12,
+      "path": "src/plotnine_linter/describe/model.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter for generic class `tuple`",
+      "severity": "error"
+    },
+    {
+      "column": 12,
+      "path": "src/plotnine_linter/describe/model.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter for generic class `tuple`",
+      "severity": "error"
+    },
+    {
+      "column": 19,
+      "path": "src/plotnine_linter/describe/model.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter for generic class `tuple`",
+      "severity": "error"
+    },
+    {
+      "column": 18,
+      "path": "src/plotnine_linter/describe/model.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `_KT` for generic class `dict[_KT, _VT]`",
+      "severity": "error"
+    },
+    {
+      "column": 18,
+      "path": "src/plotnine_linter/describe/model.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `_VT` for generic class `dict[_KT, _VT]`",
+      "severity": "error"
+    },
+    {
+      "column": 18,
+      "path": "src/plotnine_linter/describe/model.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `_KT` for generic class `dict[_KT, _VT]`",
+      "severity": "error"
+    },
+    {
+      "column": 18,
+      "path": "src/plotnine_linter/describe/model.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `_VT` for generic class `dict[_KT, _VT]`",
+      "severity": "error"
+    },
+    {
+      "column": 17,
+      "path": "src/plotnine_linter/describe/model.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `_KT` for generic class `dict[_KT, _VT]`",
+      "severity": "error"
+    },
+    {
+      "column": 17,
+      "path": "src/plotnine_linter/describe/model.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `_VT` for generic class `dict[_KT, _VT]`",
+      "severity": "error"
+    },
+    {
+      "column": 18,
+      "path": "src/plotnine_linter/describe/render.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`get_renderer` is missing an annotation for parameter `fig`",
+      "severity": "error"
+    },
+    {
+      "column": 16,
+      "path": "src/plotnine_linter/describe/render.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_converter` is missing an annotation for parameter `axis`",
+      "severity": "error"
+    },
+    {
+      "column": 16,
+      "path": "src/plotnine_linter/describe/render.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_axis_kind` is missing an annotation for parameter `axis`",
+      "severity": "error"
+    },
+    {
+      "column": 20,
+      "path": "src/plotnine_linter/describe/render.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_looks_numeric` is missing an annotation for parameter `s`",
+      "severity": "error"
+    },
+    {
+      "column": 17,
+      "path": "src/plotnine_linter/describe/render.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_tick_boxes` is missing an annotation for parameter `labels`",
+      "severity": "error"
+    },
+    {
+      "column": 25,
+      "path": "src/plotnine_linter/describe/render.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_tick_boxes` is missing an annotation for parameter `renderer`",
+      "severity": "error"
+    },
+    {
+      "column": 35,
+      "path": "src/plotnine_linter/describe/render.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_tick_boxes` is missing an annotation for parameter `role`",
+      "severity": "error"
+    },
+    {
+      "column": 41,
+      "path": "src/plotnine_linter/describe/render.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_tick_boxes` is missing an annotation for parameter `panel`",
+      "severity": "error"
+    },
+    {
+      "column": 16,
+      "path": "src/plotnine_linter/describe/render.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_axis_info` is missing an annotation for parameter `ax`",
+      "severity": "error"
+    },
+    {
+      "column": 32,
+      "path": "src/plotnine_linter/describe/render.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_axis_info` is missing an annotation for parameter `renderer`",
+      "severity": "error"
+    },
+    {
+      "column": 11,
+      "path": "src/plotnine_linter/describe/render.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_rgba` is missing an annotation for parameter `color`",
+      "severity": "error"
+    },
+    {
+      "column": 21,
+      "path": "src/plotnine_linter/describe/render.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter for generic class `tuple`",
+      "severity": "error"
+    },
+    {
+      "column": 19,
+      "path": "src/plotnine_linter/describe/render.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_single_color` is missing an annotation for parameter `colors`",
+      "severity": "error"
+    },
+    {
+      "column": 30,
+      "path": "src/plotnine_linter/describe/render.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter for generic class `tuple`",
+      "severity": "error"
+    },
+    {
+      "column": 23,
+      "path": "src/plotnine_linter/describe/render.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_uses_data_coords` is missing an annotation for parameter `transform`",
+      "severity": "error"
+    },
+    {
+      "column": 34,
+      "path": "src/plotnine_linter/describe/render.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_uses_data_coords` is missing an annotation for parameter `ax`",
+      "severity": "error"
+    },
+    {
+      "column": 13,
+      "path": "src/plotnine_linter/describe/render.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_series` is missing an annotation for parameter `ax`",
+      "severity": "error"
+    },
+    {
+      "column": 15,
+      "path": "src/plotnine_linter/describe/render.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_is_glyph` is missing an annotation for parameter `x`",
+      "severity": "error"
+    },
+    {
+      "column": 18,
+      "path": "src/plotnine_linter/describe/render.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_is_glyph` is missing an annotation for parameter `y`",
+      "severity": "error"
+    },
+    {
+      "column": 14,
+      "path": "src/plotnine_linter/describe/render.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`hist` is missing an annotation for parameter `self`",
+      "severity": "error"
+    },
+    {
+      "column": 21,
+      "path": "src/plotnine_linter/describe/render.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`hist` is missing an annotation for parameter `args`",
+      "severity": "error"
+    },
+    {
+      "column": 29,
+      "path": "src/plotnine_linter/describe/render.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`hist` is missing an annotation for parameter `kwargs`",
+      "severity": "error"
+    },
+    {
+      "column": 13,
+      "path": "src/plotnine_linter/describe/render.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`bar` is missing an annotation for parameter `self`",
+      "severity": "error"
+    },
+    {
+      "column": 20,
+      "path": "src/plotnine_linter/describe/render.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`bar` is missing an annotation for parameter `args`",
+      "severity": "error"
+    },
+    {
+      "column": 28,
+      "path": "src/plotnine_linter/describe/render.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`bar` is missing an annotation for parameter `kwargs`",
+      "severity": "error"
+    },
+    {
+      "column": 13,
+      "path": "src/plotnine_linter/describe/render.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_is_num` is missing an annotation for parameter `values`",
+      "severity": "error"
+    },
+    {
+      "column": 17,
+      "path": "src/plotnine_linter/describe/render.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_contiguous` is missing an annotation for parameter `pos`",
+      "severity": "error"
+    },
+    {
+      "column": 22,
+      "path": "src/plotnine_linter/describe/render.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_contiguous` is missing an annotation for parameter `width`",
+      "severity": "error"
+    },
+    {
+      "column": 18,
+      "path": "src/plotnine_linter/describe/render.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_has_3d_bars` is missing an annotation for parameter `ax`",
+      "severity": "error"
+    },
+    {
+      "column": 12,
+      "path": "src/plotnine_linter/describe/render.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_cmaps` is missing an annotation for parameter `ax`",
+      "severity": "error"
+    },
+    {
+      "column": 18,
+      "path": "src/plotnine_linter/describe/render.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_is_colorbar` is missing an annotation for parameter `ax`",
+      "severity": "error"
+    },
+    {
+      "column": 21,
+      "path": "src/plotnine_linter/describe/render.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`describe_figure` is missing an annotation for parameter `fig`",
+      "severity": "error"
+    },
+    {
+      "column": 18,
+      "path": "src/plotnine_linter/describe/spec.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_labels_dict` is missing an annotation for parameter `labels`",
+      "severity": "error"
+    },
+    {
+      "column": 19,
+      "path": "src/plotnine_linter/describe/spec.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_mapping_dict` is missing an annotation for parameter `mapping`",
+      "severity": "error"
+    },
+    {
+      "column": 19,
+      "path": "src/plotnine_linter/describe/spec.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_panel_ranges` is missing an annotation for parameter `built`",
+      "severity": "error"
+    },
+    {
+      "column": 23,
+      "path": "src/plotnine_linter/describe/spec.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`describe_plotnine` is missing an annotation for parameter `plot`",
+      "severity": "error"
+    },
+    {
+      "column": 20,
+      "path": "src/plotnine_linter/describe/spec.py",
+      "name": "implicit-any-empty-container",
+      "concise_description": "Cannot infer type of empty container; it will be treated as containing `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 14,
+      "path": "src/plotnine_linter/findings.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `_KT` for generic class `dict[_KT, _VT]`",
+      "severity": "error"
+    },
+    {
+      "column": 14,
+      "path": "src/plotnine_linter/findings.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `_VT` for generic class `dict[_KT, _VT]`",
+      "severity": "error"
+    },
+    {
+      "column": 26,
+      "path": "src/plotnine_linter/findings.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `_KT` for generic class `dict[_KT, _VT]`",
+      "severity": "error"
+    },
+    {
+      "column": 26,
+      "path": "src/plotnine_linter/findings.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `_VT` for generic class `dict[_KT, _VT]`",
+      "severity": "error"
+    },
+    {
+      "column": 26,
+      "path": "src/plotnine_linter/findings.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `_KT` for generic class `dict[_KT, _VT]`",
+      "severity": "error"
+    },
+    {
+      "column": 26,
+      "path": "src/plotnine_linter/findings.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `_VT` for generic class `dict[_KT, _VT]`",
+      "severity": "error"
+    },
+    {
+      "column": 25,
+      "path": "src/plotnine_linter/findings.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`to_json` is missing an annotation for parameter `kwargs`",
+      "severity": "error"
+    },
+    {
+      "column": 14,
+      "path": "src/plotnine_linter/jupyter.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_display` is missing an annotation for parameter `report`",
+      "severity": "error"
+    },
+    {
+      "column": 19,
+      "path": "src/plotnine_linter/jupyter.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_lint_quietly` is missing an annotation for parameter `obj`",
+      "severity": "error"
+    },
+    {
+      "column": 24,
+      "path": "src/plotnine_linter/jupyter.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_lint_quietly` is missing an annotation for parameter `source`",
+      "severity": "error"
+    },
+    {
+      "column": 17,
+      "path": "src/plotnine_linter/jupyter.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_save_image` is missing an annotation for parameter `obj`",
+      "severity": "error"
+    },
+    {
+      "column": 22,
+      "path": "src/plotnine_linter/jupyter.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_save_image` is missing an annotation for parameter `report`",
+      "severity": "error"
+    },
+    {
+      "column": 30,
+      "path": "src/plotnine_linter/jupyter.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_save_image` is missing an annotation for parameter `save_dir`",
+      "severity": "error"
+    },
+    {
+      "column": 21,
+      "path": "src/plotnine_linter/jupyter.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_make_callbacks` is missing an annotation for parameter `ip`",
+      "severity": "error"
+    },
+    {
+      "column": 29,
+      "path": "src/plotnine_linter/jupyter.py",
+      "name": "implicit-any-empty-container",
+      "concise_description": "Cannot infer type of empty container; it will be treated as containing `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 22,
+      "path": "src/plotnine_linter/jupyter.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`pre_run_cell` is missing an annotation for parameter `info`",
+      "severity": "error"
+    },
+    {
+      "column": 23,
+      "path": "src/plotnine_linter/jupyter.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`post_run_cell` is missing an annotation for parameter `result`",
+      "severity": "error"
+    },
+    {
+      "column": 33,
+      "path": "src/plotnine_linter/jupyter.py",
+      "name": "implicit-any-empty-container",
+      "concise_description": "Cannot infer type of empty container; it will be treated as containing `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 14,
+      "path": "src/plotnine_linter/jupyter.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`show` is missing an annotation for parameter `self`",
+      "severity": "error"
+    },
+    {
+      "column": 21,
+      "path": "src/plotnine_linter/jupyter.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`show` is missing an annotation for parameter `args`",
+      "severity": "error"
+    },
+    {
+      "column": 29,
+      "path": "src/plotnine_linter/jupyter.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`show` is missing an annotation for parameter `kwargs`",
+      "severity": "error"
+    },
+    {
+      "column": 24,
+      "path": "src/plotnine_linter/jupyter.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_patch_pyplot_show` is missing an annotation for parameter `before_flush`",
+      "severity": "error"
+    },
+    {
+      "column": 15,
+      "path": "src/plotnine_linter/jupyter.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`show` is missing an annotation for parameter `args`",
+      "severity": "error"
+    },
+    {
+      "column": 23,
+      "path": "src/plotnine_linter/jupyter.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`show` is missing an annotation for parameter `kwargs`",
+      "severity": "error"
+    },
+    {
+      "column": 29,
+      "path": "src/plotnine_linter/jupyter.py",
+      "name": "implicit-any-empty-container",
+      "concise_description": "Cannot infer type of empty container; it will be treated as containing `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 29,
+      "path": "src/plotnine_linter/jupyter.py",
+      "name": "implicit-any-empty-container",
+      "concise_description": "Cannot infer type of empty container; it will be treated as containing `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 28,
+      "path": "src/plotnine_linter/jupyter.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`load_ipython_extension` is missing an annotation for parameter `ip`",
+      "severity": "error"
+    },
+    {
+      "column": 18,
+      "path": "src/plotnine_linter/jupyter.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`plotlint` is missing an annotation for parameter `line`",
+      "severity": "error"
+    },
+    {
+      "column": 18,
+      "path": "src/plotnine_linter/jupyter.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_audit_magic` is missing an annotation for parameter `ip`",
+      "severity": "error"
+    },
+    {
+      "column": 30,
+      "path": "src/plotnine_linter/jupyter.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`unload_ipython_extension` is missing an annotation for parameter `ip`",
+      "severity": "error"
+    },
+    {
+      "column": 27,
+      "path": "src/plotnine_linter/jupyter.py",
+      "name": "implicit-any-empty-container",
+      "concise_description": "Cannot infer type of empty container; it will be treated as containing `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 24,
+      "path": "src/plotnine_linter/jupyter.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`__init__` is missing an annotation for parameter `history`",
+      "severity": "error"
+    },
+    {
+      "column": 26,
+      "path": "src/plotnine_linter/notebook.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `_KT` for generic class `dict[_KT, _VT]`",
+      "severity": "error"
+    },
+    {
+      "column": 26,
+      "path": "src/plotnine_linter/notebook.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `_VT` for generic class `dict[_KT, _VT]`",
+      "severity": "error"
+    },
+    {
+      "column": 27,
+      "path": "src/plotnine_linter/notebook.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `_KT` for generic class `dict[_KT, _VT]`",
+      "severity": "error"
+    },
+    {
+      "column": 27,
+      "path": "src/plotnine_linter/notebook.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `_VT` for generic class `dict[_KT, _VT]`",
+      "severity": "error"
+    },
+    {
+      "column": 26,
+      "path": "src/plotnine_linter/notebook.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `_KT` for generic class `dict[_KT, _VT]`",
+      "severity": "error"
+    },
+    {
+      "column": 26,
+      "path": "src/plotnine_linter/notebook.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `_VT` for generic class `dict[_KT, _VT]`",
+      "severity": "error"
+    },
+    {
+      "column": 21,
+      "path": "src/plotnine_linter/notebook.py",
+      "name": "implicit-any-empty-container",
+      "concise_description": "Cannot infer type of empty container; it will be treated as containing `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 14,
+      "path": "src/plotnine_linter/notebook.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `_KT` for generic class `dict[_KT, _VT]`",
+      "severity": "error"
+    },
+    {
+      "column": 14,
+      "path": "src/plotnine_linter/notebook.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `_VT` for generic class `dict[_KT, _VT]`",
+      "severity": "error"
+    },
+    {
+      "column": 14,
+      "path": "src/plotnine_linter/registry.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `_KT` for generic class `dict[_KT, _VT]`",
+      "severity": "error"
+    },
+    {
+      "column": 14,
+      "path": "src/plotnine_linter/registry.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `_VT` for generic class `dict[_KT, _VT]`",
+      "severity": "error"
+    },
+    {
+      "column": 23,
+      "path": "src/plotnine_linter/registry.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `_KT` for generic class `dict[_KT, _VT]`",
+      "severity": "error"
+    },
+    {
+      "column": 23,
+      "path": "src/plotnine_linter/registry.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `_VT` for generic class `dict[_KT, _VT]`",
+      "severity": "error"
+    },
+    {
+      "column": 37,
+      "path": "src/plotnine_linter/registry.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `_KT` for generic class `dict[_KT, _VT]`",
+      "severity": "error"
+    },
+    {
+      "column": 37,
+      "path": "src/plotnine_linter/registry.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `_VT` for generic class `dict[_KT, _VT]`",
+      "severity": "error"
+    },
+    {
+      "column": 19,
+      "path": "src/plotnine_linter/registry.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`decorator` is missing an annotation for parameter `fn`",
+      "severity": "error"
+    },
+    {
+      "column": 26,
+      "path": "src/plotnine_linter/rules/_util.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter `_T_co` for generic class `Iterable[_T_co]`",
+      "severity": "error"
+    },
+    {
+      "column": 14,
+      "path": "src/plotnine_linter/rules/_util.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`monotone` is missing an annotation for parameter `values`",
+      "severity": "error"
+    },
+    {
+      "column": 14,
+      "path": "src/plotnine_linter/rules/_util.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`overlaps` is missing an annotation for parameter `a`",
+      "severity": "error"
+    },
+    {
+      "column": 17,
+      "path": "src/plotnine_linter/rules/_util.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`overlaps` is missing an annotation for parameter `b`",
+      "severity": "error"
+    },
+    {
+      "column": 19,
+      "path": "src/plotnine_linter/rules/_util.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`natural_order` is missing an annotation for parameter `labels`",
+      "severity": "error"
+    },
+    {
+      "column": 16,
+      "path": "src/plotnine_linter/rules/axes.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_log_scale` is missing an annotation for parameter `scale`",
+      "severity": "error"
+    },
+    {
+      "column": 25,
+      "path": "src/plotnine_linter/rules/axes.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`categorical_fix` is missing an annotation for parameter `expr`",
+      "severity": "error"
+    },
+    {
+      "column": 31,
+      "path": "src/plotnine_linter/rules/axes.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`categorical_fix` is missing an annotation for parameter `natural`",
+      "severity": "error"
+    },
+    {
+      "column": 27,
+      "path": "src/plotnine_linter/rules/axes.py",
+      "name": "implicit-any-lambda",
+      "concise_description": "Type of lambda parameter `t` is unknown",
+      "severity": "error"
+    },
+    {
+      "column": 20,
+      "path": "src/plotnine_linter/rules/axes.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_numeric_ticks` is missing an annotation for parameter `axis`",
+      "severity": "error"
+    },
+    {
+      "column": 12,
+      "path": "src/plotnine_linter/rules/axes.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_whole` is missing an annotation for parameter `values`",
+      "severity": "error"
+    },
+    {
+      "column": 25,
+      "path": "src/plotnine_linter/rules/color.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_colors_repeat_axis` is missing an annotation for parameter `panel`",
+      "severity": "error"
+    },
+    {
+      "column": 22,
+      "path": "src/plotnine_linter/rules/color.py",
+      "name": "implicit-any-empty-container",
+      "concise_description": "Cannot infer type of empty container; it will be treated as containing `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 28,
+      "path": "src/plotnine_linter/rules/color.py",
+      "name": "implicit-any-empty-container",
+      "concise_description": "Cannot infer type of empty container; it will be treated as containing `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 32,
+      "path": "src/plotnine_linter/rules/color.py",
+      "name": "implicit-any-empty-container",
+      "concise_description": "Cannot infer type of empty container; it will be treated as containing `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 18,
+      "path": "src/plotnine_linter/rules/color.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_color_names` is missing an annotation for parameter `spec`",
+      "severity": "error"
+    },
+    {
+      "column": 24,
+      "path": "src/plotnine_linter/rules/color.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_color_names` is missing an annotation for parameter `aes`",
+      "severity": "error"
+    },
+    {
+      "column": 17,
+      "path": "src/plotnine_linter/rules/color.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_spans_zero` is missing an annotation for parameter `values`",
+      "severity": "error"
+    },
+    {
+      "column": 15,
+      "path": "src/plotnine_linter/rules/color.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_panel_bg` is missing an annotation for parameter `ax`",
+      "severity": "error"
+    },
+    {
+      "column": 17,
+      "path": "src/plotnine_linter/rules/color.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_saturation` is missing an annotation for parameter `rgb`",
+      "severity": "error"
+    },
+    {
+      "column": 18,
+      "path": "src/plotnine_linter/rules/color.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_mark_colors` is missing an annotation for parameter `desc`",
+      "severity": "error"
+    },
+    {
+      "column": 24,
+      "path": "src/plotnine_linter/rules/color.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_mark_colors` is missing an annotation for parameter `panel`",
+      "severity": "error"
+    },
+    {
+      "column": 12,
+      "path": "src/plotnine_linter/rules/color.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_style` is missing an annotation for parameter `series`",
+      "severity": "error"
+    },
+    {
+      "column": 23,
+      "path": "src/plotnine_linter/rules/color.py",
+      "name": "implicit-any-type-argument",
+      "concise_description": "Cannot determine the type parameter for generic class `tuple`",
+      "severity": "error"
+    },
+    {
+      "column": 22,
+      "path": "src/plotnine_linter/rules/color.py",
+      "name": "implicit-any-empty-container",
+      "concise_description": "Cannot infer type of empty container; it will be treated as containing `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 18,
+      "path": "src/plotnine_linter/rules/color.py",
+      "name": "implicit-any-empty-container",
+      "concise_description": "Cannot infer type of empty container; it will be treated as containing `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 17,
+      "path": "src/plotnine_linter/rules/labels.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_strip_hits` is missing an annotation for parameter `desc`",
+      "severity": "error"
+    },
+    {
+      "column": 18,
+      "path": "src/plotnine_linter/rules/labels.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_tick_values` is missing an annotation for parameter `axis`",
+      "severity": "error"
+    },
+    {
+      "column": 27,
+      "path": "src/plotnine_linter/rules/layout.py",
+      "name": "implicit-any-lambda",
+      "concise_description": "Type of lambda parameter `t` is unknown",
+      "severity": "error"
+    },
+    {
+      "column": 33,
+      "path": "src/plotnine_linter/rules/layout.py",
+      "name": "implicit-any-empty-container",
+      "concise_description": "Cannot infer type of empty container; it will be treated as containing `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 26,
+      "path": "src/plotnine_linter/rules/layout.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_data_points_display` is missing an annotation for parameter `panel`",
+      "severity": "error"
+    },
+    {
+      "column": 22,
+      "path": "src/plotnine_linter/rules/layout.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_text_background` is missing an annotation for parameter `desc`",
+      "severity": "error"
+    },
+    {
+      "column": 28,
+      "path": "src/plotnine_linter/rules/layout.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_text_background` is missing an annotation for parameter `box`",
+      "severity": "error"
+    },
+    {
+      "column": 26,
+      "path": "src/plotnine_linter/rules/layout.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_rendered_background` is missing an annotation for parameter `image`",
+      "severity": "error"
+    },
+    {
+      "column": 33,
+      "path": "src/plotnine_linter/rules/layout.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_rendered_background` is missing an annotation for parameter `box`",
+      "severity": "error"
+    },
+    {
+      "column": 10,
+      "path": "src/plotnine_linter/session.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_hex` is missing an annotation for parameter `color`",
+      "severity": "error"
+    },
+    {
+      "column": 24,
+      "path": "src/plotnine_linter/session.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_legend_colors_mpl` is missing an annotation for parameter `legend`",
+      "severity": "error"
+    },
+    {
+      "column": 17,
+      "path": "src/plotnine_linter/session.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`chart_facts` is missing an annotation for parameter `desc`",
+      "severity": "error"
+    },
+    {
+      "column": 55,
+      "path": "src/plotnine_linter/testing.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`assert_clean` is missing an annotation for parameter `lint_kwargs`",
+      "severity": "error"
+    },
+    {
+      "column": 20,
+      "path": "tests/conftest.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_close_figures` is missing an annotation for parameter `monkeypatch`",
+      "severity": "error"
+    },
+    {
+      "column": 33,
+      "path": "tests/conftest.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`_close_figures` is missing an annotation for parameter `tmp_path`",
+      "severity": "error"
+    },
+    {
+      "column": 9,
+      "path": "tests/conftest.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`ids` is missing an annotation for parameter `report`",
+      "severity": "error"
+    },
+    {
+      "column": 27,
+      "path": "tests/test_api.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`test_pyproject_config` is missing an annotation for parameter `tmp_path`",
+      "severity": "error"
+    },
+    {
+      "column": 37,
+      "path": "tests/test_api.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`test_pyproject_config` is missing an annotation for parameter `monkeypatch`",
+      "severity": "error"
+    },
+    {
+      "column": 37,
+      "path": "tests/test_api.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`test_broken_rule_does_not_crash` is missing an annotation for parameter `monkeypatch`",
+      "severity": "error"
+    },
+    {
+      "column": 14,
+      "path": "tests/test_api.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`boom` is missing an annotation for parameter `desc`",
+      "severity": "error"
+    },
+    {
+      "column": 20,
+      "path": "tests/test_api.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`boom` is missing an annotation for parameter `cfg`",
+      "severity": "error"
+    },
+    {
+      "column": 30,
+      "path": "tests/test_api.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`test_cli_rules_and_check` is missing an annotation for parameter `tmp_path`",
+      "severity": "error"
+    },
+    {
+      "column": 13,
+      "path": "tests/test_audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`rt_plot` is missing an annotation for parameter `rt`",
+      "severity": "error"
+    },
+    {
+      "column": 19,
+      "path": "tests/test_audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`rt_plot` is missing an annotation for parameter `extra`",
+      "severity": "error"
+    },
+    {
+      "column": 26,
+      "path": "tests/test_audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`test_bar_chart_audit` is missing an annotation for parameter `rt`",
+      "severity": "error"
+    },
+    {
+      "column": 42,
+      "path": "tests/test_audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`test_fixing_the_chart_flips_verdicts` is missing an annotation for parameter `rt`",
+      "severity": "error"
+    },
+    {
+      "column": 44,
+      "path": "tests/test_audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`test_rules_turned_off_become_questions` is missing an annotation for parameter `rt`",
+      "severity": "error"
+    },
+    {
+      "column": 44,
+      "path": "tests/test_audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`test_suppressed_rule_is_partly_checked` is missing an annotation for parameter `rt`",
+      "severity": "error"
+    },
+    {
+      "column": 43,
+      "path": "tests/test_audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`test_session_enables_consistency_test` is missing an annotation for parameter `rt`",
+      "severity": "error"
+    },
+    {
+      "column": 40,
+      "path": "tests/test_audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`test_markdown_checklist_round_trip` is missing an annotation for parameter `rt`",
+      "severity": "error"
+    },
+    {
+      "column": 35,
+      "path": "tests/test_audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`test_dict_round_trip_and_html` is missing an annotation for parameter `rt`",
+      "severity": "error"
+    },
+    {
+      "column": 35,
+      "path": "tests/test_audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`test_data_table_identity_stat` is missing an annotation for parameter `rt`",
+      "severity": "error"
+    },
+    {
+      "column": 28,
+      "path": "tests/test_audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`test_check_answers_cli` is missing an annotation for parameter `tmp_path`",
+      "severity": "error"
+    },
+    {
+      "column": 38,
+      "path": "tests/test_audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`test_check_answers_cli` is missing an annotation for parameter `rt`",
+      "severity": "error"
+    },
+    {
+      "column": 34,
+      "path": "tests/test_audit.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`test_data_table_with_reorder` is missing an annotation for parameter `rt`",
+      "severity": "error"
+    },
+    {
+      "column": 10,
+      "path": "tests/test_jupyter.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`run` is missing an annotation for parameter `cells`",
+      "severity": "error"
+    },
+    {
+      "column": 17,
+      "path": "tests/test_jupyter.py",
+      "name": "implicit-any-empty-container",
+      "concise_description": "Cannot infer type of empty container; it will be treated as containing `Any`",
+      "severity": "error"
+    },
+    {
+      "column": 15,
+      "path": "tests/test_plotnine_rules.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`good_bars` is missing an annotation for parameter `df`",
+      "severity": "error"
+    },
+    {
+      "column": 37,
+      "path": "tests/test_plotnine_rules.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`test_clean_plot_has_no_findings` is missing an annotation for parameter `regions`",
+      "severity": "error"
+    },
+    {
+      "column": 36,
+      "path": "tests/test_plotnine_rules.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`test_lint_does_not_mutate_plot` is missing an annotation for parameter `regions`",
+      "severity": "error"
+    },
+    {
+      "column": 31,
+      "path": "tests/test_plotnine_rules.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`test_ax101_bars_truncated` is missing an annotation for parameter `regions`",
+      "severity": "error"
+    },
+    {
+      "column": 29,
+      "path": "tests/test_plotnine_rules.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`test_ax101_full_bars_ok` is missing an annotation for parameter `regions`",
+      "severity": "error"
+    },
+    {
+      "column": 29,
+      "path": "tests/test_plotnine_rules.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`test_mk101_overplotting` is missing an annotation for parameter `cloud`",
+      "severity": "error"
+    },
+    {
+      "column": 26,
+      "path": "tests/test_plotnine_rules.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`test_lb201_raw_names` is missing an annotation for parameter `regions`",
+      "severity": "error"
+    },
+    {
+      "column": 32,
+      "path": "tests/test_plotnine_rules.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`test_lb301_units_is_opt_in` is missing an annotation for parameter `regions`",
+      "severity": "error"
+    },
+    {
+      "column": 33,
+      "path": "tests/test_plotnine_rules.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`test_lb203_redundant_legend` is missing an annotation for parameter `regions`",
+      "severity": "error"
+    },
+    {
+      "column": 25,
+      "path": "tests/test_plotnine_rules.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`test_ax201_unsorted` is missing an annotation for parameter `regions`",
+      "severity": "error"
+    },
+    {
+      "column": 31,
+      "path": "tests/test_plotnine_rules.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`test_ax202_rotated_labels` is missing an annotation for parameter `regions`",
+      "severity": "error"
+    },
+    {
+      "column": 29,
+      "path": "tests/test_plotnine_rules.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`test_ax204_default_bins` is missing an annotation for parameter `cloud`",
+      "severity": "error"
+    },
+    {
+      "column": 27,
+      "path": "tests/test_plotnine_rules.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`test_ly201_small_text` is missing an annotation for parameter `regions`",
+      "severity": "error"
+    },
+    {
+      "column": 49,
+      "path": "tests/test_plotnine_rules.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`test_cl203_fill_repeats_axis_without_legend` is missing an annotation for parameter `regions`",
+      "severity": "error"
+    },
+    {
+      "column": 14,
+      "path": "tests/test_review_cases.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`penguins` is missing an annotation for parameter `n`",
+      "severity": "error"
+    },
+    {
+      "column": 21,
+      "path": "tests/test_review_cases.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`penguins` is missing an annotation for parameter `seed`",
+      "severity": "error"
+    },
+    {
+      "column": 14,
+      "path": "tests/test_review_cases.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`findings` is missing an annotation for parameter `report`",
+      "severity": "error"
+    },
+    {
+      "column": 22,
+      "path": "tests/test_review_cases.py",
+      "name": "implicit-any-parameter",
+      "concise_description": "`findings` is missing an annotation for parameter `rule_id`",
+      "severity": "error"
+    }
+  ]
+}

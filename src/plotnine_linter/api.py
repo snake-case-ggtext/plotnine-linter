@@ -3,13 +3,17 @@
 from __future__ import annotations
 
 import warnings
-from typing import Any, Iterable, Mapping
+from collections.abc import Iterable, Mapping
+from typing import TYPE_CHECKING, Any
 
 from .config import Config, load_config
 from .describe import ChartDescription, describe
 from .findings import Finding, Report, Severity
 from .registry import all_rules
 from .suppress import parse_suppressions
+
+if TYPE_CHECKING:
+    from .session import Session
 
 
 def lint(
@@ -22,7 +26,7 @@ def lint(
     suppress: Mapping[str, str] | Iterable[str] | None = None,
     source: str | None = None,
     config: Config | None = None,
-    session=None,
+    session: Session | None = None,
     profile: str | None = None,
 ) -> Report:
     """Lint a plotnine plot or a matplotlib Figure/Axes and return a :class:`Report`.
@@ -41,7 +45,8 @@ def lint(
     suppress
         Rule IDs to suppress, optionally with a reason: ``{"AX201": "months are ordinal"}``.
     source
-        Code that made the plot; ``# plotlint: ignore[ID] reason`` comments in it are honored.
+        Code that made the plot. The linter follows the ``# plotlint: ignore[ID] reason``
+        comments in it.
     config
         A :class:`Config`; defaults to the nearest pyproject.toml.
     profile
@@ -52,7 +57,11 @@ def lint(
         compare figures (ST305, ST306). The Jupyter hook passes one automatically.
     """
     cfg = (config or load_config()).merged(
-        profile=profile, select=select, ignore=ignore, severity=severity, thresholds=thresholds
+        profile=profile,
+        select=select,
+        ignore=ignore,
+        severity=severity,
+        thresholds=thresholds,
     )
     desc = describe(obj)
     desc.session = session
@@ -64,7 +73,7 @@ def lint(
             session.add(chart_facts(desc))
         return report
     finally:
-        if desc.source == "plotnine" and desc.render is not None:
+        if desc.source == "plotnine":
             _close(desc.render.figure)
 
 
@@ -83,7 +92,7 @@ def lint_description(
             suppressions.update({str(k).upper(): "" for k in suppress})
 
     report = Report(source=desc.source)
-    if desc.render is not None and desc.spec is None:
+    if desc.spec is None:
         data_panels = [p for p in desc.render.panels if p.has_data]
         if not data_panels:
             report.empty = True
@@ -97,7 +106,7 @@ def lint_description(
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
                 hits = list(rule.check(desc, cfg) or [])
-        except Exception as exc:  # a broken rule must never break the user's plot
+        except Exception as exc:  # noqa: BLE001  # a broken rule must never break the user's plot
             desc.errors.append(f"{rule.id}: {type(exc).__name__}: {exc}")
             continue
         for hit in hits:
@@ -107,7 +116,11 @@ def lint_description(
             seen.add(key)
             sev = cfg.severity.get(rule.id)
             if sev is None:
-                sev = Severity.INFO if (hit.heuristic or rule.heuristic) else rule.default_severity
+                sev = (
+                    Severity.INFO
+                    if (hit.heuristic or rule.heuristic)
+                    else rule.default_severity
+                )
             finding = Finding(
                 rule_id=rule.id,
                 title=rule.title,
@@ -117,7 +130,7 @@ def lint_description(
                 why=rule.why,
                 source=hit.source,
                 heuristic=hit.heuristic or rule.heuristic,
-                panel=hit.panel if desc.render and len(desc.render.panels) > 1 else None,
+                panel=hit.panel if len(desc.render.panels) > 1 else None,
                 details=hit.details,
             )
             if rule.id in suppressions:
@@ -146,9 +159,6 @@ def lint_description(
 
 
 def _close(fig) -> None:
-    try:
-        import matplotlib.pyplot as plt
+    import matplotlib.pyplot as plt
 
-        plt.close(fig)
-    except Exception:  # pragma: no cover
-        pass
+    plt.close(fig)
