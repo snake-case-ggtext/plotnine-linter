@@ -42,6 +42,7 @@ To break a rule on purpose, give the reason in a comment in the cell:
 ```
 
 [`examples/demo.ipynb`](examples/demo.ipynb) walks through the main rules, the audit and the opt-in style rules.
+For a two-minute live demo, open [`examples/demo_marimo.py`](examples/demo_marimo.py) with `uvx marimo edit --sandbox examples/demo_marimo.py`.
 
 ## What's in the package
 

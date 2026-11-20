@@ -1,4 +1,4 @@
-.PHONY: help install test test-fast lint format prose rules gallery demo pre-commit
+.PHONY: help install test test-fast lint format prose rules gallery demo demo-marimo pre-commit
 
 PY_FILES = $(shell git ls-files '*.py')
 MD_FILES = $(shell git ls-files '*.md')
@@ -38,6 +38,9 @@ gallery: ## Draw the before and after gallery (docs/gallery.md and docs/gallery/
 
 demo: ## Run the demo notebook again and save its output
 	uv run jupyter nbconvert --to notebook --execute --inplace examples/demo.ipynb
+
+demo-marimo: ## Open the two-minute marimo demo in a sandbox (needs only uv)
+	uvx marimo edit --sandbox examples/demo_marimo.py
 
 pre-commit: ## Install the git hooks and run them on every file
 	uv run prek install
