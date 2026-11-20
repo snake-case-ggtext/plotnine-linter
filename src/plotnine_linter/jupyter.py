@@ -1,21 +1,11 @@
-"""Jupyter integration: lint every plot as it is displayed.
+"""Jupyter integration: lint every plot when the notebook shows it.
 
-    %load_ext plotnine_linter
+After ``%load_ext plotnine_linter``, the findings for each plot appear under
+the cell's output. The ``%plotlint`` magic controls the linter. The README
+lists its commands: ``on``, ``off``, ``status``, ``reset``, ``rules``,
+``summary``, ``profile``, ``audit``, ``select=`` and ``ignore=``.
 
-After that, each cell's plots are linted and any findings appear under the
-cell's output. Control it with the ``%plotlint`` magic::
-
-    %plotlint off            # pause
-    %plotlint on             # resume
-    %plotlint select=tier1,tier2,ST301
-    %plotlint ignore=AX203
-    %plotlint status
-    %plotlint rules          # the rule catalog (also: %plotlint rules 1, %plotlint rules AX)
-    %plotlint summary        # every plot linted so far in this notebook, with its findings
-    %plotlint profile accessibility   # Chartability/WCAG rules at their published thresholds
-    %plotlint audit          # Chartability audit of the last plot (also: %plotlint audit p --markdown)
-
-Suppress a rule for one cell with a comment in that cell::
+To suppress a rule for one cell, write a comment in that cell:
 
     # plotlint: ignore[AX201] months are ordinal
 """
@@ -28,7 +18,7 @@ from typing import Any
 _STATE: dict[str, Any] = {
     "enabled": True,
     "options": {},
-    "pending": [],  # reports waiting to be shown after the cell output
+    "pending": [],  # reports to show after the cell output
     "linted": weakref.WeakSet(),
     "callbacks": [],
     "history": [],  # (cell number, report) for every plot linted this session
@@ -158,7 +148,7 @@ def _patch_ggplot_show():
     original = ggplot.show
 
     def show(self, *args, **kwargs):
-        # its matplotlib figure is linted from the spec instead
+        # the linter reads this plot from its spec, not from its matplotlib figure
         _STATE["in_ggplot_show"] = True
         try:
             out = original(self, *args, **kwargs)

@@ -1,22 +1,19 @@
-"""Chartability audit: every test that applies to a static chart, with a verdict.
+"""Chartability audit: a verdict for every test that applies to a static chart.
+
+``lint()`` reports only problems. ``audit()`` marks each of the 50 tests in
+Chartability (https://chartability.github.io/POUR-CAF/):
+
+- **pass** or **fail**: the linter's rules decide.
+- **partly checked**: the linter gathers evidence, and the author answers a question.
+- **your call**: only the author can decide, so the audit asks.
+- **n/a**: the test is about interactive or web charts.
+
+In a notebook, ``%plotlint audit`` audits the last plot. The command
+``plotnine-linter audit`` audits every plot in a notebook. With
+``--check-answers``, it lists the checklist items that students left open.
 
     from plotnine_linter import audit
-    a = audit(p)            # a plotnine plot, or a matplotlib Figure/Axes
-    a                       # in a notebook: the checklist, with a status for every test
-    print(a.to_markdown())  # paste into a markdown cell under the chart and answer it
-
-``lint()`` reports only problems. ``audit()`` walks through Chartability's
-tests (https://chartability.github.io/POUR-CAF/) and marks each one:
-
-- **pass** / **fail**: decided by the linter's rules
-- **partly checked**: the linter gathered evidence; the author answers a question
-- **your call**: only the author can decide; the audit asks
-- **n/a**: about interactive or web charts, not a static plot
-
-In a notebook, ``%plotlint audit`` audits the last plot. On the command line,
-``plotnine-linter audit project.ipynb`` audits every plot in a notebook, and
-``plotnine-linter audit project.ipynb --check-answers`` reports checklist items
-students left unanswered.
+    print(audit(p).to_markdown())
 """
 
 from __future__ import annotations
@@ -86,7 +83,7 @@ class Audit:
     title: str = ""
     kind: str = ""  # e.g. "bar chart"
     source: str = ""
-    table_rows: int | None = None  # rows in data_table(), if one could be built
+    table_rows: int | None = None  # rows in data_table(), when the audit could make one
     internal_errors: list[str] = field(default_factory=list)
 
     # ----- convenience -------------------------------------------------
@@ -197,7 +194,7 @@ class Audit:
         """A checklist to paste into a markdown cell under the chart.
 
         Automatic passes are pre-checked. Everything else is an open box; questions get an
-        ``Answer:`` line. The draft alt text is filled in for the author to edit.
+        ``Answer:`` line. The checklist includes the draft alt text for the author to edit.
         ``plotnine-linter audit --check-answers`` reads these checklists back.
         """
         h = "#" * heading_level
@@ -837,8 +834,8 @@ def _extreme_value(desc) -> str | None:
 def data_table(obj: Any) -> pd.DataFrame:
     """The data behind a chart, as a DataFrame you can show under it.
 
-    For a plotnine plot with computed statistics (histograms, counts, box plots), the
-    computed values; otherwise the plotted columns, named by their axis labels.
+    A plotnine plot with computed statistics (histograms, counts, box plots) gives the
+    computed values. Other plots give the plotted columns, named by their axis labels.
     """
     from .describe import describe
 

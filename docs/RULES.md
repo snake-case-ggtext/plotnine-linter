@@ -53,4 +53,3 @@
 | ST305 | Same category, different colors across figures | Readers carry color meaning from one figure to the next. If 'West' is orange in one chart and blue in the next, they'll misread the second. | Define one palette per variable (a dict of category to color) and reuse it in every figure. |
 | ST306 | Inconsistent themes across figures | Figures in one report read as a set. Switching themes or base font sizes between them looks unfinished and makes comparisons harder. | Set the theme and font size once at the top of the notebook. |
 | ST307 | Excess precision in tick labels | Extra decimals add clutter without information. | Format ticks to the precision the step needs. |
-

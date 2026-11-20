@@ -1,11 +1,11 @@
 """Spec adapter: read a plotnine ``ggplot`` object.
 
-The user's plot is never mutated: we read the spec as written, then draw a
-deep copy to get trained scales, built layer data, panel ranges and the
-matplotlib figure for the render adapter.
+The adapter never changes the user's plot. It reads the spec as written. Then
+it draws a deep copy. The copy gives the trained scales, the layer data,
+the panel ranges and the figure for the render adapter.
 
-This reads some plotnine internals (``layer._data``, ``ggplot.layout``) that
-are not public API; tested against plotnine 0.13-0.15.
+This module reads some plotnine internals (``layer._data``, ``ggplot.layout``)
+that are not public API. The tests cover plotnine 0.13 to 0.15.
 """
 
 from __future__ import annotations
@@ -142,8 +142,8 @@ def describe_plotnine(plot) -> tuple[SpecInfo, Any]:
         if fx is not None:
             final_labels["y"] = fx
 
-    # plotnine < 0.14 fills plot.labels from the mapping as layers are added, so a label
-    # that just repeats its mapping expression is a default, not something the user wrote
+    # plotnine < 0.14 fills plot.labels from the mapping when you add layers. So a label
+    # that only repeats its mapping expression is a default, not something the user wrote.
     user_labels = {
         k: v
         for k, v in _labels_dict(plot.labels).items()

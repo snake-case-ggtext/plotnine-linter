@@ -1,18 +1,12 @@
 """Configuration: which rules run, at what severity, with which thresholds.
 
-Settings are read from the nearest ``pyproject.toml`` (searching upward from
-the working directory) under ``[tool.plotnine-linter]``::
+The linter reads ``[tool.plotnine-linter]`` from the nearest ``pyproject.toml``.
+It searches upward from the working directory. An instructor can ship this
+file with course materials, so every student sees the same rules.
 
     [tool.plotnine-linter]
-    select = ["tier1", "tier2", "ST301"]   # tiers, area prefixes or rule IDs
+    select = ["tier1", "tier2", "ST301"]
     ignore = ["AX203"]
-    severity = { LB202 = "warning" }
-
-    [tool.plotnine-linter.thresholds]
-    max_pie_slices = 4
-
-An instructor can ship this file with course materials so every student
-sees the same rules.
 """
 
 from __future__ import annotations
@@ -76,10 +70,10 @@ class Config:
         return self.thresholds.get(name, DEFAULT_THRESHOLDS[name])
 
     def merged(self, **overrides) -> Config:
-        """Return a copy with keyword overrides applied (None values are skipped).
+        """Return a copy with the keyword overrides. It skips overrides that are None.
 
-        ``profile`` (e.g. "accessibility") is applied first; explicit select, severity
-        and thresholds then override it. ``profile="none"`` clears a profile.
+        A ``profile`` (e.g. "accessibility") comes first. Explicit select, severity and
+        thresholds then override it. ``profile="none"`` clears a profile.
         """
         profile = overrides.pop("profile", None)
         base = self.with_profile(profile) if profile else self

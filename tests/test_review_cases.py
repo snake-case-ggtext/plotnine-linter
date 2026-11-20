@@ -1,8 +1,9 @@
 """Review cases: realistic COGS 108-style charts.
 
-Each test asserts the CORRECT behavior. Tests marked "FAILS TODAY" document a
-confirmed false positive / false negative; the comment says expected vs actual.
-Tests marked "guard" pass today and protect behavior that is right.
+Each test asserts the correct behavior. A "Regression" test covers a false
+positive or false negative from the review. Its comment gives the expected
+result and the result before the fix. A "guard" test protects behavior that
+was already right.
 """
 
 import matplotlib.pyplot as plt
@@ -52,10 +53,10 @@ def findings(report, rule_id):
 
 
 # =====================================================================
-# MK103 / MK202: box plots and error bars are read as "lines"
+# MK103 / MK202: the linter read box plots and error bars as "lines"
 # =====================================================================
 def test_matplotlib_boxplot_is_not_lines():
-    # FAILS TODAY. Expected: no MK103/MK202. Actual: MK103 (error) "line connects
+    # Regression. Expected: no MK103/MK202. Before the fix: MK103 (error) "line connects
     # categories" + MK202 "18 lines" -- whiskers/caps/medians are 2-point Line2Ds.
     df = penguins()
     fig, ax = plt.subplots()
@@ -70,7 +71,7 @@ def test_matplotlib_boxplot_is_not_lines():
 
 
 def test_seaborn_boxplot_is_not_lines():
-    # FAILS TODAY. Expected: no MK103/MK202. Actual: MK103 + MK202 "15 lines".
+    # Regression. Expected: no MK103/MK202. Before the fix: MK103 + MK202 "15 lines".
     ax = sns.boxplot(data=penguins(), x="species", y="body_mass_g")
     ax.set(xlabel="Species", ylabel="Body mass (g)")
     got = ids(lint(ax.figure))
@@ -79,14 +80,14 @@ def test_seaborn_boxplot_is_not_lines():
 
 
 def test_seaborn_barplot_errorbars_do_not_connect_categories():
-    # FAILS TODAY. Expected: no MK103. Actual: MK103 (error) from the vertical CI lines.
+    # Regression. Expected: no MK103. Before the fix: MK103 (error) from the vertical CI lines.
     ax = sns.barplot(data=penguins(), x="species", y="body_mass_g")
     ax.set(xlabel="Species", ylabel="Body mass (g)")
     assert "MK103" not in ids(lint(ax.figure))
 
 
 def test_seaborn_barplot_hue_errorbars_are_not_spaghetti():
-    # FAILS TODAY. Expected: no MK202. Actual: "This panel draws 8 lines" (8 CI whiskers).
+    # Regression. Expected: no MK202. Before the fix: "This panel draws 8 lines" (8 CI whiskers).
     rng = np.random.default_rng(0)
     tips = pd.DataFrame(
         {
@@ -115,7 +116,7 @@ INCOME = pd.Series({"West": 52, "East": 61, "South": 47, "North": 58, "Central":
 
 
 def test_pandas_bar_category_axis_is_not_numeric():
-    # FAILS TODAY. Expected: no LB101. Actual: LB101 "The x-axis shows numbers but
+    # Regression. Expected: no LB101. Before the fix: LB101 "The x-axis shows numbers but
     # has no label" on an axis of region names.
     ax = INCOME.plot.bar()
     ax.set_ylabel("Income (USD, thousands)")
@@ -123,23 +124,23 @@ def test_pandas_bar_category_axis_is_not_numeric():
 
 
 def test_pandas_bar_unsorted_is_flagged():
-    # FAILS TODAY. Expected: AX201 (bars unsorted). Actual: nothing (axis kind 'continuous').
+    # Regression. Expected: AX201 (bars unsorted). Before the fix: nothing (axis kind 'continuous').
     ax = INCOME.plot.barh()
     ax.set_xlabel("Income (USD, thousands)")
     assert "AX201" in ids(lint(ax.figure))
 
 
 def test_pandas_bar_default_rot90_is_flagged():
-    # FAILS TODAY. Expected: AX202 (pandas rotates category labels 90° by default).
-    # Actual: nothing.
+    # Regression. Expected: AX202 (pandas rotates category labels 90° by default).
+    # Before the fix: nothing.
     ax = INCOME.sort_values().plot.bar()
     ax.set_ylabel("Income (USD, thousands)")
     assert "AX202" in ids(lint(ax.figure))
 
 
 def test_grouped_bar_recipe_has_no_lb101():
-    # FAILS TODAY. matplotlib gallery grouped bars: ax.set_xticks(x, labels).
-    # Expected: no LB101. Actual: LB101 on the category axis.
+    # Regression. matplotlib gallery grouped bars: ax.set_xticks(x, labels).
+    # Expected: no LB101. Before the fix: LB101 on the category axis.
     fig, ax = plt.subplots()
     x, w = np.arange(4), 0.35
     ax.bar(x - w / 2, [20, 34, 30, 35], w, label="Men")
@@ -166,8 +167,8 @@ MAJORS = [
 
 
 def test_ly101_rotated_category_labels_do_not_overlap():
-    # FAILS TODAY. Labels at 45° (ha='right') are clearly legible; AX202 is the right
-    # finding. Expected: AX202 only. Actual: AX202 + LY101 "5 pairs overlap"
+    # Regression. Labels at 45° (ha='right') are clearly legible; AX202 is the right
+    # finding. Expected: AX202 only. Before the fix: AX202 + LY101 "5 pairs overlap"
     # (rotated text's axis-aligned bboxes overlap even though the glyphs don't).
     fig, ax = plt.subplots()
     ax.bar(MAJORS, np.arange(8, 0, -1) * 30)
@@ -180,8 +181,8 @@ def test_ly101_rotated_category_labels_do_not_overlap():
 
 
 def test_ly101_autofmt_xdate_does_not_overlap():
-    # FAILS TODAY. fig.autofmt_xdate() rotates date labels 30° and they no longer
-    # touch. Expected: AX202 only. Actual: AX202 + LY101 "7 pairs overlap".
+    # Regression. fig.autofmt_xdate() rotates date labels 30° and they no longer
+    # touch. Expected: AX202 only. Before the fix: AX202 + LY101 "7 pairs overlap".
     fig, ax = plt.subplots()
     d = pd.date_range("2024-01-01", periods=60)
     ax.plot(d, np.random.default_rng(1).normal(size=60).cumsum())
@@ -192,7 +193,7 @@ def test_ly101_autofmt_xdate_does_not_overlap():
 
 
 def test_ly101_plotnine_rotated_labels_do_not_overlap():
-    # FAILS TODAY. Same AABB issue in plotnine. Expected: AX202 only; actual adds LY101.
+    # Regression. Same AABB issue in plotnine. Expected: AX202 only; before the fix, adds LY101.
     df = mpg.groupby("manufacturer", as_index=False).agg(hwy=("hwy", "mean"))
     p = (
         ggplot(df, aes("reorder(manufacturer, -hwy)", "hwy"))
@@ -215,7 +216,7 @@ def test_ly101_unrotated_daily_dates_overlap():
 
 
 def test_ly101_plotnine_date_fix_does_not_suggest_more_breaks():
-    # FAILS TODAY. User already has date_breaks='2 years'; the fix suggests
+    # Regression. User already has date_breaks='2 years'; the fix suggests
     # date_breaks='1 year' (twice as many labels). Expected: a coarser suggestion.
     p = (
         ggplot(economics, aes("date", "unemploy"))
@@ -232,23 +233,23 @@ def test_ly101_plotnine_date_fix_does_not_suggest_more_breaks():
 # AX102 / LB201: seaborn grids
 # =====================================================================
 def test_pairplot_diagonal_twins_are_not_dual_axes():
-    # FAILS TODAY. pairplot's diagonal KDE axes are twinx() with the y-axis hidden.
-    # Expected: no AX102. Actual: AX102 (error) "overlays two axes with independent scales".
+    # Regression. pairplot's diagonal KDE axes are twinx() with the y-axis hidden.
+    # Expected: no AX102. Before the fix: AX102 (error) "overlays two axes with independent scales".
     g = sns.pairplot(penguins(), hue="species")
     assert "AX102" not in ids(lint(g.figure))
 
 
 def test_lb201_ignores_hidden_axis_labels():
-    # FAILS TODAY. jointplot marginal axes keep 'bill_length_mm' as an invisible label.
-    # Expected: no LB201 once set_axis_labels() is used. Actual: two LB201 warnings.
+    # Regression. jointplot marginal axes keep 'bill_length_mm' as an invisible label.
+    # Expected: no LB201 after set_axis_labels(). Before the fix: two LB201 warnings.
     g = sns.jointplot(data=penguins(), x="bill_length_mm", y="body_mass_g", alpha=0.4)
     g.set_axis_labels("Bill length (mm)", "Body mass (g)")
     assert "LB201" not in ids(lint(g.figure))
 
 
 def test_lb201_reports_a_repeated_facet_label_once():
-    # FAILS TODAY. One raw column name shared by 3 facets. Expected: one LB201.
-    # Actual: three identical findings (one per panel); pairplot gives 17.
+    # Regression. One raw column name shared by 3 facets. Expected: one LB201.
+    # Before the fix: three identical findings (one per panel); pairplot gives 17.
     g = sns.FacetGrid(penguins(), col="species")
     g.map(plt.hist, "body_mass_g", bins=np.arange(2000, 7001, 250))
     g.set_ylabels("Count")
@@ -267,8 +268,8 @@ def test_lb201_fix_keeps_units_from_the_name():
 # CL201: calibration and redundancy
 # =====================================================================
 def test_cl201_accepts_seaborn_colorblind_palette():
-    # FAILS TODAY. Four lines in sns.color_palette('colorblind') (an Okabe-Ito variant).
-    # Expected: no CL201. Actual: CL201 error (deuteranopia, ΔE 9.0 < 10).
+    # Regression. Four lines in sns.color_palette('colorblind') (an Okabe-Ito variant).
+    # Expected: no CL201. Before the fix: CL201 error (deuteranopia, ΔE 9.0 < 10).
     pal = sns.color_palette("colorblind")
     fig, ax = plt.subplots()
     rng = np.random.default_rng(0)
@@ -285,9 +286,9 @@ def test_cl201_accepts_seaborn_colorblind_palette():
 
 
 def test_cl201_skips_color_redundant_with_axis_plotnine():
-    # FAILS TODAY. fill repeats x and the legend is hidden (the fix LB203 suggests);
-    # categories are named on the axis, so CVD can't hide them.
-    # Expected: no CL201. Actual: CL201 error ('4' vs 'f').
+    # Regression. fill repeats x and the legend is hidden (the fix LB203 suggests);
+    # the axis names the categories, so CVD can't hide them.
+    # Expected: no CL201. Before the fix: CL201 error ('4' vs 'f').
     p = (
         ggplot(mpg, aes("drv", fill="drv"))
         + geom_bar(show_legend=False)
@@ -297,16 +298,16 @@ def test_cl201_skips_color_redundant_with_axis_plotnine():
 
 
 def test_cl201_skips_color_redundant_with_axis_seaborn():
-    # FAILS TODAY. seaborn 0.13's recommended idiom hue=x, legend=False.
-    # Expected: no CL201. Actual: CL201 error (tab10 orange/green).
+    # Regression. seaborn 0.13's recommended idiom hue=x, legend=False.
+    # Expected: no CL201. Before the fix: CL201 error (tab10 orange/green).
     ax = sns.countplot(data=penguins(), x="species", hue="species", legend=False)
     ax.set(xlabel="Species", ylabel="Penguins (count)")
     assert "CL201" not in ids(lint(ax.figure))
 
 
 def test_cl201_one_finding_when_color_and_fill_map_same_variable():
-    # FAILS TODAY. color='drv', fill='drv' on one density layer.
-    # Expected: one CL201. Actual: two (one for color, one for fill).
+    # Regression. color='drv', fill='drv' on one density layer.
+    # Expected: one CL201. Before the fix: two (one for color, one for fill).
     p = (
         ggplot(mpg, aes("hwy", color="drv", fill="drv"))
         + geom_density(alpha=0.3)
@@ -319,7 +320,7 @@ def test_cl201_one_finding_when_color_and_fill_map_same_variable():
 
 
 def test_cl201_same_verdict_for_seaborn_scatter_and_scatter_loop():
-    # FAILS TODAY. Same three tab10 colors; plt.scatter loop -> CL201, but
+    # Regression. Same three tab10 colors; plt.scatter loop -> CL201, but
     # sns.scatterplot(hue=...) -> nothing (one PathCollection with per-point colors
     # gets color=None in the render adapter). Expected: same verdict.
     df = penguins()
@@ -354,8 +355,8 @@ def test_cl201_default_palette_is_not_an_error():
 # Other rules
 # =====================================================================
 def test_ax103_ignores_empty_bins_in_log_histogram():
-    # FAILS TODAY. plt.hist(..., log=True) with empty tail bins. Expected: no AX103
-    # (no data is dropped; empty bins are just empty). Actual: AX103 error
+    # Regression. plt.hist(..., log=True) with empty tail bins. Expected: no AX103
+    # (the log scale drops no data; empty bins are just empty). Before the fix: AX103 error
     # "6 plotted values are at or below zero" with a symlog fix.
     fig, ax = plt.subplots()
     ax.hist(
@@ -368,8 +369,8 @@ def test_ax103_ignores_empty_bins_in_log_histogram():
 
 
 def test_ax201_dodged_bar_count_is_number_of_categories():
-    # FAILS TODAY. 7 classes dodged by drv. Expected message "The 7 bars ...".
-    # Actual: "The 12 bars for `class`" (counts dodged sub-bars by their shifted x).
+    # Regression. 7 classes dodged by drv. Expected message "The 7 bars ...".
+    # Before the fix: "The 12 bars for `class`" (counts dodged sub-bars by their shifted x).
     p = (
         ggplot(mpg, aes("class", fill="drv"))
         + geom_bar(position="dodge")
@@ -380,8 +381,8 @@ def test_ax201_dodged_bar_count_is_number_of_categories():
 
 
 def test_lint_accepts_array_of_axes():
-    # FAILS TODAY. `axes = df.hist()` / plt.subplots(1, 2) return ndarrays of Axes;
-    # students will pass them straight in. Expected: lints the figure. Actual: TypeError.
+    # Regression. `axes = df.hist()` / plt.subplots(1, 2) return ndarrays of Axes;
+    # students will pass them straight in. Expected: lints the figure. Before the fix: TypeError.
     _fig, axes = plt.subplots(1, 2)
     for a in axes:
         a.plot([1, 2, 3], [1, 4, 9])

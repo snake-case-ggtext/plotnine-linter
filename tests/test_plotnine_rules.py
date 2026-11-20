@@ -353,7 +353,7 @@ def test_ax205_months_in_alphabetical_order():
     )
 
 
-# ---------------------------------------------------------------- new rules
+# ---------------------------------------------------------------- rules from calibration
 def test_cl202_diverging_data_sequential_scale():
     rng = np.random.default_rng(3)
     df = pd.DataFrame(

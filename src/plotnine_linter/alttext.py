@@ -1,12 +1,11 @@
 """Draft alt text from the chart description.
 
-    from plotnine_linter import alt_text
-    alt_text(p)   # 'Bar chart of Average income (USD) by Region. Highest: East (61); lowest: South (47).'
+The draft gives the chart type, the plotted variables and the most salient
+numbers. The author adds the takeaway in their own words. ``lint()`` also puts
+the draft on ``report.alt_text``.
 
-It's a starting point: it says what kind of chart it is, what is plotted
-against what, and the most salient numbers. The author should add the
-takeaway in their own words. ``lint()`` also puts the draft on
-``report.alt_text``.
+    from plotnine_linter import alt_text
+    alt_text(p)
 """
 
 from __future__ import annotations

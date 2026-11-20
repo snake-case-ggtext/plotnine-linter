@@ -45,7 +45,8 @@ def lint(
     suppress
         Rule IDs to suppress, optionally with a reason: ``{"AX201": "months are ordinal"}``.
     source
-        Code that made the plot; ``# plotlint: ignore[ID] reason`` comments in it are honored.
+        Code that made the plot. The linter follows the ``# plotlint: ignore[ID] reason``
+        comments in it.
     config
         A :class:`Config`; defaults to the nearest pyproject.toml.
     profile

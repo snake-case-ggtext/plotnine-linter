@@ -1,14 +1,12 @@
 """A readable rule catalog for notebooks.
 
+``show_rules()`` shows every rule, grouped by tier, and marks the rules that
+are on. Pass a tier (``1``), an area (``"AX"``) or ``"a11y"`` to show fewer.
+``.to_frame()`` gives a pandas DataFrame. In Jupyter, ``%plotlint rules`` does
+the same.
+
     from plotnine_linter import show_rules
-    show_rules()                 # every rule, grouped by tier, showing which are on
-    rules(tier=1)           # just the errors
-    show_rules("AX")             # one area
-    show_rules().to_frame()      # a pandas DataFrame to sort or filter
-
-or, after ``%load_ext plotnine_linter``::
-
-    %plotlint rules
+    show_rules("AX")
 """
 
 from __future__ import annotations
@@ -137,8 +135,8 @@ def show_rules(
 ) -> RuleCatalog:
     """The rule catalog, showing which rules are on under the current settings.
 
-    ``select`` narrows it: a tier number (``1``), an area prefix (``"AX"``), a rule ID, or
-    ``"a11y"`` for the rules tied to Chartability tests or WCAG criteria.
+    ``select`` shows fewer rules. Give a tier number (``1``), an area prefix (``"AX"``)
+    or a rule ID. ``"a11y"`` shows the rules tied to Chartability tests or WCAG criteria.
     """
     cfg = config or _current_config()
     chosen = all_rules()

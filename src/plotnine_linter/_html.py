@@ -1,8 +1,8 @@
 """Shared HTML styling for notebook output.
 
-Readable in light and dark notebook themes: text inherits the theme's color,
-backgrounds are translucent tints, and severity is shown as a solid pill with
-white text (high contrast on any background) plus its name, never color alone.
+The output reads well in light and dark notebook themes. Text takes the
+theme's color, and backgrounds are translucent tints. Each severity shows as
+a solid pill with white text and its name, so color is never the only cue.
 """
 
 from __future__ import annotations

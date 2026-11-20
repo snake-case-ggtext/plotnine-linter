@@ -64,7 +64,7 @@ _BADGE = {
 
 @dataclass
 class Report:
-    """All findings for one chart, plus anything that was suppressed."""
+    """All findings for one chart, plus the suppressed ones."""
 
     findings: list[Finding] = field(default_factory=list)
     suppressed: list[tuple[Finding, str]] = field(default_factory=list)
@@ -74,7 +74,7 @@ class Report:
     )  # rules that crashed (a linter bug)
     image: str | None = None  # path to a saved PNG of the plot, when requested
     alt_text: str = ""  # a draft alt text for the plot (see alttext.py)
-    empty: bool = False  # the figure had no plotted data, so nothing was checked
+    empty: bool = False  # the figure had no plotted data, so no rule ran
     # set by `plotnine-linter audit` and `check_notebook(audit=True)`
     audit: Audit | None = field(default=None, repr=False, compare=False)
 

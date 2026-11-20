@@ -1,16 +1,15 @@
-"""Build the before/after example gallery (docs/GALLERY.md + docs/gallery/img/).
+"""Build the before/after gallery: docs/GALLERY.md and docs/gallery/img/.
 
-For every rule in the catalog this script runs a short BEFORE snippet that breaks
-the rule and an AFTER snippet that follows the rule's fix, lints both with all
-three tiers selected, and fails loudly unless BEFORE is flagged with the rule and
-AFTER is not. AFTER plots are meant to be model answers: any finding left on one
-is printed at the end (and the script exits non-zero with ``--strict``).
+Each rule in the catalog has a BEFORE snippet that breaks the rule. It also
+has an AFTER snippet that follows the rule's fix. The script lints both with
+all three tiers. It fails unless the rule flags BEFORE and not AFTER.
 
-    python docs/gallery/make_gallery.py            # from the package root
-    python docs/gallery/make_gallery.py --strict   # also fail if an AFTER has any finding
-    python docs/gallery/make_gallery.py --only AX101 MK202
+AFTER plots are model answers. The script prints any finding left on one. With
+``--strict``, those findings also make it exit with an error.
 
-The snippets below are exactly what runs; GALLERY.md shows them as diffs.
+GALLERY.md shows the snippets below as diffs. Run it from the package root:
+
+    python docs/gallery/make_gallery.py --strict
 """
 
 from __future__ import annotations

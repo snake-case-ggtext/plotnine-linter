@@ -1,6 +1,17 @@
+.venv/
 __pycache__/
 *.egg-info/
-.pytest_cache/
-.ipynb_checkpoints/
 build/
 dist/
+
+# tests and tools
+.pytest_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+# notebooks and OS files
+.ipynb_checkpoints/
+.DS_Store

@@ -1,14 +1,12 @@
 """The shared chart description that every rule reads.
 
-Two adapters fill it in:
+Two adapters fill it in. The **spec adapter** (plotnine only) records intent:
+mappings, geoms, stats, scales, facets and labels. The **render adapter** (any
+matplotlib figure, plotnine's too) records what the reader sees. That means
+marks, tick labels, text sizes, legends and colors.
 
-* the **spec adapter** (plotnine only) records intent: which column maps to
-  which aesthetic, which geoms and stats are used, scales, facets, labels;
-* the **render adapter** (any matplotlib figure, including plotnine's) records
-  what the reader sees: marks, tick labels, text sizes, legends, colors.
-
-Rules ask for ``desc.spec`` and/or ``desc.render`` and skip silently when the
-part they need is missing.
+Rules read ``desc.spec`` and ``desc.render``. A rule that needs the spec skips
+matplotlib figures without a message.
 """
 
 from __future__ import annotations
@@ -233,7 +231,7 @@ class ChartDescription:
     render: RenderInfo  # what was drawn; plotnine plots are drawn too
     spec: SpecInfo | None = None  # plotnine plots only
     errors: list[str] = field(default_factory=list)  # adapter problems, for debugging
-    session: Session | None = None  # set when figures are linted as a set (notebooks)
+    session: Session | None = None  # the other figures in a notebook, for ST305/ST306
 
 
 def scale_categories(scale: Any) -> list[str]:

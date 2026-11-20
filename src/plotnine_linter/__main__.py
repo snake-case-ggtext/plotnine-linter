@@ -1,10 +1,6 @@
-"""Command line.
+"""The ``plotnine-linter`` command: ``rules``, ``check`` and ``audit``.
 
-plotnine-linter rules [--markdown]      # list the rule catalog
-plotnine-linter check project.ipynb      # run a notebook, lint every plot it draws
-plotnine-linter check script.py [...]   # run scripts, lint every plot they make
-plotnine-linter audit project.ipynb      # Chartability audit of every plot, as markdown checklists
-plotnine-linter audit project.ipynb --check-answers   # report checklist items left unanswered
+Run ``plotnine-linter --help`` for the options of each command.
 """
 
 from __future__ import annotations
@@ -26,14 +22,20 @@ def _rules(markdown: bool) -> int:
             2: "Tier 2 — Clarity (on by default)",
             3: "Tier 3 — Style (opt-in)",
         }
+        sections = []
         for tier, heading in tiers.items():
-            print(f"## {heading}\n")
-            print("| ID | Rule | Why | Fix |\n| --- | --- | --- | --- |")
+            lines = [
+                f"## {heading}",
+                "",
+                "| ID | Rule | Why | Fix |",
+                "| --- | --- | --- | --- |",
+            ]
             for r in rules:
                 if r.tier == tier:
                     note = " *(heuristic, reported as info)*" if r.heuristic else ""
-                    print(f"| {r.id} | {r.title}{note} | {r.why} | {r.fix} |")
-            print()
+                    lines.append(f"| {r.id} | {r.title}{note} | {r.why} | {r.fix} |")
+            sections.append("\n".join(lines))
+        print("\n\n".join(sections))
     else:
         for r in rules:
             print(f"{r.id}  tier {r.tier}  {r.title}")

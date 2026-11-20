@@ -37,7 +37,7 @@ def _log_scale(scale) -> bool:
     )
     text = f"{name} {type(scale).__name__}".lower()
     if "symlog" in text or "pseudo" in text:
-        return False  # defined at zero; nothing is dropped
+        return False  # defined at zero, so the scale drops nothing
     return "log" in text
 
 

@@ -1,12 +1,10 @@
 """Inline suppressions.
 
-In a script or notebook cell, write::
+A suppression without a reason still works, but the report notes it. That way
+the reason for breaking a rule stays next to the plot. To break a rule,
+write its ID and a reason:
 
     # plotlint: ignore[AX201] months are ordinal
-    # plotlint: ignore[AX201, LB202] reason applies to both
-
-A suppression without a reason still works, but the report notes it, so the
-reason for breaking a rule is written down next to the plot.
 """
 
 from __future__ import annotations

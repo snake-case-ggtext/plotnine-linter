@@ -1,12 +1,11 @@
 """Lint every plot in a Jupyter notebook by running it.
 
-    plotnine-linter check project.ipynb
-    plotnine-linter check projects/*.ipynb --format json
+The notebook runs in a fresh kernel, with its own folder as the working
+directory and the linter loaded. A cell can fail, for example when a data file
+is missing. The run then records the error and continues. So the linter checks
+every plot that the notebook can draw. It never changes the notebook file.
 
-The notebook runs in a fresh kernel (its own folder as the working directory)
-with the linter loaded. Cells that fail, for example because a data file is
-missing, are recorded and the run continues, so every plot that can be drawn
-is linted. The notebook file itself is never modified.
+    plotnine-linter check project.ipynb
 """
 
 from __future__ import annotations
@@ -130,8 +129,8 @@ def check_notebook(
 ) -> NotebookReport:
     """Run ``path`` in a fresh kernel and lint every plot it draws.
 
-    With ``save_images_to``, a PNG of each linted plot is saved in that folder and its
-    path recorded in the plot's report (``report.image``). With ``audit=True``, each plot
+    With ``save_images_to``, it saves a PNG of each linted plot in that folder. The
+    plot's report records the path (``report.image``). With ``audit=True``, each plot
     also gets a Chartability audit (``result.plots[i].audit``).
     """
     import nbformat

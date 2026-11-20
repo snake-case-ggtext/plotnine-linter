@@ -1,8 +1,8 @@
 """Render adapter: read a drawn matplotlib figure.
 
-Works on any matplotlib figure, including the figure plotnine draws, so
-render-level rules (overlap, font sizes, legends, colors, point density) apply
-to both libraries.
+It reads any matplotlib figure, including the figure that plotnine draws. So
+the render-level rules (overlap, font sizes, legends, colors, point density)
+apply to both libraries.
 """
 
 from __future__ import annotations
@@ -299,11 +299,11 @@ _HIST_TAGGING: bool = False  # set once tag_histograms() has wrapped Axes.hist
 
 
 def tag_histograms() -> None:
-    """Wrap ``Axes.hist`` so the bars it draws are known to be a histogram.
+    """Wrap ``Axes.hist`` to tag the bars it draws as a histogram.
 
     The Jupyter hook and ``plotnine-linter check`` call this before any plotting.
-    Without it (e.g. ``lint(fig)`` on a figure made earlier), touching equal-width
-    bars are taken to be a histogram.
+    Without it (e.g. ``lint(fig)`` on a figure made earlier), the render adapter
+    treats touching bars of equal width as a histogram.
     """
     global _HIST_TAGGING
     from matplotlib.axes import Axes

@@ -207,8 +207,8 @@ def monotone(values) -> bool:
 def overlaps(a, b, tol: float = 1.0, along: str | None = None) -> bool:
     """Do two display-space Bboxes overlap by more than ``tol`` pixels each way?
 
-    With ``along`` ("x" or "y") and a negative ``tol``, boxes closer than ``-tol``
-    pixels along that direction also count (labels running into each other).
+    With ``along`` ("x" or "y") and a negative ``tol``, near boxes also count. That
+    catches labels closer than ``-tol`` pixels in that direction.
     """
     w = min(a.x1, b.x1) - max(a.x0, b.x0)
     h = min(a.y1, b.y1) - max(a.y0, b.y0)

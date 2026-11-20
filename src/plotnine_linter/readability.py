@@ -1,7 +1,7 @@
 """Plain-language checks for a chart's own text: reading grade and abbreviations.
 
-These look only at text the chart shows (title, subtitle, caption, axis and
-legend titles), not at tick labels or category names.
+These checks read the title, subtitle, caption, axis titles and legend titles.
+They skip tick labels and category names.
 """
 
 from __future__ import annotations
